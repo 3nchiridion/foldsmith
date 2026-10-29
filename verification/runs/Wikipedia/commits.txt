@@ -1,0 +1,28 @@
+065557e Duo: report (fourth review)
+3c66733 Duo: saved, activity, search → Fold-aligned split (fourth review: two more walks)
+3c385e8 Duo: article, contents (fourth review: Edit, the open-contents look, labels, carry-over)
+4e0f095 Duo: saved, activity, search → Fold-aligned split (fourth review: routes, tab bar)
+de87a89 Duo: report (third review)
+162a1c6 Duo: contents (third review: the lead image's margin stays in step)
+962e2f2 Duo: article, contents (third review: contents follow the article, margins, W label, gates)
+aa1085b Duo: saved, activity, search → Fold-aligned split (third review: every walk of the hierarchy)
+a04b528 Duo: settings → back as it was (revert the split)
+cb9681d Duo: report (second review)
+00db16f Duo: article → Reflowing columns (search item titled for the overflow)
+aa81129 Duo: settings → Fold-aligned split
+4ee89e9 Duo: community → Even grid (second review: card heights for the new width)
+0ffa2ce Duo: article → Reflowing columns (second review: overflow, priorities, contents button, W)
+03e1d80 Duo: contents → beside the article, in the list pane (second review)
+328cb92 Duo: saved, activity, search → Fold-aligned split (second review: results, tab bar, theme, copy)
+344056a Duo: report (review fixes)
+9c259a0 Duo: contents → overlay in the fold split's detail pane
+75d98fe Duo: saved, activity, search → Fold-aligned split (list content to the fold, empty detail placeholder)
+4b8955f Duo: report
+26cf97a Duo: saved, activity, search → Fold-aligned split (tapping the tab again pops the list)
+b790031 Duo: search → Fold-aligned split (the search stays as it was beside the article)
+1067adb Duo: saved, activity, search → Fold-aligned split
+5a84010 Duo: tabs → Even grid
+6e8b992 Duo: article → Reflowing columns (toolbar and W off the fold; also contents)
+0c288f1 Duo: community → Even grid
+cd5c34e Duo: profile → Fold-aligned split
+dae0c7d Duo: audit

@@ -1,0 +1,18 @@
+NetNewsWire/article book: T14 column 340–827 straddles the active division (455.5–495.5)
+NetNewsWire/article book: T14 panes inessential and Detail meet at 320.5 pt, off the active division (455.5–495.5)
+NetNewsWire/launch book: T14 panes Timeline and Detail meet at 320.5 pt, off the active division (455.5–495.5)
+NetNewsWire/launch laptop: T1 text (y 444–469) intersects the active division (y 455.5–495.5)
+NetNewsWire/launch tent: T1 text (y 444–469) intersects the active division (y 455.5–495.5)
+NetNewsWire/settings book: T15 sheet 8–467.5 sits on the leading half while the fold (455.5–495.5) is active
+NetNewsWire/timeline book: T14 panes inessential and Detail meet at 320.5 pt, off the active division (455.5–495.5)
+NetNewsWire/timeline laptop: T1 text (y 444–469) intersects the active division (y 455.5–495.5)
+NetNewsWire/timeline tent: T1 text (y 444–469) intersects the active division (y 455.5–495.5)
+NetNewsWire/launch book: T7 none of the shut phone's Add, Current Activity, Feeds, Filter Read Feeds is on the inner display
+NetNewsWire/launch flat-sideways: T7 none of the shut phone's Add, Current Activity, Feeds, Filter Read Feeds is on the inner display
+NetNewsWire/launch flat-upright: T7 none of the shut phone's Add, Current Activity, Feeds, Filter Read Feeds is on the inner display
+NetNewsWire/launch laptop: T7 none of the shut phone's Add, Current Activity, Feeds, Filter Read Feeds is on the inner display
+NetNewsWire/launch tent: T7 none of the shut phone's Add, Current Activity, Feeds, Filter Read Feeds is on the inner display
+NetNewsWire/timeline flat-upright: T7 none of the shut phone's Filter Read Articles, Mark All as Read, Search, go down is on the inner display
+NetNewsWire/timeline laptop: T7 none of the shut phone's Filter Read Articles, Mark All as Read, Search, go down is on the inner display
+NetNewsWire/timeline tent: T7 none of the shut phone's Filter Read Articles, Mark All as Read, Search, go down is on the inner display
+28 captures, 17 findings

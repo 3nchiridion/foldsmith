@@ -1,0 +1,16 @@
+{
+  "name": "duo-kit",
+  "owner": {
+    "name": "3nchiridion"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for adapting iOS apps to iPhone Duo"
+  },
+  "plugins": [
+    {
+      "name": "duo-migration",
+      "source": "./plugins/duo-migration",
+      "description": "Hands-free iPhone Duo migration: the iphone-duo-patterns skill, /duo-start, and a pane with the live simulator, before/after shots and what is done and left"
+    }
+  ]
+}

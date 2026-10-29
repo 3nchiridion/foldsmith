@@ -1,0 +1,35 @@
+app: IceCubesApp (dev.enchiridion.corpus.IceCubesApp)
+flow: verification/ab/flows/IceCubesApp.flow sha256 9dc96b4d0ac528c89bec452b05e8f9ab11786b01b281ac8290964b3decc55569
+captured: 2026-10-27T01:40:33Z on iPhone Duo (<Duo simulator UDID>) (Booted) 
+settle: WAIT=6 TAP_WAIT=2
+== pose closed
+  launch
+  timeline
+  settings
+== pose closed-sideways
+  launch
+  timeline
+  settings
+== pose book
+  launch
+  timeline
+  settings
+== pose laptop
+  launch
+  timeline
+  settings
+== pose tent
+  launch
+  timeline
+  settings
+== pose flat-sideways
+  launch
+  timeline
+  settings
+== pose flat-upright
+  launch
+  timeline
+  settings
+done → verification/ab/baseline/IceCubesApp
+redacted 14 shots in verification/ab/baseline/IceCubesApp
+re-redacted 2026-10-27 with images flattened (scripts/redact-shots.py as committed)

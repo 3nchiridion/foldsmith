@@ -1,0 +1,11 @@
+# IceCubesApp at 98098b9 (raw/corpus/manifest.txt), built as in raw/corpus/BUILDS.md (xcconfig from the template).
+# No account: the app opens on Add Account over mastodon.social's Trending timeline; its logged-out tabs are Timeline
+# and Settings. The timeline shows strangers' posts, so those screens are pixelated (scripts/redact-shots.py) in every
+# capture of every condition: scrolling areas become blocks, bars and their items stay as shot.
+BUNDLE=dev.enchiridion.corpus.IceCubesApp
+SCREENS=(
+  "launch=springboard:Don"                           # Add Account sheet, keyboard up, over the timeline
+  "timeline=springboard:Don;Cancel"                  # Trending timeline
+  "settings=springboard:Don;Cancel;Settings"         # Settings tab
+)
+REDACT=(launch timeline)

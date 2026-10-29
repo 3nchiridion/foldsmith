@@ -1,0 +1,336 @@
+{
+  "app": "IceCubesApp",
+  "phase": "done",
+  "poses": [
+    "closed",
+    "closed-sideways",
+    "book",
+    "laptop",
+    "tent",
+    "flat-sideways",
+    "flat-upright"
+  ],
+  "screens": [
+    {
+      "name": "add-account",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/add-account-closed-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/add-account-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/add-account-closed-sideways-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/add-account-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "verified",
+          "before": ".duo/captures/IceCubesApp/before/add-account-book-inner.png",
+          "label": "Fold-aligned split (sheet rule)",
+          "after": ".duo/captures/IceCubesApp/after/add-account-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/add-account-laptop-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/add-account-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/add-account-tent-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/add-account-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/add-account-flat-sideways-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/add-account-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/add-account-flat-upright-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/add-account-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    },
+    {
+      "name": "timeline",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/timeline-closed-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/timeline-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/timeline-closed-sideways-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/timeline-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/timeline-book-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/timeline-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/timeline-laptop-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/timeline-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/timeline-tent-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/timeline-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/timeline-flat-sideways-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/timeline-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/timeline-flat-upright-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/timeline-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    },
+    {
+      "name": "status",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/status-closed-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/status-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/status-closed-sideways-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/status-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/status-book-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/status-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/status-laptop-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/status-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/status-tent-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/status-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "verified",
+          "before": ".duo/captures/IceCubesApp/before/status-flat-sideways-inner.png",
+          "label": "Fold-aligned split (state kept on fold)",
+          "after": ".duo/captures/IceCubesApp/after/status-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/status-flat-upright-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/status-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    },
+    {
+      "name": "settings",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/settings-closed-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/settings-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/settings-closed-sideways-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/settings-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/settings-book-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/settings-book-inner.png"
+        },
+        "laptop": {
+          "state": "verified",
+          "before": ".duo/captures/IceCubesApp/before/settings-laptop-inner.png",
+          "label": "Fold-aligned split (state kept on fold)",
+          "after": ".duo/captures/IceCubesApp/after/settings-laptop-inner.png"
+        },
+        "tent": {
+          "state": "verified",
+          "before": ".duo/captures/IceCubesApp/before/settings-tent-inner.png",
+          "label": "Fold-aligned split (state kept on fold)",
+          "after": ".duo/captures/IceCubesApp/after/settings-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "verified",
+          "before": ".duo/captures/IceCubesApp/before/settings-flat-sideways-inner.png",
+          "label": "Fold-aligned split (state kept on fold)",
+          "after": ".duo/captures/IceCubesApp/after/settings-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "verified",
+          "before": ".duo/captures/IceCubesApp/before/settings-flat-upright-inner.png",
+          "label": "Fold-aligned split (state kept on fold)",
+          "after": ".duo/captures/IceCubesApp/after/settings-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    },
+    {
+      "name": "settings-display",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/settings-display-closed-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/settings-display-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/settings-display-closed-sideways-cover.png",
+          "after": ".duo/captures/IceCubesApp/after/settings-display-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/settings-display-book-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/settings-display-book-inner.png"
+        },
+        "laptop": {
+          "state": "verified",
+          "before": ".duo/captures/IceCubesApp/before/settings-display-laptop-inner.png",
+          "label": "Fold-aligned split (state kept on fold)",
+          "after": ".duo/captures/IceCubesApp/after/settings-display-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/settings-display-tent-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/settings-display-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "verified",
+          "before": ".duo/captures/IceCubesApp/before/settings-display-flat-sideways-inner.png",
+          "label": "Fold-aligned split (state kept on fold)",
+          "after": ".duo/captures/IceCubesApp/after/settings-display-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/IceCubesApp/before/settings-display-flat-upright-inner.png",
+          "after": ".duo/captures/IceCubesApp/after/settings-display-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    }
+  ],
+  "done": [
+    "add-account: Fold-aligned split (sheet rule), verified in every pose",
+    "timeline: Fold-aligned split (system tab sidebar, unchanged), verified in every pose",
+    "status: Fold-aligned split (state kept on fold), verified in every pose",
+    "settings: Fold-aligned split (state kept on fold), verified in every pose",
+    "settings-display: Fold-aligned split (state kept on fold), verified in every pose"
+  ],
+  "todo": [
+    "account-required screens: Notifications, Mentions, Explore, Messages, Profile, Bookmarks, Favorites, Lists, Followed tags, Links, composer, account settings — need a signed-in account, which may not be created on this simulator",
+    "account-detail: a stranger's profile; reachable logged out only through avatars and names whose labels change with the timeline, no stable tap",
+    "static T10 hits: ListAddAccountView (Button(\"action.done\")), EditRelationshipNoteView (Button(\"action.cancel\")): text-only bar items, behind an account, not captured",
+    "split-view half (475 x 669): not drivable headless",
+    "logged-in tab sections: logged in, the inner display (regular width) switches AppView to the iPad sections (untitled/sidebar-only TabSections, sidebar-only tabs) and the cover back to the iPhone tabs; the tab-rebuild mechanism behind the logged-out crash may apply there; needs an account to capture"
+  ],
+  "log": [
+    "07:52 started IceCubesApp",
+    "07:52 branch duo-migration from main 8614ae9",
+    "08:15 flow check: add-account, timeline, status, settings reach their screens in closed; each XCUITest tap waits 60 s for SpringBoard to idle, so settings-display (3 taps) needs TAP_TIMEOUT=400",
+    "08:15 phase audit",
+    "08:15 before capture started: 5 screens x 7 poses, TAP_TIMEOUT=400",
+    "08:16 before shot add-account / closed",
+    "08:16 before shot add-account / closed-sideways",
+    "08:16 before shot add-account / book",
+    "08:16 before shot add-account / laptop",
+    "08:17 before shot add-account / tent",
+    "08:17 before shot add-account / flat-sideways",
+    "08:18 before shot add-account / flat-upright",
+    "08:20 before shot timeline / closed",
+    "08:20 before shot timeline / closed-sideways",
+    "08:20 before shot timeline / book",
+    "08:20 before shot timeline / laptop",
+    "08:21 before shot timeline / tent",
+    "08:21 before shot timeline / flat-sideways",
+    "08:22 before shot timeline / flat-upright",
+    "08:25 before shot status / closed",
+    "08:25 before shot status / closed-sideways",
+    "08:25 before shot status / book",
+    "08:25 before shot status / laptop",
+    "08:26 before shot status / tent",
+    "08:26 before shot status / flat-sideways",
+    "08:29 before shot status / flat-upright",
+    "08:32 before shot settings / closed",
+    "08:32 before shot settings / closed-sideways",
+    "08:32 before shot settings / book",
+    "08:33 before shot settings / laptop",
+    "08:36 before shot settings / tent",
+    "08:36 before shot settings / flat-sideways",
+    "08:36 before shot settings / flat-upright",
+    "08:41 before shot settings-display / closed",
+    "08:41 before shot settings-display / closed-sideways",
+    "08:41 before shot settings-display / book",
+    "08:42 before shot settings-display / laptop",
+    "08:45 before shot settings-display / tent",
+    "08:46 before shot settings-display / flat-sideways",
+    "08:50 before shot settings-display / flat-upright",
+    "08:52 audit: detectors T15 add-account/book, T7 status/flat-sideways; by eye and capture lines: Add Account sheet re-presented on folds (status, settings, settings-display), app crash in UITabBarController tab rebuild on closing from tent (settings)",
+    "08:53 phase classify",
+    "08:53 classify: all five hierarchical (add-account, settings-display editing; timeline, status, settings viewing) → Fold-aligned split; reasons in .duo/audit.md",
+    "08:53 phase migrate",
+    "09:21 migrate: logged-out tabs as plain Tabs (AppView): the untitled sidebar-only TabSection made folds rebuild the tab bar (hidden Timeline tab appeared → Add Account re-presented; Settings selected → UIKit nil tab item crash). Probe: settings, status, settings-display clean in all 7 poses, no crash",
+    "09:24 migrate: sheet rule (DesignSystem/Duo/FoldAwareSheetPlacement.swift): readsBookFold() at the window root, foldAwareSheetPlacement() on every sheet; probe: add-account book trailing (0 findings), flat-sideways centred",
+    "09:24 phase verify",
+    "09:24 after capture started on 725ff38: 5 screens x 7 poses",
+    "09:24 after shot add-account / closed",
+    "09:25 after shot add-account / closed-sideways",
+    "09:25 after shot add-account / book",
+    "09:25 after shot add-account / laptop",
+    "09:26 after shot add-account / tent",
+    "09:26 after shot add-account / flat-sideways",
+    "09:26 after shot add-account / flat-upright",
+    "09:28 after shot timeline / closed",
+    "09:28 after shot timeline / closed-sideways",
+    "09:28 after shot timeline / book",
+    "09:29 after shot timeline / laptop",
+    "09:29 after shot timeline / tent",
+    "09:30 after shot timeline / flat-sideways",
+    "09:30 after shot timeline / flat-upright",
+    "09:33 after shot status / closed",
+    "09:34 after shot status / closed-sideways",
+    "09:34 after shot status / book",
+    "09:34 after shot status / laptop",
+    "09:35 after shot status / tent",
+    "09:35 after shot status / flat-sideways",
+    "09:36 after shot status / flat-upright",
+    "09:39 after shot settings / closed",
+    "09:39 after shot settings / closed-sideways",
+    "09:39 after shot settings / book",
+    "09:39 after shot settings / laptop",
+    "09:40 after shot settings / tent",
+    "09:40 after shot settings / flat-sideways",
+    "09:41 after shot settings / flat-upright",
+    "09:45 after shot settings-display / closed",
+    "09:45 after shot settings-display / closed-sideways",
+    "09:45 after shot settings-display / book",
+    "09:46 after shot settings-display / laptop",
+    "09:46 after shot settings-display / tent",
+    "09:47 after shot settings-display / flat-sideways",
+    "09:47 after shot settings-display / flat-upright",
+    "09:47 verify: after capture 35 shots, duo-detect 0 findings (before 2), no lost screen, no crash; looked at every shot",
+    "09:47 done add-account: Fold-aligned split (sheet rule), verified in every pose",
+    "09:47 done timeline: Fold-aligned split (system tab sidebar, unchanged), verified in every pose",
+    "09:47 done status: Fold-aligned split (state kept on fold), verified in every pose",
+    "09:47 done settings: Fold-aligned split (state kept on fold), verified in every pose",
+    "09:47 done settings-display: Fold-aligned split (state kept on fold), verified in every pose",
+    "09:50 phase done",
+    "09:50 report: .duo/REPORT.md; 5 screens verified in all 7 poses; 5 todo items (account-required screens, logged-in tab sections, stranger's profile, static T10 hits, split-view half)"
+  ],
+  "simulator": "<Duo simulator UDID>"
+}

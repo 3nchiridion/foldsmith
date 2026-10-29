@@ -1,0 +1,29 @@
+# XcodeGen spec. On the Mac: `cd Tap && xcodegen generate`
+name: DuoTap
+options:
+  bundleIdPrefix: dev.enchiridion.duopatterns
+  deploymentTarget:
+    iOS: "27.1"
+  xcodeVersion: "27.1"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    CODE_SIGNING_ALLOWED: NO
+targets:
+  DuoTapUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [DuoTapUITests]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.enchiridion.duopatterns.tap
+        GENERATE_INFOPLIST_FILE: YES
+        USES_XCTRUNNER: YES
+schemes:
+  DuoTapUITests:
+    build:
+      targets:
+        DuoTapUITests: all
+    test:
+      targets: [DuoTapUITests]

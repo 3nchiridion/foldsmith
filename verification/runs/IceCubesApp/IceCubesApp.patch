@@ -1,0 +1,306 @@
+IceCubesApp (https://github.com/Dimillian/IceCubesApp, 98098b9) is licensed under the GNU AGPL-3.0. This patch
+changes it and is under the AGPL-3.0 too, not under this repository's MIT license; the license's text is in
+LICENSE-AGPL-3.0, next to this file. git apply skips this preamble.
+
+diff --git a/IceCubesApp/App/Main/AppView.swift b/IceCubesApp/App/Main/AppView.swift
+index 06e35df..81ab545 100644
+--- a/IceCubesApp/App/Main/AppView.swift
++++ b/IceCubesApp/App/Main/AppView.swift
+@@ -91,9 +91,14 @@ struct AppView: View {
+         })
+     ) {
+       ForEach(availableSections) { section in
+-        if section == .iosTabs {
++        // The logged-out tabs (Timeline, Settings) are plain tabs, as on iPhone. Inside an untitled
++        // sidebar-only TabSection, with Settings sidebar-only, a fold on iPhone Duo made the tab bar
++        // rebuild its items: the hidden Timeline tab appeared for a moment (presenting Add Account
++        // again over Settings), and with Settings selected UIKit crashed inserting a nil tab bar
++        // item (`-[UITabBarController _tabs_rebuildTabBarItemsAnimated:]`).
++        if section == .iosTabs || section == .loggedOutTabs {
+           // Sidebar placement and the search role can override the user's tab order.
+-          ForEach(iosTabs.tabs) { tab in
++          ForEach(section == .iosTabs ? iosTabs.tabs : section.tabs) { tab in
+             Tab(value: tab) {
+               makeTabContent(for: tab)
+             } label: {
+diff --git a/IceCubesApp/App/Main/IceCubesApp+Scene.swift b/IceCubesApp/App/Main/IceCubesApp+Scene.swift
+index c8e9661..bef3252 100644
+--- a/IceCubesApp/App/Main/IceCubesApp+Scene.swift
++++ b/IceCubesApp/App/Main/IceCubesApp+Scene.swift
+@@ -1,4 +1,5 @@
+ import AppIntents
++import DesignSystem
+ import Env
+ import MediaUI
+ import StatusKit
+@@ -37,6 +38,7 @@ extension IceCubesApp {
+             .presentationCornerRadius(16)
+             .presentationSizing(.page)
+             .withEnvironments()
++            .foldAwareSheetPlacement()
+           } else {
+             EmptyView()
+           }
+@@ -67,6 +69,7 @@ extension IceCubesApp {
+           }
+         }
+         .withModelContainer()
++        .readsBookFold()
+     }
+     .commands {
+       appMenu
+diff --git a/IceCubesApp/App/Router/AppRegistry.swift b/IceCubesApp/App/Router/AppRegistry.swift
+index 4f944ec..8cac85d 100644
+--- a/IceCubesApp/App/Router/AppRegistry.swift
++++ b/IceCubesApp/App/Router/AppRegistry.swift
+@@ -242,6 +242,7 @@ extension View {
+         }
+       }
+       .environment(routerPath)
++      .foldAwareSheetPlacement()
+     }
+   }
+ 
+diff --git a/IceCubesApp/App/Tabs/Settings/SettingsTab.swift b/IceCubesApp/App/Tabs/Settings/SettingsTab.swift
+index 44b8b28..afd1056 100644
+--- a/IceCubesApp/App/Tabs/Settings/SettingsTab.swift
++++ b/IceCubesApp/App/Tabs/Settings/SettingsTab.swift
+@@ -362,6 +362,7 @@ struct SettingsTabs: View {
+     }
+     .sheet(isPresented: $addAccountSheetPresented) {
+       AddAccountView()
++        .foldAwareSheetPlacement()
+     }
+   }
+ 
+diff --git a/Packages/Account/Sources/Account/Detail/AccountDetailView.swift b/Packages/Account/Sources/Account/Detail/AccountDetailView.swift
+index c89ee2d..af1041d 100644
+--- a/Packages/Account/Sources/Account/Detail/AccountDetailView.swift
++++ b/Packages/Account/Sources/Account/Detail/AccountDetailView.swift
+@@ -178,6 +178,7 @@ public struct AccountDetailView: View {
+             }
+           }
+         )
++        .foldAwareSheetPlacement()
+       }
+     )
+     .edgesIgnoringSafeArea(.top)
+diff --git a/Packages/AppAccount/Sources/AppAccount/AppAccountsSelectorView.swift b/Packages/AppAccount/Sources/AppAccount/AppAccountsSelectorView.swift
+index 0f1d3c2..d5205e5 100644
+--- a/Packages/AppAccount/Sources/AppAccount/AppAccountsSelectorView.swift
++++ b/Packages/AppAccount/Sources/AppAccount/AppAccountsSelectorView.swift
+@@ -83,6 +83,7 @@ public struct AppAccountsSelectorView: View {
+             .onAppear {
+               refreshAccounts()
+             }
++            .foldAwareSheetPlacement()
+         } else {
+           accountsView.presentationDetents([.height(preferredHeight), .large])
+             .presentationBackground(.ultraThinMaterial)
+diff --git a/Packages/DesignSystem/Sources/DesignSystem/Duo/FoldAwareSheetPlacement.swift b/Packages/DesignSystem/Sources/DesignSystem/Duo/FoldAwareSheetPlacement.swift
+new file mode 100644
+index 0000000..44925fd
+--- /dev/null
++++ b/Packages/DesignSystem/Sources/DesignSystem/Duo/FoldAwareSheetPlacement.swift
+@@ -0,0 +1,86 @@
++// FoldAwareSheetPlacement.swift — the sheet rule of duo-patterns' P1 "Fold-aligned split"
++// (patterns/fold-aligned-split.md; adapted from its reference implementation, FoldAlignedSplit.swift).
++//
++// Ice Cubes' split on iPhone Duo's inner display is the system tab sidebar, which already ends at the fold when the
++// phone is folded like a book and starts the tab's content after it. What it does not do is move sheets: the system
++// places them on the leading half while the book fold is active, ending inside the fold's margin (taxonomy T15),
++// where Apple sends alerts and sheets to the trailing side [tech talk 111463, 4:00].
++//
++// `readsBookFold()`, once on the window's root view, reads the fold from reserved regions (never from the device,
++// idiom or orientation) and tells every view below it, presented sheets included, whether a vertical fold is active.
++// `foldAwareSheetPlacement()` on a sheet's content then puts the sheet on the trailing half while it is, and leaves the
++// system's placement everywhere else (flat, upright, the outer display, any other device).
++//
++// iOS 27.1 and later, outside Mac Catalyst: `PresentationPlacement.trailing` is unavailable on visionOS and macOS, and
++// reserved regions arrive with iOS 27.1. Elsewhere both modifiers return the view unchanged.
++
++import SwiftUI
++
++public extension EnvironmentValues {
++  /// True while a vertical division is active around this view: the device is folded like a book.
++  @Entry var duoBookFoldIsActive: Bool = false
++}
++
++public extension View {
++  /// Apply once, on the window's root view: sets `duoBookFoldIsActive` for everything below it, sheets included.
++  @ViewBuilder func readsBookFold() -> some View {
++    #if os(iOS) && !targetEnvironment(macCatalyst)
++      if #available(iOS 27.1, *) {
++        modifier(BookFoldReader())
++      } else {
++        self
++      }
++    #else
++      self
++    #endif
++  }
++
++  /// Apply to a sheet's content: trailing half while the book fold is active, the system's placement otherwise.
++  @ViewBuilder func foldAwareSheetPlacement() -> some View {
++    #if os(iOS) && !targetEnvironment(macCatalyst)
++      if #available(iOS 27.1, *) {
++        modifier(FoldAwareSheetPlacement())
++      } else {
++        self
++      }
++    #else
++      self
++    #endif
++  }
++}
++
++#if os(iOS) && !targetEnvironment(macCatalyst)
++  @available(iOS 27.1, *)
++  private struct BookFoldReader: ViewModifier {
++    /// The active vertical fold in window coordinates, or nil.
++    @State private var fold: CGRect?
++
++    func body(content: Content) -> some View {
++      content
++        .environment(\.duoBookFoldIsActive, fold != nil)
++        .background {
++          GeometryReader { _ in
++            Color.clear.onGeometryChange(for: CGRect?.self, of: activeVerticalFold) { fold = $0 }
++          }
++          .ignoresSafeArea()
++        }
++    }
++  }
++
++  /// The first active division that runs top to bottom, in the proxy's coordinates (the window, here).
++  @available(iOS 27.1, *)
++  nonisolated private func activeVerticalFold(in proxy: GeometryProxy) -> CGRect? {
++    proxy.reservedRegions(kind: .division)  // active regions only
++      .map(\.frame)
++      .first { $0.height > $0.width }
++  }
++
++  @available(iOS 27.1, *)
++  private struct FoldAwareSheetPlacement: ViewModifier {
++    @Environment(\.duoBookFoldIsActive) private var foldIsActive
++
++    func body(content: Content) -> some View {
++      content.presentationPlacement(foldIsActive ? .trailing : .automatic)
++    }
++  }
++#endif
+diff --git a/Packages/Lists/Sources/Lists/AddAccounts/ListAddAccountView.swift b/Packages/Lists/Sources/Lists/AddAccounts/ListAddAccountView.swift
+index 1cd3f23..7afe669 100644
+--- a/Packages/Lists/Sources/Lists/AddAccounts/ListAddAccountView.swift
++++ b/Packages/Lists/Sources/Lists/AddAccounts/ListAddAccountView.swift
+@@ -67,6 +67,7 @@ public struct ListAddAccountView: View {
+     }
+     .sheet(isPresented: $isPresentingCreateList) {
+       ListCreateView()
++        .foldAwareSheetPlacement()
+     }
+     .task {
+       viewModel.client = client
+diff --git a/Packages/Notifications/Sources/Notifications/List/NotificationsListView.swift b/Packages/Notifications/Sources/Notifications/List/NotificationsListView.swift
+index 9383c80..972898b 100644
+--- a/Packages/Notifications/Sources/Notifications/List/NotificationsListView.swift
++++ b/Packages/Notifications/Sources/Notifications/List/NotificationsListView.swift
+@@ -111,6 +111,7 @@ public struct NotificationsListView: View {
+       NotificationsPolicyView()
+         .environment(client)
+         .environment(theme)
++        .foldAwareSheetPlacement()
+     }
+     .onChange(of: isNotificationsPolicyPresented) { _, isPresented in
+       guard !isPresented else { return }
+diff --git a/Packages/StatusKit/Sources/StatusKit/Editor/Components/AccessoryView.swift b/Packages/StatusKit/Sources/StatusKit/Editor/Components/AccessoryView.swift
+index a3ed1d3..04e46b6 100644
+--- a/Packages/StatusKit/Sources/StatusKit/Editor/Components/AccessoryView.swift
++++ b/Packages/StatusKit/Sources/StatusKit/Editor/Components/AccessoryView.swift
+@@ -205,6 +205,7 @@ extension StatusEditor {
+         .sheet(isPresented: $isCustomEmojisSheetDisplay) {
+           CustomEmojisView(store: focusedStore)
+             .environment(theme)
++            .foldAwareSheetPlacement()
+         }
+       }
+ 
+diff --git a/Packages/StatusKit/Sources/StatusKit/Editor/Components/LangButton.swift b/Packages/StatusKit/Sources/StatusKit/Editor/Components/LangButton.swift
+index 01a5ea0..0f47742 100644
+--- a/Packages/StatusKit/Sources/StatusKit/Editor/Components/LangButton.swift
++++ b/Packages/StatusKit/Sources/StatusKit/Editor/Components/LangButton.swift
+@@ -38,6 +38,7 @@ extension StatusEditor {
+           store: store,
+           isPresented: $isLanguageSheetDisplayed
+         )
++        .foldAwareSheetPlacement()
+       }
+     }
+ 
+diff --git a/Packages/StatusKit/Sources/StatusKit/Editor/MainView.swift b/Packages/StatusKit/Sources/StatusKit/Editor/MainView.swift
+index 9087158..2dff9e6 100644
+--- a/Packages/StatusKit/Sources/StatusKit/Editor/MainView.swift
++++ b/Packages/StatusKit/Sources/StatusKit/Editor/MainView.swift
+@@ -50,6 +50,7 @@ extension StatusEditor {
+       }
+       .sheet(item: $editingMediaContainer, onDismiss: restoreEditorFocus) { container in
+         StatusEditor.MediaEditView(store: focusedStore, container: container)
++          .foldAwareSheetPlacement()
+       }
+       .presentationDetents([.large, .height(230)], selection: $presentationDetent)
+       .presentationBackgroundInteraction(.enabled)
+diff --git a/Packages/StatusKit/Sources/StatusKit/Editor/ToolbarItems.swift b/Packages/StatusKit/Sources/StatusKit/Editor/ToolbarItems.swift
+index 46c0940..30108ad 100644
+--- a/Packages/StatusKit/Sources/StatusKit/Editor/ToolbarItems.swift
++++ b/Packages/StatusKit/Sources/StatusKit/Editor/ToolbarItems.swift
+@@ -42,11 +42,14 @@ extension StatusEditor {
+         .tint(.label)
+         .accessibilityLabel("accessibility.editor.button.drafts")
+         .sheet(isPresented: $isDraftsSheetDisplayed) {
+-          if UIDevice.current.userInterfaceIdiom == .phone {
+-            draftsListView
+-          } else {
+-            draftsListView
++          Group {
++            if UIDevice.current.userInterfaceIdiom == .phone {
++              draftsListView
++            } else {
++              draftsListView
++            }
+           }
++          .foldAwareSheetPlacement()
+         }
+       }
+ 
+diff --git a/Packages/StatusKit/Sources/StatusKit/Row/StatusRowView.swift b/Packages/StatusKit/Sources/StatusKit/Row/StatusRowView.swift
+index 139f33d..e32e817 100644
+--- a/Packages/StatusKit/Sources/StatusKit/Row/StatusRowView.swift
++++ b/Packages/StatusKit/Sources/StatusKit/Row/StatusRowView.swift
+@@ -235,6 +235,7 @@ public struct StatusRowView: View {
+         viewModel.status.reblog?.content.asSafeMarkdownAttributedString
+         ?? viewModel.status.content.asSafeMarkdownAttributedString
+       StatusRowSelectableTextView(content: content)
++        .foldAwareSheetPlacement()
+     }
+     .environment(
+       StatusDataControllerProvider.shared.dataController(
+diff --git a/Packages/StatusKit/Sources/StatusKit/Row/Subviews/StatusRowActionsView.swift b/Packages/StatusKit/Sources/StatusKit/Row/Subviews/StatusRowActionsView.swift
+index 7b35354..f5297eb 100644
+--- a/Packages/StatusKit/Sources/StatusKit/Row/Subviews/StatusRowActionsView.swift
++++ b/Packages/StatusKit/Sources/StatusKit/Row/Subviews/StatusRowActionsView.swift
+@@ -275,6 +275,7 @@ struct StatusRowActionsView: View {
+       ?? viewModel.status.content.asSafeMarkdownAttributedString
+     return StatusRowSelectableTextView(content: content)
+       .tint(theme.tintColor)
++      .foldAwareSheetPlacement()
+   }
+ 
+   private func makeShareAsImageSheet() -> some View {
+@@ -286,6 +287,7 @@ struct StatusRowActionsView: View {
+       renderer: renderer
+     )
+     .tint(theme.tintColor)
++    .foldAwareSheetPlacement()
+   }
+ 
+   private var shareCaptureView: some View {

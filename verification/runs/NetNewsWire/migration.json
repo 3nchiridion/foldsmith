@@ -1,0 +1,371 @@
+{
+  "app": "NetNewsWire",
+  "phase": "done",
+  "simulator": "<Duo simulator UDID>",
+  "poses": [
+    "closed",
+    "closed-sideways",
+    "book",
+    "laptop",
+    "tent",
+    "flat-sideways",
+    "flat-upright"
+  ],
+  "screens": [
+    {
+      "name": "feeds",
+      "pattern": "Fold-aligned split",
+      "cells": {
+        "closed": {
+          "before": ".duo/captures/NetNewsWire/before/feeds-closed-cover.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/feeds-closed-cover.png"
+        },
+        "closed-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/feeds-closed-sideways-cover.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/feeds-closed-sideways-cover.png"
+        },
+        "book": {
+          "before": ".duo/captures/NetNewsWire/before/feeds-book-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T14 T7",
+          "after": ".duo/captures/NetNewsWire/after/feeds-book-inner.png"
+        },
+        "laptop": {
+          "before": ".duo/captures/NetNewsWire/before/feeds-laptop-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T1 T7",
+          "after": ".duo/captures/NetNewsWire/after/feeds-laptop-inner.png"
+        },
+        "tent": {
+          "before": ".duo/captures/NetNewsWire/before/feeds-tent-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T1 T7",
+          "after": ".duo/captures/NetNewsWire/after/feeds-tent-inner.png"
+        },
+        "flat-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/feeds-flat-sideways-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T7",
+          "after": ".duo/captures/NetNewsWire/after/feeds-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "before": ".duo/captures/NetNewsWire/before/feeds-flat-upright-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T7",
+          "after": ".duo/captures/NetNewsWire/after/feeds-flat-upright-inner.png"
+        }
+      }
+    },
+    {
+      "name": "timeline",
+      "pattern": "Fold-aligned split",
+      "cells": {
+        "closed": {
+          "before": ".duo/captures/NetNewsWire/before/timeline-closed-cover.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/timeline-closed-cover.png"
+        },
+        "closed-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/timeline-closed-sideways-cover.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/timeline-closed-sideways-cover.png"
+        },
+        "book": {
+          "before": ".duo/captures/NetNewsWire/before/timeline-book-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T14",
+          "after": ".duo/captures/NetNewsWire/after/timeline-book-inner.png"
+        },
+        "laptop": {
+          "before": ".duo/captures/NetNewsWire/before/timeline-laptop-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T1 T7",
+          "after": ".duo/captures/NetNewsWire/after/timeline-laptop-inner.png"
+        },
+        "tent": {
+          "before": ".duo/captures/NetNewsWire/before/timeline-tent-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T1 T7",
+          "after": ".duo/captures/NetNewsWire/after/timeline-tent-inner.png"
+        },
+        "flat-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/timeline-flat-sideways-inner.png",
+          "state": "verified",
+          "after": ".duo/captures/NetNewsWire/after/timeline-flat-sideways-inner.png",
+          "label": "Fold-aligned split"
+        },
+        "flat-upright": {
+          "before": ".duo/captures/NetNewsWire/before/timeline-flat-upright-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T7",
+          "after": ".duo/captures/NetNewsWire/after/timeline-flat-upright-inner.png"
+        }
+      }
+    },
+    {
+      "name": "article",
+      "pattern": "Fold-aligned split",
+      "cells": {
+        "closed": {
+          "before": ".duo/captures/NetNewsWire/before/article-closed-cover.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/article-closed-cover.png"
+        },
+        "closed-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/article-closed-sideways-cover.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/article-closed-sideways-cover.png"
+        },
+        "book": {
+          "before": ".duo/captures/NetNewsWire/before/article-book-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T14",
+          "after": ".duo/captures/NetNewsWire/after/article-book-inner.png"
+        },
+        "laptop": {
+          "before": ".duo/captures/NetNewsWire/before/article-laptop-inner.png",
+          "state": "verified",
+          "after": ".duo/captures/NetNewsWire/after/article-laptop-inner.png",
+          "label": "Fold-aligned split"
+        },
+        "tent": {
+          "before": ".duo/captures/NetNewsWire/before/article-tent-inner.png",
+          "state": "verified",
+          "after": ".duo/captures/NetNewsWire/after/article-tent-inner.png",
+          "label": "Fold-aligned split"
+        },
+        "flat-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/article-flat-sideways-inner.png",
+          "state": "verified",
+          "after": ".duo/captures/NetNewsWire/after/article-flat-sideways-inner.png",
+          "label": "Fold-aligned split"
+        },
+        "flat-upright": {
+          "before": ".duo/captures/NetNewsWire/before/article-flat-upright-inner.png",
+          "state": "verified",
+          "after": ".duo/captures/NetNewsWire/after/article-flat-upright-inner.png",
+          "label": "Fold-aligned split"
+        }
+      }
+    },
+    {
+      "name": "settings",
+      "pattern": "Fold-aligned split",
+      "cells": {
+        "closed": {
+          "before": ".duo/captures/NetNewsWire/before/settings-closed-cover.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/settings-closed-cover.png"
+        },
+        "closed-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/settings-closed-sideways-cover.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/settings-closed-sideways-cover.png"
+        },
+        "book": {
+          "before": ".duo/captures/NetNewsWire/before/settings-book-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T15",
+          "after": ".duo/captures/NetNewsWire/after/settings-book-inner.png"
+        },
+        "laptop": {
+          "before": ".duo/captures/NetNewsWire/before/settings-laptop-inner.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/settings-laptop-inner.png"
+        },
+        "tent": {
+          "before": ".duo/captures/NetNewsWire/before/settings-tent-inner.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/settings-tent-inner.png"
+        },
+        "flat-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/settings-flat-sideways-inner.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/settings-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "before": ".duo/captures/NetNewsWire/before/settings-flat-upright-inner.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/settings-flat-upright-inner.png"
+        }
+      }
+    },
+    {
+      "name": "add-feed",
+      "pattern": "Fold-aligned split",
+      "cells": {
+        "closed": {
+          "before": ".duo/captures/NetNewsWire/before/add-feed-closed-cover.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T10",
+          "after": ".duo/captures/NetNewsWire/after/add-feed-closed-cover.png"
+        },
+        "closed-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/add-feed-closed-sideways-cover.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T10",
+          "after": ".duo/captures/NetNewsWire/after/add-feed-closed-sideways-cover.png"
+        },
+        "book": {
+          "before": ".duo/captures/NetNewsWire/before/add-feed-book-inner.png",
+          "state": "verified",
+          "label": "Fold-aligned split",
+          "finding": "T15",
+          "after": ".duo/captures/NetNewsWire/after/add-feed-book-inner.png"
+        },
+        "laptop": {
+          "before": ".duo/captures/NetNewsWire/before/add-feed-laptop-inner.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/add-feed-laptop-inner.png"
+        },
+        "tent": {
+          "before": ".duo/captures/NetNewsWire/before/add-feed-tent-inner.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/add-feed-tent-inner.png"
+        },
+        "flat-sideways": {
+          "before": ".duo/captures/NetNewsWire/before/add-feed-flat-sideways-inner.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/add-feed-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "before": ".duo/captures/NetNewsWire/before/add-feed-flat-upright-inner.png",
+          "state": "unchanged",
+          "after": ".duo/captures/NetNewsWire/after/add-feed-flat-upright-inner.png"
+        }
+      }
+    }
+  ],
+  "done": [
+    "timeline: Fold-aligned split, verified in every pose",
+    "article: Fold-aligned split, verified in every pose",
+    "settings: Fold-aligned split (sheet rule), verified in every pose",
+    "add-feed: Fold-aligned split (sheet rule, bar symbols), verified in every pose",
+    "feeds: Fold-aligned split, three levels: the sidebar beside the article when unfolded from the feeds list (owner's rule 2026-10-27), verified in every pose"
+  ],
+  "todo": [
+    "not captured: Add Folder sheet (AddFolderView text-only Cancel/Add, T10 by static scan; presented from MainFeedCollectionViewController so it gets trailing placement only via the fold-change update), inspectors, Current Activity, search, full-screen image; Split View half window not drivable headless"
+  ],
+  "log": [
+    "11:16 start: new run (no .duo/migration.json); branch duo-migration from duo-baseline; simulator iPhone Duo booted",
+    "11:19 screens: read RootSplitViewController/SceneCoordinator/Main.storyboard: UIKit triple-column UISplitViewController (Feeds | Timeline | Article), sheets Settings and Add Feed; wrote .duo/flows/NetNewsWire.flow with 5 screens",
+    "11:19 built unmodified app (iOS 27.1 SDK) in 59s; built DuoTap runner in 9s; installed",
+    "11:25 screens: checked every flow line with one closed capture (339s for 5): feeds, timeline (All Unread), article (first unread), settings sheet, add-feed sheet all reached",
+    "11:25 audit: capturing unmodified build, 5 screens x 7 poses, SNAPSHOT=1, into .duo/captures/NetNewsWire/before",
+    "11:26 before capture: shot feeds/closed",
+    "11:30 before capture: shot timeline/closed, article/closed, settings/closed, add-feed/closed",
+    "11:35 before capture: shot feeds/closed-sideways, timeline/closed-sideways, article/closed-sideways, settings/closed-sideways, add-feed/closed-sideways",
+    "11:41 before capture: shot feeds/book, timeline/book, article/book, settings/book, add-feed/book",
+    "11:46 before capture: shot feeds/laptop, timeline/laptop, article/laptop, settings/laptop, add-feed/laptop",
+    "11:52 before capture: shot feeds/tent, timeline/tent, article/tent, settings/tent, add-feed/tent",
+    "11:57 before capture: shot feeds/flat-sideways, timeline/flat-sideways, article/flat-sideways, settings/flat-sideways, add-feed/flat-sideways",
+    "12:03 before capture: shot feeds/flat-upright, timeline/flat-upright, article/flat-upright, settings/flat-upright, add-feed/flat-upright",
+    "12:04 audit: 35 captures in 2274s (65 s per cell); duo-detect: T15 settings/book, T15 add-feed/book, T14 article/book",
+    "12:04 audit: by eye: T14 feeds+timeline book (detail 321-951 across fold), T1 No-selection placeholder on laptop/tent fold, T7 list lost on unfold (feeds all inner poses, timeline upright), T10 Add Feed text-only items on cover",
+    "12:04 audit: static scans: T14 SceneCoordinator column widths (primary+supplementary), T10 AddFeedView by hand (skill regex missed it); wrote .duo/audit.md",
+    "12:04 classify: feeds, timeline hierarchical/viewing; article = detail pane of the feeds-with-detail split (P2 reference is TextKit plain text, not WKWebView); settings, add-feed hierarchical/editing sheets -> all P1 Fold-aligned split; reasoning in .duo/audit.md",
+    "12:04 lookup: decision-table cells hierarchical/viewing (all poses cited), hierarchical/editing (tent UNJUSTIFIED, no finding there); 13 cells proposed",
+    "12:11 migrate article: iOS/FoldAlignedSplit.swift (UIKit port of P1: fold = division region incl. inactive, iOS 27.1-gated); RootSplitViewController re-reads it on layout and on UIHingeInteraction; SceneCoordinator sets no column width on a folding display (saved widths elsewhere, never saved from a fold); built 18s",
+    "12:11 probe (duo.py, no tap runner): book boundary on the fold (separator 475, timeline to 455, article from 495); flat-sideways 340 (leading narrower, as P1); laptop still detail-only",
+    "12:11 migrate timeline (part): minimumSecondaryColumnWidth 320 on a folding display lets the timeline tile beside the article at 669 pt (laptop probe: separator 340) as the decision table cell says [apple-apps/settings/laptop]; the v0 SwiftUI reference could not; built 14s",
+    "12:12 migrate timeline: empty detail placeholder (No selection) at 25% of the pane on a folding display (CSS appended in WebViewController; re-rendered on .foldAlignmentDidChange) per the P1 page; built 15s; probe cover->laptop: two panes, placeholder above the fold",
+    "12:14 feeds: tried show(.primary) when the window gains a fold with no feed chosen: the system brings the feeds list up as an overlay (0-280) over a dimmed timeline+article in book and laptop, the state the P1 page rejects; reverted. T14 (book) and T1 (laptop, tent) are fixed by the article and timeline steps; T7 stays: the feeds list is one tap away on the inner display",
+    "12:17 migrate settings: sheet rule in UIKit: RootSplitViewController.present sets sheetPresentationController.preferredPlacement (.trailing while a vertical division is active, else .automatic) and re-applies it to every presented sheet on layout/hinge; built 13s; probe (capture-app ONLY=book flat-sideways, 130s): book sheet on the trailing half with a vertical bar, flat centred; detectors clean",
+    "12:20 migrate add-feed: T15 by the sheet rule (presented through RootSplitViewController); T10: Cancel and Add get symbols (xmark, checkmark) on iOS 27.1, text-only before; built 14s; probe closed+book (144s): items in the vertical column on the cover, sheet trailing with a vertical bar in book; detectors clean",
+    "12:31 after capture: shot feeds/closed, feeds/closed-sideways, timeline/closed, timeline/closed-sideways, article/closed, article/closed-sideways, settings/closed, settings/closed-sideways, add-feed/closed",
+    "12:37 after capture: shot feeds/book, timeline/book, article/book, settings/book, add-feed/closed-sideways, add-feed/book",
+    "12:47 after capture: shot feeds/laptop, feeds/tent, timeline/laptop, timeline/tent, article/laptop, article/tent, settings/laptop, settings/tent, add-feed/laptop",
+    "12:58 after capture: shot feeds/flat-sideways, feeds/flat-upright, timeline/flat-sideways, timeline/flat-upright, article/flat-sideways, article/flat-upright, settings/flat-sideways, settings/flat-upright, add-feed/tent, add-feed/flat-sideways",
+    "12:59 after capture: shot add-feed/flat-upright",
+    "13:00 verify: recaptured 35 cells in 2277s; duo-detect 0 findings; looked at every shot: book panes on the fold (timeline to 455, article from 495), upright inner poses tile timeline|article with lists scrolling across the fold, placeholder above the fold, settings/add-feed sheets trailing in book and centred flat, Add Feed items in the cover vertical bar",
+    "13:00 verify: feeds keeps T7 in book, laptop, tent, flat-sideways, flat-upright (feeds list one tap away after unfolding); second fix tried during migration (show primary -> overlay over dimmed detail) and reverted; to todo",
+    "13:00 report: wrote .duo/REPORT.md; phase done. 4 screens verified in every pose, feeds left in todo (T7)",
+    "19:29 after shot feeds / closed",
+    "19:30 after shot feeds / closed-sideways",
+    "19:30 after shot feeds / book",
+    "19:30 after shot feeds / laptop",
+    "19:31 after shot feeds / tent",
+    "19:31 after shot feeds / flat-sideways",
+    "19:32 after shot feeds / flat-upright",
+    "19:33 after shot timeline / closed",
+    "19:33 after shot timeline / closed-sideways",
+    "19:33 after shot timeline / book",
+    "19:34 after shot timeline / laptop",
+    "19:35 after shot timeline / tent",
+    "19:35 after shot timeline / flat-sideways",
+    "19:36 after shot timeline / flat-upright",
+    "19:37 after shot article / closed",
+    "19:37 after shot article / closed-sideways",
+    "19:38 after shot article / book",
+    "19:38 after shot article / laptop",
+    "19:39 after shot article / tent",
+    "19:40 after shot article / flat-sideways",
+    "19:41 after shot article / flat-upright",
+    "19:42 after shot settings / closed",
+    "19:42 after shot settings / closed-sideways",
+    "19:43 after shot settings / book",
+    "19:43 after shot settings / laptop",
+    "19:43 after shot settings / tent",
+    "19:44 after shot settings / flat-sideways",
+    "19:44 after shot settings / flat-upright",
+    "19:45 after shot add-feed / closed",
+    "19:45 after shot add-feed / closed-sideways",
+    "19:46 after shot add-feed / book",
+    "19:46 after shot add-feed / laptop",
+    "19:48 after shot add-feed / tent",
+    "19:50 after shot add-feed / flat-sideways",
+    "19:51 after shot add-feed / flat-upright",
+    "20:34 after shot feeds / closed",
+    "20:34 after shot feeds / closed-sideways",
+    "20:34 after shot feeds / book",
+    "20:35 after shot feeds / laptop",
+    "20:35 after shot feeds / tent",
+    "20:36 after shot feeds / flat-sideways",
+    "20:36 after shot feeds / flat-upright",
+    "20:37 after shot timeline / closed",
+    "20:37 after shot timeline / closed-sideways",
+    "20:37 after shot timeline / book",
+    "20:38 after shot timeline / laptop",
+    "20:38 after shot timeline / tent",
+    "20:38 after shot timeline / flat-sideways",
+    "20:39 after shot timeline / flat-upright",
+    "20:40 after shot article / closed",
+    "20:40 after shot article / closed-sideways",
+    "20:41 after shot article / book",
+    "20:41 after shot article / laptop",
+    "20:41 after shot article / tent",
+    "20:42 after shot article / flat-sideways",
+    "20:42 after shot article / flat-upright",
+    "20:43 after shot settings / closed",
+    "20:43 after shot settings / closed-sideways",
+    "20:44 after shot settings / book",
+    "20:44 after shot settings / laptop",
+    "20:45 after shot settings / tent",
+    "20:45 after shot settings / flat-sideways",
+    "20:45 after shot settings / flat-upright",
+    "20:46 after shot add-feed / closed",
+    "20:46 after shot add-feed / closed-sideways",
+    "20:47 after shot add-feed / book",
+    "20:47 after shot add-feed / laptop",
+    "20:47 after shot add-feed / tent",
+    "20:48 after shot add-feed / flat-sideways",
+    "20:48 after shot add-feed / flat-upright",
+    "20:49 done feeds: Fold-aligned split, three levels: the sidebar beside the article when unfolded from the feeds list (owner's rule 2026-10-27), verified in every pose",
+    "20:49 feeds: sidebar beside the article on the inner display (the feeds list moves onto the timeline column's stack while the split is expanded with a fold); recaptured 35 cells in 915 s, duo-detect 0 findings, every shot checked"
+  ]
+}

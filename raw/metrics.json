@@ -1,0 +1,1026 @@
+{
+  "book": {
+    "firstFrame": {
+      "divisions": [],
+      "hSizeClass": "regular",
+      "label": "book",
+      "layoutDirection": "leftToRight",
+      "occlusions": [],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 4)",
+        "sceneBounds": {
+          "h": 669,
+          "w": 951,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 669,
+          "w": 951,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 84,
+          "top": 0
+        }
+      },
+      "schema": 2,
+      "seq": 1,
+      "sinceLastChange": 0.06973600387573242,
+      "t": -5.507469177246094e-05,
+      "toolbarVerticalEdge": "trailing",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 0,
+        "w": 0
+      }
+    },
+    "firstFrameHadRegions": false,
+    "hingeAtPose": {
+      "angleDegrees": 125.88889312744139,
+      "status": "partiallyOpen"
+    },
+    "samples": 8,
+    "secondsToSettle": 0.138,
+    "settled": {
+      "divisions": [
+        {
+          "frame": {
+            "h": 669,
+            "w": 40,
+            "x": 455.5,
+            "y": 0
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.fold\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 20,
+            "top": 0,
+            "trailing": 20
+          }
+        }
+      ],
+      "hSizeClass": "regular",
+      "label": "book",
+      "layoutDirection": "leftToRight",
+      "occlusions": [
+        {
+          "frame": {
+            "h": 37,
+            "w": 58,
+            "x": 677.3333333333334,
+            "y": 21
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.innerCamera\")))",
+          "isActive": false,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        },
+        {
+          "frame": {
+            "h": 124,
+            "w": 84,
+            "x": 867,
+            "y": 0
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.statusBarOcclusion\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        }
+      ],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 4)",
+        "sceneBounds": {
+          "h": 669,
+          "w": 951,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 669,
+          "w": 951,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 84,
+          "top": 0
+        }
+      },
+      "schema": 2,
+      "seq": 3,
+      "sinceLastChange": 0.09791100025177002,
+      "t": 0.1384119987487793,
+      "toolbarVerticalEdge": "trailing",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 669,
+        "w": 951
+      }
+    },
+    "shape": "wide",
+    "shapeMatchesPose": true
+  },
+  "closed": {
+    "firstFrame": {
+      "divisions": [],
+      "hSizeClass": "compact",
+      "label": "closed",
+      "layoutDirection": "leftToRight",
+      "occlusions": [],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 1)",
+        "sceneBounds": {
+          "h": 678,
+          "w": 466,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 678,
+          "w": 466,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 84,
+          "top": 0
+        }
+      },
+      "schema": 2,
+      "seq": 1,
+      "sinceLastChange": 0.2850409746170044,
+      "t": -5.2094459533691406e-05,
+      "toolbarVerticalEdge": "trailing",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 0,
+        "w": 0
+      }
+    },
+    "firstFrameHadRegions": false,
+    "hingeAtPose": {
+      "angleDegrees": 0,
+      "status": "closed"
+    },
+    "samples": 14,
+    "secondsToSettle": 0.231,
+    "settled": {
+      "divisions": [],
+      "hSizeClass": "compact",
+      "label": "closed",
+      "layoutDirection": "leftToRight",
+      "occlusions": [
+        {
+          "frame": {
+            "h": 37,
+            "w": 37,
+            "x": 399.6666666666667,
+            "y": 29.333333333333332
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.coverCamera\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        },
+        {
+          "frame": {
+            "h": 174,
+            "w": 84,
+            "x": 382,
+            "y": 0
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.statusBarOcclusion\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        }
+      ],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 1)",
+        "sceneBounds": {
+          "h": 678,
+          "w": 466,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 678,
+          "w": 466,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 84,
+          "top": 0
+        }
+      },
+      "schema": 2,
+      "seq": 3,
+      "sinceLastChange": 0.16124999523162842,
+      "t": 0.23143601417541504,
+      "toolbarVerticalEdge": "trailing",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 678,
+        "w": 466
+      }
+    },
+    "shape": "tall",
+    "shapeMatchesPose": true
+  },
+  "closed-sideways": {
+    "firstFrame": {
+      "divisions": [],
+      "hSizeClass": "compact",
+      "label": "closed-sideways",
+      "layoutDirection": "leftToRight",
+      "occlusions": [],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 3)",
+        "sceneBounds": {
+          "h": 466,
+          "w": 678,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 466,
+          "w": 678,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 84,
+          "right": 0,
+          "top": 0
+        }
+      },
+      "schema": 2,
+      "seq": 1,
+      "sinceLastChange": 0.06621098518371582,
+      "t": -5.4955482482910156e-05,
+      "toolbarVerticalEdge": "leading",
+      "vSizeClass": "compact",
+      "window": {
+        "h": 0,
+        "w": 0
+      }
+    },
+    "firstFrameHadRegions": false,
+    "hingeAtPose": {
+      "angleDegrees": 0,
+      "status": "closed"
+    },
+    "samples": 26,
+    "secondsToSettle": 0.159,
+    "settled": {
+      "divisions": [],
+      "hSizeClass": "compact",
+      "label": "closed-sideways",
+      "layoutDirection": "leftToRight",
+      "occlusions": [
+        {
+          "frame": {
+            "h": 37,
+            "w": 37,
+            "x": 29.333333333333332,
+            "y": 29.333333333333314
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.coverCamera\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        },
+        {
+          "frame": {
+            "h": 82,
+            "w": 84,
+            "x": 0,
+            "y": 0
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.statusBarOcclusion\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        }
+      ],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 3)",
+        "sceneBounds": {
+          "h": 466,
+          "w": 678,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 466,
+          "w": 678,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 84,
+          "right": 0,
+          "top": 0
+        }
+      },
+      "schema": 2,
+      "seq": 3,
+      "sinceLastChange": 0.1144869327545166,
+      "t": 0.15911197662353516,
+      "toolbarVerticalEdge": "leading",
+      "vSizeClass": "compact",
+      "window": {
+        "h": 466,
+        "w": 678
+      }
+    },
+    "shape": "wide",
+    "shapeMatchesPose": true
+  },
+  "flat-sideways": {
+    "firstFrame": {
+      "divisions": [],
+      "hSizeClass": "regular",
+      "label": "flat-sideways",
+      "layoutDirection": "leftToRight",
+      "occlusions": [],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 4)",
+        "sceneBounds": {
+          "h": 669,
+          "w": 951,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 669,
+          "w": 951,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 84,
+          "top": 0
+        }
+      },
+      "schema": 2,
+      "seq": 1,
+      "sinceLastChange": 0.06352496147155762,
+      "t": -5.4001808166503906e-05,
+      "toolbarVerticalEdge": "trailing",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 0,
+        "w": 0
+      }
+    },
+    "firstFrameHadRegions": false,
+    "hingeAtPose": {
+      "angleDegrees": 180,
+      "status": "fullyOpen"
+    },
+    "samples": 7,
+    "secondsToSettle": 0.135,
+    "settled": {
+      "divisions": [
+        {
+          "frame": {
+            "h": 669,
+            "w": 40,
+            "x": 455.5,
+            "y": 0
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.fold\")))",
+          "isActive": false,
+          "margins": {
+            "bottom": 0,
+            "leading": 20,
+            "top": 0,
+            "trailing": 20
+          }
+        }
+      ],
+      "hSizeClass": "regular",
+      "label": "flat-sideways",
+      "layoutDirection": "leftToRight",
+      "occlusions": [
+        {
+          "frame": {
+            "h": 37,
+            "w": 58,
+            "x": 677.3333333333334,
+            "y": 21
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.innerCamera\")))",
+          "isActive": false,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        },
+        {
+          "frame": {
+            "h": 124,
+            "w": 84,
+            "x": 867,
+            "y": 0
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.statusBarOcclusion\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        }
+      ],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 4)",
+        "sceneBounds": {
+          "h": 669,
+          "w": 951,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 669,
+          "w": 951,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 84,
+          "top": 0
+        }
+      },
+      "schema": 2,
+      "seq": 3,
+      "sinceLastChange": 0.09444093704223633,
+      "t": 0.13485395908355713,
+      "toolbarVerticalEdge": "trailing",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 669,
+        "w": 951
+      }
+    },
+    "shape": "wide",
+    "shapeMatchesPose": true
+  },
+  "flat-upright": {
+    "firstFrame": {
+      "divisions": [],
+      "hSizeClass": "regular",
+      "label": "flat-upright",
+      "layoutDirection": "leftToRight",
+      "occlusions": [],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 1)",
+        "sceneBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 0,
+          "top": 82
+        }
+      },
+      "schema": 2,
+      "seq": 1,
+      "sinceLastChange": 0.06667006015777588,
+      "t": -7.998943328857422e-05,
+      "toolbarVerticalEdge": "nil",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 0,
+        "w": 0
+      }
+    },
+    "firstFrameHadRegions": false,
+    "hingeAtPose": null,
+    "samples": 3,
+    "secondsToSettle": 0.138,
+    "settled": {
+      "divisions": [
+        {
+          "frame": {
+            "h": 40,
+            "w": 669,
+            "x": 0,
+            "y": 455.5
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.fold\")))",
+          "isActive": false,
+          "margins": {
+            "bottom": 20,
+            "leading": 0,
+            "top": 20,
+            "trailing": 0
+          }
+        }
+      ],
+      "hSizeClass": "regular",
+      "label": "flat-upright",
+      "layoutDirection": "leftToRight",
+      "occlusions": [
+        {
+          "frame": {
+            "h": 57.99999999999997,
+            "w": 37,
+            "x": 21,
+            "y": 215.66666666666666
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.innerCamera\")))",
+          "isActive": false,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        },
+        {
+          "frame": {
+            "h": 82,
+            "w": 144,
+            "x": 525,
+            "y": 0
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.statusBarOcclusion\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        }
+      ],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 1)",
+        "sceneBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 0,
+          "top": 82
+        }
+      },
+      "schema": 2,
+      "seq": 3,
+      "sinceLastChange": 0.09584999084472656,
+      "t": 0.1383979320526123,
+      "toolbarVerticalEdge": "nil",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 951,
+        "w": 669
+      }
+    },
+    "shape": "tall",
+    "shapeMatchesPose": true
+  },
+  "laptop": {
+    "firstFrame": {
+      "divisions": [],
+      "hSizeClass": "regular",
+      "label": "laptop",
+      "layoutDirection": "leftToRight",
+      "occlusions": [],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 1)",
+        "sceneBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 0,
+          "top": 82
+        }
+      },
+      "schema": 2,
+      "seq": 1,
+      "sinceLastChange": 0.08139503002166748,
+      "t": -5.2928924560546875e-05,
+      "toolbarVerticalEdge": "nil",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 0,
+        "w": 0
+      }
+    },
+    "firstFrameHadRegions": false,
+    "hingeAtPose": {
+      "angleDegrees": 108.88888549804688,
+      "status": "partiallyOpen"
+    },
+    "samples": 5,
+    "secondsToSettle": 0.188,
+    "settled": {
+      "divisions": [
+        {
+          "frame": {
+            "h": 40,
+            "w": 669,
+            "x": 0,
+            "y": 455.5
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.fold\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 20,
+            "leading": 0,
+            "top": 20,
+            "trailing": 0
+          }
+        }
+      ],
+      "hSizeClass": "regular",
+      "label": "laptop",
+      "layoutDirection": "leftToRight",
+      "occlusions": [
+        {
+          "frame": {
+            "h": 57.99999999999997,
+            "w": 37,
+            "x": 21,
+            "y": 215.66666666666666
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.innerCamera\")))",
+          "isActive": false,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        },
+        {
+          "frame": {
+            "h": 82,
+            "w": 144,
+            "x": 525,
+            "y": 0
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.statusBarOcclusion\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        }
+      ],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 1)",
+        "sceneBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 0,
+          "top": 82
+        }
+      },
+      "schema": 2,
+      "seq": 3,
+      "sinceLastChange": 0.1392890214920044,
+      "t": 0.1883070468902588,
+      "toolbarVerticalEdge": "nil",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 951,
+        "w": 669
+      }
+    },
+    "shape": "tall",
+    "shapeMatchesPose": true
+  },
+  "tent": {
+    "firstFrame": {
+      "divisions": [],
+      "hSizeClass": "regular",
+      "label": "tent",
+      "layoutDirection": "leftToRight",
+      "occlusions": [],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 2)",
+        "sceneBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 0,
+          "top": 82
+        }
+      },
+      "schema": 2,
+      "seq": 1,
+      "sinceLastChange": 0.45744407176971436,
+      "t": -5.793571472167969e-05,
+      "toolbarVerticalEdge": "nil",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 0,
+        "w": 0
+      }
+    },
+    "firstFrameHadRegions": false,
+    "hingeAtPose": {
+      "angleDegrees": 108.88888549804688,
+      "status": "partiallyOpen"
+    },
+    "samples": 9,
+    "secondsToSettle": 0.476,
+    "settled": {
+      "divisions": [
+        {
+          "frame": {
+            "h": 40,
+            "w": 669,
+            "x": 0,
+            "y": 455.5
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.fold\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 20,
+            "leading": 0,
+            "top": 20,
+            "trailing": 0
+          }
+        }
+      ],
+      "hSizeClass": "regular",
+      "hinge": {
+        "angleDegrees": 108.88888549804688,
+        "status": "partiallyOpen"
+      },
+      "label": "tent",
+      "layoutDirection": "leftToRight",
+      "occlusions": [
+        {
+          "frame": {
+            "h": 58,
+            "w": 37,
+            "x": 611,
+            "y": 677.3333333333334
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.innerCamera\")))",
+          "isActive": false,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        },
+        {
+          "frame": {
+            "h": 82,
+            "w": 144,
+            "x": 525,
+            "y": 0
+          },
+          "id": "ID(base: SwiftUI._SceneRegion.ID(base: SwiftUI.UncheckedSendable<SwiftUI.AnyHashable2>(value: \"com.apple.springboard.statusBarOcclusion\")))",
+          "isActive": true,
+          "margins": {
+            "bottom": 0,
+            "leading": 0,
+            "top": 0,
+            "trailing": 0
+          }
+        }
+      ],
+      "safeArea": {
+        "bottom": 0,
+        "leading": 0,
+        "top": 0,
+        "trailing": 0
+      },
+      "scene": {
+        "displayScale": 3,
+        "interfaceOrientation": "UIInterfaceOrientation(rawValue: 2)",
+        "sceneBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "screenBounds": {
+          "h": 951,
+          "w": 669,
+          "x": 0,
+          "y": 0
+        },
+        "windowSafeArea": {
+          "bottom": 34,
+          "left": 0,
+          "right": 0,
+          "top": 82
+        }
+      },
+      "schema": 2,
+      "seq": 3,
+      "sinceLastChange": 0.26558804512023926,
+      "t": 0.4759809970855713,
+      "toolbarVerticalEdge": "nil",
+      "vSizeClass": "regular",
+      "window": {
+        "h": 951,
+        "w": 669
+      }
+    },
+    "shape": "tall",
+    "shapeMatchesPose": true
+  }
+}

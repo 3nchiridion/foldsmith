@@ -1,0 +1,45 @@
+app: HomeAssistant (dev.enchiridion.corpus.HomeAssistant.dev)
+flow: verification/ab/flows/HomeAssistant.flow sha256 d79a1893d3d52fdc0df53be93afc4a69a0620252630f246363c1dc600ce4f354
+captured: 2026-10-27T11:22:30Z on iPhone Duo (<Duo simulator UDID>) (Booted) 
+settle: WAIT=6 TAP_WAIT=2
+== pose closed
+  launch: no snapshot in closed 
+  launch
+  servers
+  manual-url
+  learn-more
+== pose closed-sideways
+  launch
+  servers
+  manual-url
+  learn-more
+== pose book
+  launch
+  servers
+  manual-url
+  learn-more
+== pose laptop
+  launch
+  servers
+  manual-url
+  learn-more
+== pose tent
+  launch
+  servers
+  manual-url
+  learn-more
+== pose flat-sideways
+  launch
+  servers
+  manual-url
+  learn-more
+== pose flat-upright
+  launch
+  servers
+  manual-url
+  learn-more
+done → verification/ab/baseline/HomeAssistant
+recaptured 2026-10-27T12:45:45Z: launch in closed (its snapshot was lost while the simulator service was stuck)
+== pose closed
+  launch
+done → verification/ab/baseline/HomeAssistant

@@ -1,0 +1,2091 @@
+wikipedia-ios (https://github.com/wikimedia/wikipedia-ios, 2031b89) is licensed under the MIT License, Copyright (c)
+2013–2025 Wikimedia Foundation et al. This patch changes it under the same license; the license's text is in
+LICENSE-MIT-Wikimedia, next to this file. git apply skips this preamble.
+
+diff --git a/WMF Framework/ColumnarCollectionViewLayoutMetrics.swift b/WMF Framework/ColumnarCollectionViewLayoutMetrics.swift
+index 51837a4..fdc8d8c 100644
+--- a/WMF Framework/ColumnarCollectionViewLayoutMetrics.swift	
++++ b/WMF Framework/ColumnarCollectionViewLayoutMetrics.swift	
+@@ -35,7 +35,35 @@ public struct ColumnarCollectionViewLayoutMetrics {
+         
+         return ColumnarCollectionViewLayoutMetrics(boundsSize: boundsSize, layoutMargins: layoutMarginsForMetrics, countOfColumns: countOfColumns, itemLayoutMargins: itemLayoutMargins, readableWidth: readableWidth, interSectionSpacing: interSectionSpacing, interColumnSpacing: interColumnSpacing, interItemSpacing: interItemSpacing, shouldMatchColumnHeights: false)
+     }
+-    
++
++    /// iPhone Duo, duo-patterns "Even grid": Explore's two columns with the fold in the gutter.
++    ///
++    /// `verticalDivision` is the fold (`WMFFold.verticalDivision(in:includeInactive: true)`) in the collection view's
++    /// coordinates, active or not, so the columns do not move when a flat phone is folded like a book. One column per
++    /// half, both as wide as the narrower half allows; the outer margins stay as they are and the spare width goes into
++    /// the gutter at the hinge (Fitness [tech talk 111463, 5:12]), so the leading column ends where the fold begins and
++    /// the trailing column starts where it ends. Without a fold, or when the halves are too narrow for a card, this is
++    /// exactly `exploreViewMetrics(with:readableWidth:layoutMargins:)`.
++    public static func exploreViewMetrics(with boundsSize: CGSize, readableWidth: CGFloat, layoutMargins: UIEdgeInsets, verticalDivision: CGRect?) -> ColumnarCollectionViewLayoutMetrics {
++        let metrics = exploreViewMetrics(with: boundsSize, readableWidth: readableWidth, layoutMargins: layoutMargins)
++        guard let division = verticalDivision, metrics.countOfColumns == 2 else {
++            return metrics
++        }
++        let leadingEdge = metrics.layoutMargins.left
++        let trailingEdge = boundsSize.width - metrics.layoutMargins.right
++        let divisionStart = floor(division.minX)
++        let divisionEnd = ceil(division.maxX)
++        let columnWidth = floor(min(divisionStart - leadingEdge, trailingEdge - divisionEnd))
++        let minimumColumnWidth: CGFloat = 280
++        guard columnWidth >= minimumColumnWidth else {
++            return metrics
++        }
++        let gutter = divisionEnd - leadingEdge - columnWidth
++        var margins = metrics.layoutMargins
++        margins.right = boundsSize.width - divisionEnd - columnWidth
++        return ColumnarCollectionViewLayoutMetrics(boundsSize: boundsSize, layoutMargins: margins, countOfColumns: 2, itemLayoutMargins: metrics.itemLayoutMargins, readableWidth: readableWidth, interSectionSpacing: metrics.interSectionSpacing, interColumnSpacing: gutter, interItemSpacing: metrics.interItemSpacing, shouldMatchColumnHeights: false)
++    }
++
+     
+     public static func tableViewMetrics(with boundsSize: CGSize, readableWidth: CGFloat, layoutMargins: UIEdgeInsets, interSectionSpacing: CGFloat = 0, interItemSpacing: CGFloat  = 0) -> ColumnarCollectionViewLayoutMetrics {
+         let marginWidth = max(max(layoutMargins.left, layoutMargins.right), round(0.5 * (boundsSize.width - readableWidth)))
+diff --git a/WMFComponents/Sources/WMFComponents/Base/Component Base Classes/WMFComponentNavigationController.swift b/WMFComponents/Sources/WMFComponents/Base/Component Base Classes/WMFComponentNavigationController.swift
+index 13b8fd7..e481fcd 100644
+--- a/WMFComponents/Sources/WMFComponents/Base/Component Base Classes/WMFComponentNavigationController.swift	
++++ b/WMFComponents/Sources/WMFComponents/Base/Component Base Classes/WMFComponentNavigationController.swift	
+@@ -41,6 +41,95 @@ open class WMFComponentNavigationController: UINavigationController {
+         super.viewDidAppear(animated)
+         triggerNavigationBarRender()
+     }
++
++    /// iPhone Duo: true while this stack is a pane of a fold split (`WMFFoldSplitContainerViewController`).
++    ///
++    /// Each pane ends before the vertical bar's band (the list at the fold, the detail at the bar), but UIKit still gives
++    /// every screen of a navigation stack a trailing safe-area inset the width of the bar (84 pt) whenever the bar is on
++    /// that edge, wherever the stack is: the list's rows and controls stopped at 371 pt of a pane that ends at 455 pt,
++    /// and the article in the detail pane lost 84 pt of its 372. While this is set the inset is cancelled on each screen
++    /// of the stack (a negative `additionalSafeAreaInsets` on that edge) and given back when it is cleared, including to
++    /// a screen that moved to another stack meanwhile.
++    public var isFoldSplitPane = false {
++        didSet {
++            guard oldValue != isFoldSplitPane else { return }
++            view.setNeedsLayout()
++            updateVerticalBarInsetCancellation()
++        }
++    }
++
++    /// The trailing inset this class cancelled on each screen, so it can be given back exactly.
++    private static let cancelledVerticalBarInsets = NSMapTable<UIViewController, NSNumber>.weakToStrongObjects()
++
++    open override func viewDidLayoutSubviews() {
++        super.viewDidLayoutSubviews()
++        updateVerticalBarInsetCancellation()
++    }
++
++    /// iPhone Duo: on the list's stack of a split fold split container, a screen the container keeps for its detail
++    /// pane (an article) is shown there instead of being pushed here.
++    open override func pushViewController(_ viewController: UIViewController, animated: Bool) {
++        if isFoldSplitPane,
++           let container = parent as? WMFFoldSplitContainerViewController,
++           container.isSplit, container.listNavigationController === self,
++           container.routesToDetail(viewController) {
++            container.showDetail(viewController, animated: false)
++            return
++        }
++        super.pushViewController(viewController, animated: animated)
++    }
++
++    /// The screens whose trailing inset this stack corrects: its own, and what they present in their context (a search
++    /// controller's results), when that is drawn inside this stack.
++    private var screensInThisStack: [UIViewController] {
++        var screens: [UIViewController] = []
++        for viewController in viewControllers {
++            screens.append(viewController)
++            var presented = viewController.presentedViewController
++            while let current = presented, current.viewIfLoaded?.isDescendant(of: view) == true {
++                screens.append(current)
++                presented = current.presentedViewController
++            }
++        }
++        return screens
++    }
++
++    private func updateVerticalBarInsetCancellation() {
++        let trailingIsLeft = view.effectiveUserInterfaceLayoutDirection == .rightToLeft
++        for viewController in screensInThisStack {
++            let applied = CGFloat(Self.cancelledVerticalBarInsets.object(forKey: viewController)?.doubleValue ?? 0)
++            guard isFoldSplitPane || applied != 0 else {
++                continue
++            }
++            var additional = viewController.additionalSafeAreaInsets
++            let current = trailingIsLeft ? additional.left : additional.right
++            let safe = trailingIsLeft ? viewController.view.safeAreaInsets.left : viewController.view.safeAreaInsets.right
++            let system = max(0, safe - current)
++            let wanted: CGFloat = isFoldSplitPane ? -system : 0
++            guard wanted != applied else {
++                continue
++            }
++            let own = current - applied
++            if trailingIsLeft {
++                additional.left = own + wanted
++            } else {
++                additional.right = own + wanted
++            }
++            viewController.additionalSafeAreaInsets = additional
++            if wanted == 0 {
++                Self.cancelledVerticalBarInsets.removeObject(forKey: viewController)
++            } else {
++                Self.cancelledVerticalBarInsets.setObject(NSNumber(value: Double(wanted)), forKey: viewController)
++            }
++        }
++    }
++
++    /// iPhone Duo: a sheet presented from here goes to the trailing half while the phone is folded like a book
++    /// (`WMFFold`); the app's root moves sheets already up when the fold changes.
++    open override func present(_ viewControllerToPresent: UIViewController, animated flag: Bool, completion: (() -> Void)? = nil) {
++        WMFFold.prepareSheet(viewControllerToPresent, over: view)
++        super.present(viewControllerToPresent, animated: flag, completion: completion)
++    }
+     
+     private var shouldUseTransparentAppearance: Bool = false
+ 
+@@ -236,3 +325,4 @@ extension WMFComponentNavigationController: UIGestureRecognizerDelegate {
+         return otherGestureRecognizer is UIPanGestureRecognizer && otherGestureRecognizer.view == view
+     }
+ }
++
+diff --git a/WMFComponents/Sources/WMFComponents/Base/Component Base Classes/WMFFoldSplitContainerViewController.swift b/WMFComponents/Sources/WMFComponents/Base/Component Base Classes/WMFFoldSplitContainerViewController.swift
+new file mode 100644
+index 0000000..4b1bb36
+--- /dev/null
++++ b/WMFComponents/Sources/WMFComponents/Base/Component Base Classes/WMFFoldSplitContainerViewController.swift	
+@@ -0,0 +1,286 @@
++import UIKit
++import Combine
++
++/// iPhone Duo, duo-patterns "Fold-aligned split" for a tab whose screen is a list that opens articles.
++///
++/// Wherever the window has a vertical division (the inner display held sideways: folded like a book, or lying flat),
++/// the tab shows two panes: its own navigation stack (the list) ends where the fold begins, and a detail stack starts
++/// where it ends, so neither pane straddles the fold. Opening an item from the list shows it in the detail pane.
++/// Everywhere else — the outer display, the inner display held upright (laptop, tent, flat upright), an iPhone, an
++/// iPad, any system before iOS 27.1 — there is no vertical division and the container is invisible: the tab's own
++/// navigation stack fills it, exactly as before.
++///
++/// Why not `UISplitViewController`: a split view expands wherever the width is regular, so it would also split the
++/// tab on an iPad and on the upright inner display, where the app has no finding and no split today. The panes here
++/// come only from the reserved regions, never from the device, idiom or orientation.
++///
++/// State survives the fold: closing the phone moves what the detail pane shows back onto the list's stack (the cover
++/// shows the article, Back returns to the list); opening it moves the detail screens (everything from the first one
++/// `isDetail` accepts) off the list's stack into the detail pane.
++public final class WMFFoldSplitContainerViewController: UIViewController {
++
++    public let listNavigationController: WMFComponentNavigationController
++    public let detailNavigationController: WMFComponentNavigationController
++    private let placeholder: UIViewController
++    private let isDetail: (UIViewController) -> Bool
++
++    /// True while the two panes are shown.
++    public private(set) var isSplit = false
++    private var division: CGRect?
++    private var didAddHingeInteraction = false
++    private var cancellables = Set<AnyCancellable>()
++
++    /// A screen shown in the list pane in place of the list while split (an article's contents beside the article).
++    public private(set) var listPaneAccessory: UIViewController?
++    /// The detail screen the accessory belongs to: it goes when another screen takes the detail pane.
++    private weak var listPaneAccessoryOwner: UIViewController?
++
++    /// - Parameters:
++    ///   - list: the tab's navigation controller, as the tab used it before.
++    ///   - placeholder: what the detail pane shows before anything is opened.
++    ///   - isDetail: which screens belong in the detail pane (articles).
++    public init(list: WMFComponentNavigationController, placeholder: UIViewController, isDetail: @escaping (UIViewController) -> Bool) {
++        self.listNavigationController = list
++        self.placeholder = placeholder
++        self.detailNavigationController = WMFComponentNavigationController(rootViewController: placeholder, modalPresentationStyle: .overFullScreen)
++        self.isDetail = isDetail
++        super.init(nibName: nil, bundle: nil)
++        tabBarItem = list.viewControllers.first?.tabBarItem ?? list.tabBarItem
++        title = list.viewControllers.first?.title
++        // The band behind the fold and behind the vertical bar shows the container's own background: follow the theme.
++        WMFAppEnvironment.publisher
++            .sink { [weak self] _ in self?.applyThemeBackground() }
++            .store(in: &cancellables)
++    }
++
++    private func applyThemeBackground() {
++        guard isViewLoaded else { return }
++        view.backgroundColor = WMFAppEnvironment.current.theme.paperBackground
++    }
++
++    required init?(coder: NSCoder) {
++        fatalError("init(coder:) has not been implemented")
++    }
++
++    /// The container holding `navigationController` as its list, or nil.
++    public static func containing(_ navigationController: UINavigationController) -> WMFFoldSplitContainerViewController? {
++        guard let container = navigationController.parent as? WMFFoldSplitContainerViewController,
++              container.listNavigationController === navigationController else {
++            return nil
++        }
++        return container
++    }
++
++    /// True when `viewController` is in the detail pane of a container that is split (a pane narrower than the outer
++    /// display: 372 pt in book). Screens use it where a regular width would otherwise give them a side column.
++    public static func isInSplitDetailPane(_ viewController: UIViewController) -> Bool {
++        guard let navigationController = viewController.navigationController,
++              let container = navigationController.parent as? WMFFoldSplitContainerViewController else {
++            return false
++        }
++        return container.isSplit && container.detailNavigationController === navigationController
++    }
++
++    /// The container whose detail pane (while split) holds `viewController`, or nil.
++    public static func containerOfDetailPane(holding viewController: UIViewController) -> WMFFoldSplitContainerViewController? {
++        guard let navigationController = viewController.navigationController,
++              let container = navigationController.parent as? WMFFoldSplitContainerViewController,
++              container.isSplit, container.detailNavigationController === navigationController else {
++            return nil
++        }
++        return container
++    }
++
++    /// Shows `viewController` in the detail pane, replacing what was there. Only while split.
++    public func showDetail(_ viewController: UIViewController, animated: Bool) {
++        setListPaneAccessory(nil) // what the previous detail showed in the list pane (its contents) goes with it
++        detailNavigationController.setViewControllers([viewController], animated: animated)
++    }
++
++    /// Whether a screen pushed on the list's stack belongs in the detail pane.
++    func routesToDetail(_ viewController: UIViewController) -> Bool {
++        return isDetail(viewController)
++    }
++
++    /// Back to the tab's root, as a tap on the W or on the tab did before: the list pops to its root and the detail
++    /// pane empties.
++    public func popToRoot(animated: Bool) {
++        setListPaneAccessory(nil)
++        listNavigationController.popToRootViewController(animated: animated)
++        if detailNavigationController.viewControllers.first !== placeholder {
++            detailNavigationController.setViewControllers([placeholder], animated: false)
++        }
++    }
++
++    /// True while split and the detail pane shows something other than its placeholder (an article, or a screen
++    /// opened from it).
++    public var detailShowsContent: Bool {
++        guard isSplit, let top = detailNavigationController.topViewController else {
++            return false
++        }
++        return top !== placeholder
++    }
++
++    /// The stack in front: the detail stack while it shows an article (what is opened from there stacks on it), else
++    /// the list's stack.
++    public var frontNavigationController: WMFComponentNavigationController {
++        return detailShowsContent ? detailNavigationController : listNavigationController
++    }
++
++    /// True when the tab is at its root: the list at its first screen and nothing in the detail pane.
++    public var isAtRoot: Bool {
++        return listNavigationController.viewControllers.count == 1 && !detailShowsContent
++    }
++
++    /// True while the detail pane shows a screen that hides the tab bar when pushed (an article). An open article hides
++    /// the tab bar on the outer display; it does the same beside the list, which leaves the vertical bar to its items.
++    public var detailHidesTabBar: Bool {
++        guard isSplit, let top = detailNavigationController.topViewController, top !== placeholder else {
++            return false
++        }
++        return top.hidesBottomBarWhenPushed
++    }
++
++    /// Shows `viewController` in the list pane in place of the list while split, or removes what is there (nil).
++    /// `owner` is the detail screen it belongs to; it is removed when another screen takes the detail pane.
++    public func setListPaneAccessory(_ viewController: UIViewController?, owner: UIViewController? = nil) {
++        if let current = listPaneAccessory, current !== viewController {
++            current.willMove(toParent: nil)
++            current.view.removeFromSuperview()
++            current.removeFromParent()
++            listPaneAccessory = nil
++            listPaneAccessoryOwner = nil
++        }
++        // What the accessory covers is not on screen: keep it out of VoiceOver and touch while it is covered.
++        listNavigationController.view.accessibilityElementsHidden = viewController != nil
++        guard let viewController, viewController !== listPaneAccessory else {
++            return
++        }
++        addChild(viewController)
++        view.insertSubview(viewController.view, aboveSubview: listNavigationController.view)
++        viewController.didMove(toParent: self)
++        listPaneAccessory = viewController
++        listPaneAccessoryOwner = owner
++        layoutPanes()
++    }
++
++    /// Called when the detail pane shows `viewController` (a push, a pop, a replacement): an accessory that belongs to
++    /// another screen goes. The screen that owns it puts it back when it is on top again.
++    public func detailDidShow(_ viewController: UIViewController) {
++        guard listPaneAccessory != nil, listPaneAccessoryOwner !== viewController else {
++            return
++        }
++        setListPaneAccessory(nil)
++    }
++
++    public override func viewDidLoad() {
++        super.viewDidLoad()
++        applyThemeBackground()
++        addChild(listNavigationController)
++        view.addSubview(listNavigationController.view)
++        listNavigationController.didMove(toParent: self)
++
++        addChild(detailNavigationController)
++        view.addSubview(detailNavigationController.view)
++        detailNavigationController.didMove(toParent: self)
++        detailNavigationController.view.isHidden = true
++        listNavigationController.view.frame = view.bounds
++    }
++
++    public override func viewDidLayoutSubviews() {
++        super.viewDidLayoutSubviews()
++        if !didAddHingeInteraction {
++            didAddHingeInteraction = true
++            if let hingeInteraction = WMFFold.hingeInteraction(onChange: { [weak self] in self?.view.setNeedsLayout() }) {
++                view.addInteraction(hingeInteraction)
++            }
++        }
++        let newDivision = WMFFold.verticalDivision(in: view, includeInactive: true)
++        let shouldSplit = newDivision.map { $0.minX > 0 && $0.maxX < view.bounds.width } ?? false
++        if shouldSplit != isSplit {
++            isSplit = shouldSplit
++            listNavigationController.isFoldSplitPane = shouldSplit
++            detailNavigationController.isFoldSplitPane = shouldSplit
++            if shouldSplit {
++                moveDetailScreensToDetailPane()
++            } else {
++                moveDetailScreensToList()
++            }
++            if #available(iOS 27.1, *) {
++                setNeedsUpdateOfVerticalBarConfiguration()
++            }
++        }
++        division = shouldSplit ? newDivision : nil
++        layoutPanes()
++    }
++
++    private func layoutPanes() {
++        let bounds = view.bounds
++        guard isSplit, let division else {
++            listNavigationController.view.frame = bounds
++            detailNavigationController.view.isHidden = true
++            listPaneAccessory?.view.isHidden = true
++            return
++        }
++        // The list ends where the fold begins; the detail starts where it ends and stops at the trailing safe area,
++        // so nothing of it runs under the system's vertical bar (whose band shows the container's background).
++        listNavigationController.view.frame = CGRect(x: bounds.minX, y: bounds.minY, width: floor(division.minX) - bounds.minX, height: bounds.height)
++        let detailX = ceil(division.maxX)
++        let detailMaxX = bounds.maxX - view.safeAreaInsets.right
++        detailNavigationController.view.frame = CGRect(x: detailX, y: bounds.minY, width: max(0, detailMaxX - detailX), height: bounds.height)
++        detailNavigationController.view.isHidden = false
++        if let accessory = listPaneAccessory {
++            accessory.view.frame = listNavigationController.view.frame
++            accessory.view.isHidden = false
++        }
++    }
++
++    /// Opening the phone: the detail screens on the list's stack move to the detail pane.
++    private func moveDetailScreensToDetailPane() {
++        let stack = listNavigationController.viewControllers
++        guard let first = stack.dropFirst().firstIndex(where: isDetail) else {
++            detailNavigationController.setViewControllers([placeholder], animated: false)
++            return
++        }
++        listNavigationController.setViewControllers(Array(stack[..<first]), animated: false)
++        detailNavigationController.setViewControllers(Array(stack[first...]), animated: false)
++        // The list's top screen changed without a transition: let its delegate set the bars up again.
++        if let top = listNavigationController.topViewController {
++            listNavigationController.delegate?.navigationController?(listNavigationController, didShow: top, animated: false)
++        }
++    }
++
++    /// Closing the phone: what the detail pane shows goes back on top of the list's stack.
++    private func moveDetailScreensToList() {
++        setListPaneAccessory(nil) // the list pane goes away; the screen that put something there takes it back
++        let moved = detailNavigationController.viewControllers.filter { $0 !== placeholder }
++        detailNavigationController.setViewControllers([placeholder], animated: false)
++        guard let top = moved.last else {
++            return
++        }
++        // Pushed, not set: a push applies the top screen's bar settings (an article hides the tab bar).
++        listNavigationController.setViewControllers(listNavigationController.viewControllers + moved.dropLast(), animated: false)
++        listNavigationController.pushViewController(top, animated: false)
++    }
++
++    // MARK: Bars and status bar
++
++    /// The vertical bar goes with the pane the system puts on the trailing side: the detail while split, the list
++    /// otherwise (the list keeps its bar at the top of its pane, as a split view's sidebar does).
++    @available(iOS 27.1, *)
++    public override var childForPreferredVerticalBarBehavior: UIViewController? {
++        return isSplit ? detailNavigationController : listNavigationController
++    }
++
++    public override var childForStatusBarStyle: UIViewController? {
++        return listNavigationController
++    }
++
++    public override var childForStatusBarHidden: UIViewController? {
++        return listNavigationController
++    }
++
++    public override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
++        return listNavigationController.supportedInterfaceOrientations
++    }
++}
+diff --git a/WMFComponents/Sources/WMFComponents/Components/Article Tabs/WMFArticleTabsView.swift b/WMFComponents/Sources/WMFComponents/Components/Article Tabs/WMFArticleTabsView.swift
+index 8060a68..87d1960 100644
+--- a/WMFComponents/Sources/WMFComponents/Components/Article Tabs/WMFArticleTabsView.swift	
++++ b/WMFComponents/Sources/WMFComponents/Components/Article Tabs/WMFArticleTabsView.swift	
+@@ -19,6 +19,8 @@ public struct WMFArticleTabsView: View {
+     /// Flag to allow us to know if we can scroll to the current tab position
+     @State private var isReady: Bool = false
+     @State private var cellFrames: [String: CGRect] = [:]
++    /// iPhone Duo (Even grid): the grid's width and its vertical fold, active or not; no fold elsewhere.
++    @State private var gridFold = WMFTabsGridFold()
+ 
+     public init(viewModel: WMFArticleTabsViewModel) {
+         self.viewModel = viewModel
+@@ -43,6 +45,15 @@ public struct WMFArticleTabsView: View {
+                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                 .background(Color(theme.midBackground))
+             }
++            .background {
++                GeometryReader { proxy in
++                    Color.clear.onGeometryChange(for: WMFTabsGridFold.self) { proxy in
++                        WMFTabsGridFold(proxy: proxy)
++                    } action: { new in
++                        gridFold = new
++                    }
++                }
++            }
+         }
+         .onReceive(viewModel.$articleTabs) { tabs in
+             guard !isReady else { return }
+@@ -96,10 +107,39 @@ public struct WMFArticleTabsView: View {
+ 
+     // MARK: - Grid
+ 
++    /// The grid's columns and side margins. Without a vertical fold: the app's column count, flexible, 8 pt margins,
++    /// as before. iPhone Duo, duo-patterns "Even grid": where the window has a vertical division, active or not, half
++    /// the columns on each side, all as wide as the narrower half allows; the outer margin stays 8 pt and the spare
++    /// width goes into the gutter at the hinge, so no card straddles the fold and folding a flat phone moves nothing.
++    private func gridLayout(_ geometry: GeometryProxy) -> (columns: [GridItem], leadingMargin: CGFloat, trailingMargin: CGFloat) {
++        let count = viewModel.calculateColumns(for: geometry.size)
++        let margin: CGFloat = 8
++        let spacing: CGFloat = 8 // LazyVGrid's spacing between the flexible columns
++        let flexible = (Array(repeating: GridItem(.flexible()), count: count), margin, margin)
++        guard let fold = gridFold.verticalDivision, count >= 2, count % 2 == 0,
++              gridFold.width.isEqual(to: geometry.size.width) else {
++            return flexible
++        }
++        let width = gridFold.width
++        let perHalf = count / 2
++        let narrowerHalf = min(fold.minX - margin, width - margin - fold.maxX)
++        let columnWidth = floor((narrowerHalf - spacing * CGFloat(perHalf - 1)) / CGFloat(perHalf))
++        guard columnWidth >= 120 else {
++            return flexible
++        }
++        let leadingEnd = margin + CGFloat(perHalf) * columnWidth + CGFloat(perHalf - 1) * spacing
++        let gutter = ceil(fold.maxX) - leadingEnd
++        let columns = (0..<count).map { index in
++            GridItem(.fixed(columnWidth), spacing: index == perHalf - 1 ? gutter : spacing)
++        }
++        let total = CGFloat(count) * columnWidth + CGFloat(count - 2) * spacing + gutter
++        return (columns, margin, max(0, width - margin - total))
++    }
++
+     private func tabsGrid(_ geometry: GeometryProxy) -> some View {
+         ScrollViewReader { proxy in
+             ScrollView {
+-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: viewModel.calculateColumns(for: geometry.size))) {
++                LazyVGrid(columns: gridLayout(geometry).columns) {
+                     ForEach(viewModel.articleTabs.sorted(by: { $0.dateCreated < $1.dateCreated }), id: \.id) { tab in
+                         WMFArticleTabsViewContent(viewModel: viewModel, tab: tab)
+                             .id(tab.id)
+@@ -118,7 +158,8 @@ public struct WMFArticleTabsView: View {
+                             }
+                     }
+                 }
+-                .padding(.horizontal, 8)
++                .padding(.leading, gridLayout(geometry).leadingMargin)
++                .padding(.trailing, gridLayout(geometry).trailingMargin)
+                 .onAppear {
+                     Task {
+                         if let id = viewModel.currentTabID {
+@@ -135,7 +176,7 @@ public struct WMFArticleTabsView: View {
+     private func tabsV2Grid(_ geometry: GeometryProxy) -> some View {
+         ScrollViewReader { proxy in
+             ScrollView {
+-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: viewModel.calculateColumns(for: geometry.size))) {
++                LazyVGrid(columns: gridLayout(geometry).columns) {
+                     ForEach(viewModel.articleTabs.sorted(by: { $0.dateCreated < $1.dateCreated }), id: \.id) { tab in
+                         WMFArticleTabsViewContent(viewModel: viewModel, tab: tab)
+                             .id(tab.id)
+@@ -192,7 +233,8 @@ public struct WMFArticleTabsView: View {
+                 .onPreferenceChange(TabGlobalFramePreferenceKey.self) { updates in
+                     cellFrames.merge(updates, uniquingKeysWith: { _, new in new })
+                 }
+-                .padding(.horizontal, 8)
++                .padding(.leading, gridLayout(geometry).leadingMargin)
++                .padding(.trailing, gridLayout(geometry).trailingMargin)
+                 .onAppear {
+                     Task { @MainActor in
+                         if let id = viewModel.currentTabID {
+@@ -488,3 +530,21 @@ private struct TabGlobalFramePreferenceKey: PreferenceKey {
+         value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+     }
+ }
++
++/// iPhone Duo: the tabs grid's width and the vertical division across it, active or inactive, in its own coordinates.
++/// Read from reserved regions (iOS 27.1); nil on every other device and system.
++nonisolated struct WMFTabsGridFold: Equatable, Sendable {
++    var width: CGFloat = 0
++    var verticalDivision: CGRect?
++
++    init() {}
++
++    init(proxy: GeometryProxy) {
++        width = proxy.size.width
++        if #available(iOS 27.1, *) {
++            verticalDivision = proxy.reservedRegions(kind: .division, options: .includeInactive)
++                .map(\.frame)
++                .first { $0.height > $0.width && $0.minX > 0 && $0.maxX < proxy.size.width }
++        }
++    }
++}
+diff --git a/WMFComponents/Sources/WMFComponents/Utility/WMFFold.swift b/WMFComponents/Sources/WMFComponents/Utility/WMFFold.swift
+new file mode 100644
+index 0000000..9c6e12f
+--- /dev/null
++++ b/WMFComponents/Sources/WMFComponents/Utility/WMFFold.swift
+@@ -0,0 +1,85 @@
++import UIKit
++
++/// iPhone Duo: where the fold is, read from the window's reserved regions (iOS 27.1).
++///
++/// Layout reads the fold from reserved regions, never from the device, idiom or orientation. On an iPhone, an iPad,
++/// the Duo's outer display and any system before iOS 27.1 there is no division, so every answer here is "no fold"
++/// and callers keep their existing layout.
++///
++/// The fold is a *division* region: active while the phone is part folded (book, laptop, tent), inactive while it lies
++/// flat. Its frame already includes the 20 pt margins on either side of the crease (455.5–495.5 pt on the inner
++/// display). Regions arrive a moment after the first layout, so callers look again on layout and on hinge changes
++/// (`WMFFold.hingeInteraction`).
++///
++/// Patterns (duo-patterns): "Fold-aligned split" (sheets on the trailing half while the book fold is active) and
++/// "Even grid" (columns that keep clear of the fold, the inactive division included, so folding moves nothing).
++public enum WMFFold {
++
++    /// The division that runs top to bottom (the phone held sideways), in `view`'s coordinate space, or nil.
++    /// - Parameter includeInactive: also return it while the phone lies flat, for layouts that must not move when the
++    ///   phone is then folded.
++    public static func verticalDivision(in view: UIView, includeInactive: Bool) -> CGRect? {
++        guard #available(iOS 27.1, *) else {
++            return nil
++        }
++        let options: UIView.ReservedRegion.QueryOptions = includeInactive ? .includeInactive : []
++        return view.reservedRegions(kind: .division, options: options)
++            .filter { includeInactive || $0.isActive }
++            .map(\.frame)
++            .first { $0.height > $0.width }
++    }
++
++    /// True while the phone is folded like a book: a vertical division is active.
++    public static func isBookFoldActive(_ view: UIView) -> Bool {
++        return verticalDivision(in: view, includeInactive: false) != nil
++    }
++
++    /// An interaction that calls `onChange` whenever the hinge moves, so a view can look at the reserved regions again
++    /// (UIKit has no callback for the regions themselves). Nil before iOS 27.1.
++    public static func hingeInteraction(onChange: @escaping () -> Void) -> UIInteraction? {
++        guard #available(iOS 27.1, *) else {
++            return nil
++        }
++        return UIHingeInteraction { _, _ in
++            onChange()
++        }
++    }
++
++    // MARK: Sheets (Fold-aligned split, the sheet rule)
++
++    /// Sets a sheet's placement before it is presented over `view`: the trailing half while the book fold is active,
++    /// the system's own placement otherwise. Apple sends alerts and sheets to the trailing side in book; left alone the
++    /// system puts sheets on the leading half.
++    public static func prepareSheet(_ viewController: UIViewController, over view: UIView) {
++        guard #available(iOS 27.1, *) else {
++            return
++        }
++        // Only for sheets: asking a full-screen or popover presentation for its sheet controller is harmless, it is nil.
++        switch viewController.modalPresentationStyle {
++        case .pageSheet, .formSheet, .automatic:
++            viewController.sheetPresentationController?.preferredPlacement = isBookFoldActive(view) ? .trailing : .automatic
++        default:
++            break
++        }
++    }
++
++    /// Moves every sheet presented above `presenter` to the trailing half while the book fold is active, and back to the
++    /// system's placement otherwise. Call when the fold may have changed (layout, hinge).
++    public static func updateSheetPlacement(above presenter: UIViewController) {
++        guard #available(iOS 27.1, *) else {
++            return
++        }
++        let placement: UISheetPresentationController.Placement = isBookFoldActive(presenter.view) ? .trailing : .automatic
++        var presented = presenter.presentedViewController
++        while let viewController = presented {
++            if !viewController.isBeingDismissed,
++               let sheet = viewController.presentationController as? UISheetPresentationController,
++               sheet.preferredPlacement != placement {
++                sheet.animateChanges {
++                    sheet.preferredPlacement = placement
++                }
++            }
++            presented = viewController.presentedViewController
++        }
++    }
++}
+diff --git a/WMFLocalizations/Sources/WMFNativeLocalizations/Resources/en.lproj/Localizable.strings b/WMFLocalizations/Sources/WMFNativeLocalizations/Resources/en.lproj/Localizable.strings
+index 131dcee54d9874d980705ae5a2248507776573bb..c5e97e25b70f74059a06b6fbbbd899690e785c5c 100644
+GIT binary patch
+delta 870
+zcmcIi&r4KM6h8Cr%$@h_HRPL~p(Z>nm=u5DLPCo9142-kMZ4lnGwK5;Uo%<gLNpZr
+zfD4|@5U319fhh=03l}Y-RzbT~HnoUiO0;FGzAGjTv<h5&m+$<%=Y02;Kc?Q+QwvLx
+zC1XdF10K6-CHS3V*qnG2Pw?YkqG_l=A>F50@~B7wP0%E)KAb+?r5wEB5zB*RDNiNj
+z<S5UJFO5s19!(?3LxM-+;8O?%@JzrCXbeqsT$fJb)KOg#g6pc|R`d|{v#@&k-mY*}
+zb<bH9Qu3{J;qk$)5mg@wc4t2ddT4-}sO#jaJ`{y$8|aBu=ScDlCIk23nc}l+@&cFN
+zm=4c>m1g|-UT)6HcJ*{Q!9PDmFaJxB;r|i@<N4~<mn7T!!YN##45oO1X>!zyPzKD0
+zzIPx*H|*1s?PSlvIpKC_$s1IH-Jnnh?|e4SvssC?@z$ESVflFFX+62x-fQJ*+O)g>
+zdUm}fpd~LsXpb5eRqyALw@-Ope*PoY&RO4R;r?sZIo_(oOsjab)C?8*upW0gT@fbN
+znq^eY*QB~`JN*5oG)0O^YT#QclHtf}!*&0B*am%gdqcFUuzrybHbk1MPa-X<_RLw?
+U3<MAbVt@qVfcauGu=baK10<x`-2eap
+
+delta 64
+zcmX@{T7Axa^@bM47N#xCb22ACSS>WYp`1Bux<Vtf!1RW8X0G<Q0%jm)0b*7lW&>h&
+NAm-Q}SHPLo3IJA77=Zu)
+
+diff --git a/Wikipedia/Code/ArticleCoordinator.swift b/Wikipedia/Code/ArticleCoordinator.swift
+index 6ed3755..d4b2eae 100644
+--- a/Wikipedia/Code/ArticleCoordinator.swift
++++ b/Wikipedia/Code/ArticleCoordinator.swift
+@@ -228,6 +228,12 @@ final class ArticleCoordinator: NSObject, Coordinator, ArticleTabCoordinating {
+             await trackArticleTab(articleViewController: articleVC)
+             
+             Task { @MainActor in
++                // iPhone Duo (Fold-aligned split): opened from a list tab shown beside its detail pane, the article
++                // goes to the detail pane, replacing what was there. Everywhere else it is pushed as before.
++                if let container = WMFFoldSplitContainerViewController.containing(navigationController), container.isSplit {
++                    container.showDetail(articleVC, animated: false)
++                    return
++                }
+                 switch tabConfig {
+                 case .adjacentArticleInTab:
+                     var viewControllers = navigationController.viewControllers
+diff --git a/Wikipedia/Code/ArticleTableOfContentsDisplayController.swift b/Wikipedia/Code/ArticleTableOfContentsDisplayController.swift
+index 5292ee3..97b82c1 100644
+--- a/Wikipedia/Code/ArticleTableOfContentsDisplayController.swift
++++ b/Wikipedia/Code/ArticleTableOfContentsDisplayController.swift
+@@ -1,3 +1,4 @@
++import WMFComponents
+ // Handles hide/display of article table of contents
+ // Manages a stack view and the associated constraints
+ 
+@@ -68,6 +69,10 @@ class ArticleTableOfContentsDisplayController: Themeable {
+     }()
+ 
+     func show(animated: Bool) {
++        if listPaneHost != nil {
++            showInListPane()
++            return
++        }
+         switch viewController.displayMode {
+         case .inline:
+             showInline()
+@@ -77,6 +82,10 @@ class ArticleTableOfContentsDisplayController: Themeable {
+     }
+     
+     func hide(animated: Bool) {
++       if listPaneHost != nil {
++           hideInListPane()
++           return
++       }
+        switch viewController.displayMode {
+        case .inline:
+            hideInline()
+@@ -108,7 +117,36 @@ class ArticleTableOfContentsDisplayController: Themeable {
+         })
+     }
+     
++    /// iPhone Duo: set when contents open in the fold split's list pane come back to the article as the overlay (the
++    /// phone closed); cleared once the overlay is up or the reader closes the contents.
++    private var reopenModalOnAppearance = false
++
++    /// iPhone Duo: contents that were open beside the article come back as the overlay when the phone closes, but the
++    /// overlay cannot be presented before the article is back in the window. Present it then.
++    func presentModalIfItWasOpen() {
++        guard reopenModalOnAppearance else {
++            return
++        }
++        reopenModalOnAppearance = false
++        guard let delegate, viewController.displayMode == .modal else {
++            return
++        }
++        // The overlay from before the fold can still be attached, though no longer shown (its dismissal does not
++        // finish while the article moves between stacks): take it down, then present the current one.
++        if let stale = delegate.presentedViewController as? TableOfContentsViewController, stale !== viewController {
++            delegate.dismiss(animated: false) { [weak self] in
++                self?.showModal(animated: false)
++            }
++            return
++        }
++        guard delegate.presentedViewController == nil else {
++            return
++        }
++        showModal(animated: false)
++    }
++
+     func hideModal(animated: Bool) {
++        reopenModalOnAppearance = false
+         viewController.isVisible = false
+         delegate?.dismiss(animated: animated)
+     }
+@@ -131,7 +169,7 @@ class ArticleTableOfContentsDisplayController: Themeable {
+     
+     func setup(with traitCollection:UITraitCollection) {
+         update(with: traitCollection)
+-        guard viewController.displayMode == .inline, UserDefaults.standard.wmf_isTableOfContentsVisibleInline() else {
++        guard listPaneHost == nil, viewController.displayMode == .inline, UserDefaults.standard.wmf_isTableOfContentsVisibleInline() else {
+             return
+         }
+         showInline()
+@@ -139,9 +177,96 @@ class ArticleTableOfContentsDisplayController: Themeable {
+     
+     func update(with traitCollection: UITraitCollection) {
+         let isCompact = traitCollection.horizontalSizeClass == .compact
++        // iPhone Duo: in a fold split's detail pane (372 pt in book) there is no room for the contents beside the
++        // article inside it. They take the list pane instead, in place of the list, beside the article: the inline
++        // contents, one pane each, both readable. Decided from the pane, not the size class, which is regular for a
++        // moment on every unfold.
++        if let paneHost = delegate.flatMap({ WMFFoldSplitContainerViewController.containerOfDetailPane(holding: $0) }) {
++            guard listPaneHost !== paneHost else {
++                // Back on top of the detail pane (after a pushed screen was popped): open contents come back, but only
++                // once their article really is the top screen (not during a back swipe that may be cancelled).
++                if viewController.isVisible, paneHost.listPaneAccessory !== viewController,
++                   let delegate, delegate.navigationController?.topViewController === delegate {
++                    showInListPane()
++                }
++                return
++            }
++            // Contents open beside the previous article stay open for this one, as the inline contents did on main
++            // (the same preference, read here and written by show and hide).
++            let wasVisible = viewController.isVisible || UserDefaults.standard.wmf_isTableOfContentsVisibleInline()
++            detachForListPane()
++            listPaneHost = paneHost
++            viewController = recreateTableOfContentsViewController()
++            viewController.displayMode = .inline
++            if wasVisible {
++                showInListPane()
++            }
++            return
++        }
++        if let previousHost = listPaneHost {
++            // The article left the detail pane (the phone closed, or the tab went back to its list): the contents
++            // come back to the article, open if they were open.
++            let wasVisible = viewController.isVisible
++            if previousHost.listPaneAccessory === viewController {
++                previousHost.setListPaneAccessory(nil)
++            }
++            listPaneHost = nil
++            viewController = recreateTableOfContentsViewController()
++            viewController.displayMode = isCompact ? .modal : .inline
++            setupTableOfContentsViewController()
++            if wasVisible {
++                if viewController.displayMode == .modal {
++                    reopenModalOnAppearance = true
++                    showModal(animated: false)
++                } else {
++                    showInline()
++                }
++            }
++            return
++        }
+         viewController.displayMode = isCompact ? .modal : .inline
+         setupTableOfContentsViewController()
+     }
++
++    // MARK: iPhone Duo: contents in the fold split's list pane
++
++    /// The fold split container whose list pane shows these contents while the article is in its detail pane.
++    private weak var listPaneHost: WMFFoldSplitContainerViewController?
++
++    private func showInListPane() {
++        viewController.isVisible = true
++        UserDefaults.standard.wmf_setTableOfContentsIsVisibleInline(true)
++        listPaneHost?.setListPaneAccessory(viewController, owner: delegate)
++    }
++
++    /// iPhone Duo: true while the contents live in the fold split's list pane rather than beside the article inside it.
++    var isHostedInListPane: Bool {
++        return listPaneHost != nil
++    }
++
++    private func hideInListPane() {
++        viewController.isVisible = false
++        UserDefaults.standard.wmf_setTableOfContentsIsVisibleInline(false)
++        if listPaneHost?.listPaneAccessory === viewController {
++            listPaneHost?.setListPaneAccessory(nil)
++        }
++    }
++
++    /// Takes the contents out of the article (inline) or off the screen (the overlay) before they move to the list pane.
++    private func detachForListPane() {
++        if viewController.parent === delegate {
++            viewController.willMove(toParent: nil)
++            viewController.view.removeFromSuperview()
++            viewController.removeFromParent()
++            inlineContainerView.isHidden = true
++            separatorView.isHidden = true
++        }
++        reopenModalOnAppearance = false
++        // An overlay from before the fold can stay attached, undrawn, after the article moved between stacks.
++        if let delegate, delegate.presentedViewController is TableOfContentsViewController {
++            delegate.dismiss(animated: false)
++        }
++    }
+     
+     func updateVerticalPaddings(top: CGFloat, bottom: CGFloat) {
+         
+diff --git a/Wikipedia/Code/ArticleToolbarController.swift b/Wikipedia/Code/ArticleToolbarController.swift
+index 6aa24b6..51290ed 100644
+--- a/Wikipedia/Code/ArticleToolbarController.swift
++++ b/Wikipedia/Code/ArticleToolbarController.swift
+@@ -25,6 +25,10 @@ protocol ArticleToolbarHandling: AnyObject {
+     func updateToolbarItems()
+     /// Any toolbar button was touched, including the More menu opening and a long press starting.
+     func toolbarWasTouched(from controller: ArticleToolbarController)
++    /// iPhone Duo: true where the system puts bars in a vertical bar (the outer display, the inner display sideways).
++    var barsAreVertical: Bool { get }
++    /// iPhone Duo: items the system adds to its own overflow menu (`UINavigationItem.additionalOverflowItems`), or nil.
++    func setAdditionalOverflowItems(_ items: UIDeferredMenuElement?)
+ }
+ 
+ @MainActor
+@@ -33,20 +37,71 @@ class ArticleToolbarController: Themeable {
+ 
+     var currentItems: [UIBarButtonItem] = []
+ 
++    // MARK: iPhone Duo: items that can join the vertical bar
++
++    /// On iOS 27.1 the toolbar's items are plain bar button items with a title and an image. Items with a custom view
++    /// never go vertical: on the iPhone Duo's outer display they stayed a horizontal bar over the text while the
++    /// navigation bar went to the side, and on the inner display held sideways they were not drawn at all, leaving
++    /// empty capsules (the article lost its toolbar there). Earlier systems keep the custom-view buttons.
++    private var usesBarItemsThatCanGoVertical: Bool {
++        if #available(iOS 27.1, *) {
++            return true
++        }
++        return false
++    }
++
++    /// A toolbar item for `action`: titled, with the app's icon, or the custom-view button before iOS 27.1.
++    private func makeItem(iconName: String, title: String, action: Selector, priority: VisibilityPriority = .standard) -> IconBarButtonItem {
++        guard usesBarItemsThatCanGoVertical else {
++            return IconBarButtonItem(iconName: iconName, target: self, action: action, for: .touchUpInside)
++        }
++        let item = IconBarButtonItem(image: UIImage(named: iconName), style: .plain, target: self, action: action)
++        item.title = title
++        // The custom-view button VoiceOver read before took its label from the image's name ("font size"); keep it.
++        // The title is for the overflow and the vertical bar; items that set their own label below still do.
++        item.accessibilityLabel = iconName.replacingOccurrences(of: "-", with: " ")
++        if #available(iOS 27.0, *) {
++            // Which items a vertical bar keeps when it runs out of room [tech talk 111462, 13:10]: contents and save
++            // longest, then languages and find in page, the reading themes first into the overflow.
++            switch priority {
++            case .high: item.visibilityPriority = .high
++            case .low: item.visibilityPriority = .low
++            case .standard: break
++            }
++        }
++        return item
++    }
++
++    enum VisibilityPriority { case high, standard, low }
++
++    /// What a touch-down on a custom-view button reported before an action: plain items report it as they act.
++    private func reportTouchIfPlainItems() {
++        if usesBarItemsThatCanGoVertical {
++            delegate?.toolbarWasTouched(from: self)
++        }
++    }
++
+     lazy var saveButton: IconBarButtonItem = {
+-        let item = IconBarButtonItem(iconName: "save", target: self, action: #selector(toggleSave), for: .touchUpInside)
+-        let longPressGR = UILongPressGestureRecognizer(target: self, action: #selector(handleSaveButtonLongPress))
++        let item = makeItem(iconName: "save", title: CommonStrings.saveTitle, action: #selector(toggleSave), priority: .high)
+         item.accessibilityIdentifier = AccessibilityIdentifiers.Article.saveButton
+         if let button = item.customView as? UIButton {
++            let longPressGR = UILongPressGestureRecognizer(target: self, action: #selector(handleSaveButtonLongPress))
+             button.accessibilityIdentifier = AccessibilityIdentifiers.Article.saveButton
+             button.addGestureRecognizer(longPressGR)
++        } else {
++            // A plain item has no gesture recognizers: a long press shows its menu, which offers what the long press did.
++            item.menu = UIMenu(children: [UIAction(title: CommonStrings.addToReadingListActionTitle, image: UIImage(systemName: "text.badge.plus")) { [weak self] _ in
++                guard let self else { return }
++                self.delegate?.toolbarWasTouched(from: self)
++                self.delegate?.saveButtonWasLongPressed(from: self)
++            }])
+         }
+         item.apply(theme: theme)
+         return item
+     }()
+ 
+     lazy var themeButton: IconBarButtonItem = {
+-        let item = IconBarButtonItem(iconName: "font-size", target: self, action: #selector(showThemes), for: .touchUpInside)
++        let item = makeItem(iconName: "font-size", title: CommonStrings.readingThemesControls, action: #selector(showThemes), priority: .low)
+         item.accessibilityIdentifier = AccessibilityIdentifiers.Article.themeButton
+         item.customView?.accessibilityIdentifier = AccessibilityIdentifiers.Article.themeButton
+         item.apply(theme: theme)
+@@ -54,8 +109,9 @@ class ArticleToolbarController: Themeable {
+     }()
+ 
+     lazy var showTableOfContentsButton: IconBarButtonItem = {
+-        let item = IconBarButtonItem(iconName: "toc", target: self, action: #selector(showTableOfContents), for: .touchUpInside)
+-        item.accessibilityLabel = WMFLocalizedString("table-of-contents-button-label", value: "Table of contents", comment: "Accessibility label for the Table of Contents button {{Identical|Table of contents}}")
++        let label = WMFLocalizedString("table-of-contents-button-label", value: "Table of contents", comment: "Accessibility label for the Table of Contents button {{Identical|Table of contents}}")
++        let item = makeItem(iconName: "toc", title: label, action: #selector(showTableOfContents), priority: .high)
++        item.accessibilityLabel = label
+         item.accessibilityIdentifier = AccessibilityIdentifiers.Article.tableOfContentsButton
+         item.customView?.accessibilityIdentifier = AccessibilityIdentifiers.Article.tableOfContentsButton
+         item.apply(theme: theme)
+@@ -63,7 +119,7 @@ class ArticleToolbarController: Themeable {
+     }()
+ 
+     lazy var shareButton: IconBarButtonItem = {
+-        let item = IconBarButtonItem(iconName: "share", target: self, action: #selector(share), for: .touchUpInside)
++        let item = makeItem(iconName: "share", title: CommonStrings.accessibilityShareTitle, action: #selector(share))
+         item.accessibilityLabel = CommonStrings.accessibilityShareTitle
+         item.accessibilityIdentifier = AccessibilityIdentifiers.Article.shareButton
+         item.customView?.accessibilityIdentifier = AccessibilityIdentifiers.Article.shareButton
+@@ -72,7 +128,7 @@ class ArticleToolbarController: Themeable {
+     }()
+ 
+     lazy var findInPageButton: IconBarButtonItem = {
+-        let item = IconBarButtonItem(iconName: "find-in-page", target: self, action: #selector(findInPage), for: .touchUpInside)
++        let item = makeItem(iconName: "find-in-page", title: CommonStrings.findInPage, action: #selector(findInPage))
+         item.accessibilityLabel = CommonStrings.findInPage
+         item.accessibilityIdentifier = AccessibilityIdentifiers.Article.findInPageButton
+         item.customView?.accessibilityIdentifier = AccessibilityIdentifiers.Article.findInPageButton
+@@ -81,12 +137,15 @@ class ArticleToolbarController: Themeable {
+     }()
+ 
+     lazy var hideTableOfContentsButton: IconBarButtonItem = {
+-        let item = IconBarButtonItem(iconName: "toc", target: self, action: #selector(hideTableOfContents), for: .touchUpInside)
++        let label = WMFLocalizedString("table-of-contents-hide-button-label", value: "Hide table of contents", comment: "Accessibility label for the hide Table of Contents button")
++        let item = makeItem(iconName: "toc", title: label, action: #selector(hideTableOfContents), priority: .high)
+         if let button = item.customView as? UIButton {
+             button.layer.cornerRadius = 5
+             button.layer.masksToBounds = true
++        } else {
++            item.image = openContentsImage(theme: theme)
+         }
+-        item.accessibilityLabel = WMFLocalizedString("table-of-contents-hide-button-label", value: "Hide table of contents", comment: "Accessibility label for the hide Table of Contents button")
++        item.accessibilityLabel = label
+         item.accessibilityIdentifier = AccessibilityIdentifiers.Article.tableOfContentsButton
+         item.customView?.accessibilityIdentifier = AccessibilityIdentifiers.Article.tableOfContentsButton
+         item.apply(theme: theme)
+@@ -94,7 +153,7 @@ class ArticleToolbarController: Themeable {
+     }()
+ 
+     lazy var languagesButton: IconBarButtonItem = {
+-        let item = IconBarButtonItem(iconName: "language", target: self, action: #selector(showLanguagePicker), for: .touchUpInside)
++        let item = makeItem(iconName: "language", title: CommonStrings.accessibilityLanguagesTitle, action: #selector(showLanguagePicker))
+         item.accessibilityLabel = CommonStrings.accessibilityLanguagesTitle
+         item.accessibilityIdentifier = AccessibilityIdentifiers.Article.languagesButton
+         item.customView?.accessibilityIdentifier = AccessibilityIdentifiers.Article.languagesButton
+@@ -116,7 +175,12 @@ class ArticleToolbarController: Themeable {
+         
+         let menu = createMoreMenu(needsWatchButton: needsWatchButton, needsUnwatchHalfButton: needsUnwatchHalfButton, needsUnwatchFullButton: needsUnwatchFullButton, previousArticleTab: previousArticleTab, nextArticleTab: nextArticleTab)
+ 
+-        let item = IconBarButtonItem(image: moreImage, menu: menu)
++        let item: IconBarButtonItem
++        if usesBarItemsThatCanGoVertical {
++            item = IconBarButtonItem(title: CommonStrings.moreButton, image: moreImage, primaryAction: nil, menu: menu)
++        } else {
++            item = IconBarButtonItem(image: moreImage, menu: menu)
++        }
+ 
+         item.accessibilityLabel = CommonStrings.moreButton
+         item.accessibilityIdentifier = AccessibilityIdentifiers.Article.moreButton
+@@ -128,8 +192,8 @@ class ArticleToolbarController: Themeable {
+         var actions: [UIMenuElement] = []
+ 
+         let editElement = UIDeferredMenuElement.uncached { [weak self] completion in
+-            let title = WMFDeveloperSettingsDataController.shared.isVisualEditorEnabled ? CommonStrings.editContextMenuTitle : CommonStrings.editSource
+-            let action = UIAction(title: title, image: WMFIcon.pencil, handler: { [weak self] _ in self?.tappedEditArticle() })
++            self?.reportTouchIfPlainItems() // the More menu opening
++            let action = UIAction(title: Self.editActionTitle, image: WMFIcon.pencil, handler: { [weak self] _ in self?.tappedEditArticle() })
+             completion([action])
+         }
+ 
+@@ -176,6 +240,39 @@ class ArticleToolbarController: Themeable {
+         return menu
+     }
+ 
++    /// The More menu's actions for the system overflow, read each time the overflow opens.
++    /// The Edit action's title, which the More menu reads each time it opens.
++    private static var editActionTitle: String {
++        WMFDeveloperSettingsDataController.shared.isVisualEditorEnabled ? CommonStrings.editContextMenuTitle : CommonStrings.editSource
++    }
++
++    private lazy var moreMenuOverflowElement = UIDeferredMenuElement.uncached { [weak self] completion in
++        guard let self else { completion([]); return }
++        self.reportTouchIfPlainItems() // the menu opening, as the More button reported it
++        guard self.toolbarButtonsAreEnabled else {
++            // While the toolbar is disabled the More button was too: its actions show, but cannot be chosen.
++            completion(self.currentMoreMenu.children.compactMap { element in
++                if element is UIDeferredMenuElement {
++                    // Edit is built when the menu opens; shown disabled like the others.
++                    return UIAction(title: Self.editActionTitle, image: WMFIcon.pencil, attributes: .disabled) { _ in }
++                }
++                guard let action = element.copy() as? UIAction else { return nil }
++                action.attributes.insert(.disabled)
++                return action
++            })
++            return
++        }
++        completion(self.currentMoreMenu.children)
++    }
++
++    /// The More menu as it stands now (the watch state and the tab's neighbours change it).
++    private var currentMoreMenu: UIMenu {
++        if let button = moreButton.customView as? UIButton, let menu = button.menu {
++            return menu
++        }
++        return moreButton.menu ?? createMoreMenu()
++    }
++
+     func updateMoreButton(needsWatchButton: Bool = false, needsUnwatchHalfButton: Bool = false, needsUnwatchFullButton: Bool = false, previousArticleTab: WMFArticleTabsDataController.WMFArticle?, nextArticleTab: WMFArticleTabsDataController.WMFArticle?) {
+         
+         let updatedMenu = createMoreMenu(
+@@ -217,6 +314,7 @@ class ArticleToolbarController: Themeable {
+     // MARK: Actions
+ 
+     @objc func toggleSave(_ sender: UIBarButtonItem) {
++        reportTouchIfPlainItems()
+         delegate?.toggleSave(from: self)
+     }
+ 
+@@ -228,26 +326,32 @@ class ArticleToolbarController: Themeable {
+     }
+ 
+     @objc func showThemes() {
++        reportTouchIfPlainItems()
+         delegate?.showThemePopover(from: self)
+     }
+ 
+     @objc func showTableOfContents() {
++        reportTouchIfPlainItems()
+         delegate?.showTableOfContents(from: self)
+     }
+ 
+     @objc func hideTableOfContents() {
++        reportTouchIfPlainItems()
+         delegate?.hideTableOfContents(from: self)
+     }
+ 
+     @objc func showLanguagePicker() {
++        reportTouchIfPlainItems()
+         delegate?.showLanguagePicker(from: self)
+     }
+ 
+     @objc func share() {
++        reportTouchIfPlainItems()
+         delegate?.share(from: self)
+     }
+ 
+     @objc func findInPage() {
++        reportTouchIfPlainItems()
+         delegate?.showFindInPage(from: self)
+     }
+ 
+@@ -275,9 +379,11 @@ class ArticleToolbarController: Themeable {
+ 
+     func setSavedState(isSaved: Bool) {
+         saveButton.accessibilityLabel = isSaved ? CommonStrings.accessibilitySavedTitle : CommonStrings.saveTitle
++        let assetName = isSaved ? "save-filled" : "save"
+         if let innerButton = saveButton.customView as? UIButton {
+-            let assetName = isSaved ? "save-filled" : "save"
+             innerButton.setImage(UIImage(named: assetName), for: .normal)
++        } else {
++            saveButton.image = UIImage(named: assetName)
+         }
+     }
+ 
+@@ -294,6 +400,27 @@ class ArticleToolbarController: Themeable {
+             item.apply(theme: theme)
+         }
+         hideTableOfContentsButton.customView?.backgroundColor = theme.colors.midBackground
++        if hideTableOfContentsButton.customView == nil {
++            hideTableOfContentsButton.image = openContentsImage(theme: theme)
++        }
++    }
++
++    /// iPhone Duo (plain items, iOS 27.1): the contents icon on the filled rounded square the custom-view button drew
++    /// while the contents were open (33 × 33 pt, corner 5, the theme's midBackground), as one image, since a plain item
++    /// has no background of its own.
++    private func openContentsImage(theme: Theme) -> UIImage? {
++        guard let icon = UIImage(named: "toc") else { return nil }
++        let side: CGFloat = 33
++        let renderer = UIGraphicsImageRenderer(size: CGSize(width: side, height: side))
++        let image = renderer.image { _ in
++            theme.colors.midBackground.setFill()
++            UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: side, height: side), cornerRadius: 5).fill()
++            let scale = min(1, (side - 6) / max(icon.size.width, icon.size.height))
++            let size = CGSize(width: icon.size.width * scale, height: icon.size.height * scale)
++            let origin = CGPoint(x: (side - size.width) / 2, y: (side - size.height) / 2)
++            icon.withTintColor(theme.colors.primaryText, renderingMode: .alwaysOriginal).draw(in: CGRect(origin: origin, size: size))
++        }
++        return image.withRenderingMode(.alwaysOriginal)
+     }
+ 
+     private var flexibleSpaceToolbarItem: UIBarButtonItem {
+@@ -304,6 +431,11 @@ class ArticleToolbarController: Themeable {
+ 
+         let tocItem = delegate?.isTableOfContentsVisible ?? false ? hideTableOfContentsButton : showTableOfContentsButton
+ 
++        // iPhone Duo: where the bars are vertical the app's More menu joins the system's overflow menu instead of being
++        // an item that can itself land in that overflow (a More inside a More) [tech talk 111462, 11:40].
++        let mergesMoreIntoSystemOverflow = usesBarItemsThatCanGoVertical && (delegate?.barsAreVertical ?? false)
++        delegate?.setAdditionalOverflowItems(mergesMoreIntoSystemOverflow ? moreMenuOverflowElement : nil)
++
+         if #available(iOS 26.0, *) {
+             currentItems = [
+                 tocItem,
+@@ -311,9 +443,8 @@ class ArticleToolbarController: Themeable {
+                 languagesButton,
+                 saveButton,
+                 findInPageButton,
+-                themeButton,
+-                moreButton
+-            ]
++                themeButton
++            ] + (mergesMoreIntoSystemOverflow ? [] : [moreButton])
+         } else {
+             currentItems = [
+                 flexibleSpaceToolbarItem,
+@@ -345,9 +476,15 @@ class ArticleToolbarController: Themeable {
+     }
+ 
+     func setToolbarButtons(enabled: Bool) {
++        toolbarButtonsAreEnabled = enabled
+         currentItems.forEach { $0.isEnabled = enabled }
++        moreButton.isEnabled = enabled
+     }
+ 
++    /// Whether the toolbar is enabled (not while the article loads or refreshes). The More actions in the system
++    /// overflow follow it, as the More button did.
++    private var toolbarButtonsAreEnabled = true
++
+ }
+ 
+ private extension String {
+diff --git a/Wikipedia/Code/ArticleViewController+ArticleToolbarHandling.swift b/Wikipedia/Code/ArticleViewController+ArticleToolbarHandling.swift
+index 7b70a2e..4f8008f 100644
+--- a/Wikipedia/Code/ArticleViewController+ArticleToolbarHandling.swift
++++ b/Wikipedia/Code/ArticleViewController+ArticleToolbarHandling.swift
+@@ -58,6 +58,20 @@ extension ArticleViewController: ArticleToolbarHandling {
+         skipSemanticSearchFeedback(reason: .startedActivity)
+     }
+ 
++    var barsAreVertical: Bool {
++        if #available(iOS 27.1, *) {
++            // The window's root says where the system puts its vertical bar; a screen inside a fold split pane may
++            // not carry the trait itself.
++            let traits = (view.window?.rootViewController ?? self).traitCollection
++            return traits.verticalBarEdge != .unspecified || traitCollection.verticalBarEdge != .unspecified
++        }
++        return false
++    }
++
++    func setAdditionalOverflowItems(_ items: UIDeferredMenuElement?) {
++        navigationItem.additionalOverflowItems = items
++    }
++
+     func toggleSave(from controller: ArticleToolbarController) {
+         NavigationEventsFunnel.shared.logEvent(action: .articleToolbarSave)
+         let isSaved = dataStore.savedPageList.toggleSavedPage(for: articleURL)
+diff --git a/Wikipedia/Code/ArticleViewController.swift b/Wikipedia/Code/ArticleViewController.swift
+index 9cbc1a4..99edc66 100644
+--- a/Wikipedia/Code/ArticleViewController.swift
++++ b/Wikipedia/Code/ArticleViewController.swift
+@@ -399,13 +399,19 @@ class ArticleViewController: ThemeableViewController, UIScrollViewDelegate, WMFN
+     }
+ 
+     func updateLeadImageMargins() {
+-        let doesArticleUseLargeMargin = (tableOfContentsController.viewController.displayMode == .inline && !tableOfContentsController.viewController.isVisible)
++        // iPhone Duo: contents in the fold split's list pane take no width from the article, so its margins stay.
++        let doesArticleUseLargeMargin = (tableOfContentsController.viewController.displayMode == .inline && (!tableOfContentsController.viewController.isVisible || tableOfContentsController.isHostedInListPane))
+         var marginWidth: CGFloat = 0
+         if doesArticleUseLargeMargin {
+             marginWidth = articleHorizontalMargin
+         }
+-        leadImageLeadingMarginConstraint.constant = marginWidth
+-        leadImageTrailingMarginConstraint.constant = marginWidth
++        // Set only on a change, so that calling this on every layout pass (below) costs nothing.
++        if leadImageLeadingMarginConstraint.constant != marginWidth {
++            leadImageLeadingMarginConstraint.constant = marginWidth
++        }
++        if leadImageTrailingMarginConstraint.constant != marginWidth {
++            leadImageTrailingMarginConstraint.constant = marginWidth
++        }
+     }
+ 
+     // MARK: Layout
+@@ -417,6 +423,10 @@ class ArticleViewController: ThemeableViewController, UIScrollViewDelegate, WMFN
+ 
+     override func viewDidLayoutSubviews() {
+         super.viewDidLayoutSubviews()
++        updateHomeButtonForFold()
++        // iPhone Duo: in a fold split's detail pane the readable margin can settle after the constraints were last
++        // updated (the pane moves into place when the phone opens); keep the lead image's margin in step with it.
++        updateLeadImageMargins()
+ 
+         tableOfContentsController.updateVerticalPaddings(top: 10, bottom: 0)
+     }
+@@ -493,6 +503,12 @@ class ArticleViewController: ThemeableViewController, UIScrollViewDelegate, WMFN
+                 }
+             }
+         }
++        // iPhone Duo: the toolbar's More joins the system overflow only where bars are vertical.
++        if #available(iOS 27.1, *) {
++            registerForTraitChanges(UITraitCollection.systemTraitsAffectingVerticalBarEdge) { (viewController: Self, _: UITraitCollection) in
++                viewController.toolbarController?.update()
++            }
++        }
+     }
+ 
+     override func viewWillAppear(_ animated: Bool) {
+@@ -515,6 +531,7 @@ class ArticleViewController: ThemeableViewController, UIScrollViewDelegate, WMFN
+         }
+         
+         presentModalsIfNeeded()
++        tableOfContentsController.presentModalIfItWasOpen()
+         removeDonationReminderCardIfNeeded()
+         trackArticleDidAppear()
+         coordinator?.syncTabsOnArticleAppearance()
+@@ -684,9 +701,53 @@ class ArticleViewController: ThemeableViewController, UIScrollViewDelegate, WMFN
+ 
+     @objc private func wButtonTapped(_ sender: UIButton) {
+         wTip.invalidate(reason: .actionPerformed)
++        returnToTabRoot()
++    }
++
++    /// What the W does: back to the root of the tab the article was opened from. In a fold split's detail pane the
++    /// article is the root of its own stack, so the container takes the tab back to its root (the list) instead.
++    private func returnToTabRoot() {
++        if let container = WMFFoldSplitContainerViewController.containerOfDetailPane(holding: self) {
++            container.popToRoot(animated: true)
++            return
++        }
+         navigationController?.popToRootViewController(animated: true)
+     }
+ 
++    // MARK: - iPhone Duo: the W off the fold
++
++    /// Whether the navigation bar was last set up with the W as a bar item (book fold active) rather than the title.
++    private var homeButtonIsBarItemForFold: Bool?
++    private var lastBarsAreVertical: Bool?
++    private var didAddHingeInteraction = false
++
++    @objc private func wBarItemTapped() {
++        wTip.invalidate(reason: .actionPerformed)
++        returnToTabRoot()
++    }
++
++    /// Sets the navigation bar up again when the book fold comes or goes. Reserved regions have no callback of their
++    /// own: layout and the hinge interaction say when to look.
++    private func updateHomeButtonForFold() {
++        // The toolbar's More joins the system overflow only where bars are vertical: look again when that changes.
++        if lastBarsAreVertical != barsAreVertical {
++            lastBarsAreVertical = barsAreVertical
++            toolbarController?.update()
++        }
++        if !didAddHingeInteraction {
++            didAddHingeInteraction = true
++            if let hingeInteraction = WMFFold.hingeInteraction(onChange: { [weak self] in self?.view.setNeedsLayout() }) {
++                view.addInteraction(hingeInteraction)
++            }
++        }
++        guard let homeButtonIsBarItemForFold,
++              homeButtonIsBarItemForFold != WMFFold.isBookFoldActive(view),
++              navigationController?.topViewController === self else {
++            return
++        }
++        configureNavigationBar()
++    }
++
+     override func viewWillDisappear(_ animated: Bool) {
+         super.viewWillDisappear(animated)
+         
+@@ -939,6 +1000,13 @@ class ArticleViewController: ThemeableViewController, UIScrollViewDelegate, WMFN
+         let searchButton = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(userDidTapSearch))
+         searchButton.accessibilityLabel = CommonStrings.searchButtonAccessibilityHint
+         searchButton.accessibilityIdentifier = AccessibilityIdentifiers.Article.searchButton
++        if #available(iOS 27.1, *) {
++            // iPhone Duo: a full vertical bar moves search into the overflow before the article's own items; there
++            // the item shows its title, which it lacked (an icon-only row) [tech talk 111462, 5:56]. Gated like the
++            // toolbar's items: earlier systems keep the item as it was.
++            searchButton.visibilityPriority = .low
++            searchButton.title = CommonStrings.searchTitle
++        }
+         return searchButton
+     }
+ 
+@@ -955,6 +1023,11 @@ class ArticleViewController: ThemeableViewController, UIScrollViewDelegate, WMFN
+         }
+         wButton.addTarget(self, action: #selector(wButtonTapped(_:)), for: .touchUpInside)
+         wButton.accessibilityIdentifier = AccessibilityIdentifiers.Article.homeButton
++        // iPhone Duo: beside the list, the article is the root of the detail pane and has no Back; the W is the way
++        // back to the list, so it says where it goes rather than the article's title.
++        if let container = WMFFoldSplitContainerViewController.containerOfDetailPane(holding: self), let listTitle = container.title {
++            wButton.accessibilityLabel = String.localizedStringWithFormat(WMFLocalizedString("fold-split-home-button-accessibility-label", value: "Wikipedia, return to %1$@", comment: "Accessibility label for the 'W' logo above an article shown beside a list (Saved, Activity, Search) on a folding iPhone held open sideways. Tapping it closes the article and returns to the list. %1$@ is the list's name, for example Saved."), listTitle)
++        }
+ 
+         var titleConfig: WMFNavigationBarTitleConfig = WMFNavigationBarTitleConfig(title: articleURL.wmf_title ?? "", customView: wButton, alignment: .centerCompact)
+ 
+@@ -976,7 +1049,31 @@ class ArticleViewController: ThemeableViewController, UIScrollViewDelegate, WMFN
+         
+         let tabsButtonConfig = tabsButtonConfig(target: self, action: #selector(userDidTapTabs), dataStore: dataStore, leadingBarButtonItem: tabsLeadingButton)
+ 
++        // iPhone Duo: folded like a book, the centred W would sit on the fold. It becomes a bar item with a title and
++        // a symbol instead, which joins the vertical bar with the other items; everywhere else it stays the title.
++        let homeButtonIsBarItem = WMFFold.isBookFoldActive(view)
++        homeButtonIsBarItemForFold = homeButtonIsBarItem
++        if homeButtonIsBarItem {
++            titleConfig = WMFNavigationBarTitleConfig(title: articleURL.wmf_title ?? "", customView: nil, alignment: .hidden)
++        }
++
+         configureNavigationBar(titleConfig: titleConfig, backButtonConfig: backButtonConfig, closeButtonConfig: nil, profileButtonConfig: profileButtonConfig, tabsButtonConfig: tabsButtonConfig, searchBarConfig: nil, hideNavigationBarOnScroll: true)
++
++        if #available(iOS 27.1, *) {
++            // iPhone Duo: with a tab bar in the vertical bar, the tab bar compresses before the article's items.
++            navigationItem.verticalBarCompressionBehavior = .prefersBarItems
++        }
++
++        if homeButtonIsBarItem {
++            // The W returns to the root of this tab's stack: its title names that screen (Home, Saved, Search…).
++            let rootTitle = WMFFoldSplitContainerViewController.containerOfDetailPane(holding: self)?.title ?? navigationController?.viewControllers.first?.title ?? CommonStrings.homeTabTitle
++            let homeItem = UIBarButtonItem(title: rootTitle, image: UIImage(named: "W"), target: self, action: #selector(wBarItemTapped))
++            homeItem.accessibilityIdentifier = AccessibilityIdentifiers.Article.homeButton
++            navigationItem.leftItemsSupplementBackButton = true
++            navigationItem.leftBarButtonItem = homeItem
++        } else if navigationItem.leftBarButtonItem?.accessibilityIdentifier == AccessibilityIdentifiers.Article.homeButton {
++            navigationItem.leftBarButtonItem = nil
++        }
+         
+         navigationItem.backButtonDisplayMode = .minimal
+         let returnAccessibilityTitle = WMFLocalizedString("article-return-button-accessibility-title", value: "Return to: %1$@", comment: "Accessibility title read by assistive technologies for the button that takes the user back to the previous article. The %1$@ placeholder is replaced with the previous article title.")
+@@ -1795,7 +1892,8 @@ extension ThemeableViewController { // Putting extension on ViewController rathe
+     var articleHorizontalMargin: CGFloat {
+         let viewForCalculation: UIView = navigationController?.view ?? view
+ 
+-        if let tableOfContentsVC = (self as? ArticleViewController)?.tableOfContentsController.viewController, tableOfContentsVC.isVisible {
++        if let tableOfContentsController = (self as? ArticleViewController)?.tableOfContentsController,
++           tableOfContentsController.viewController.isVisible, !tableOfContentsController.isHostedInListPane {
+             // full width
+             return viewForCalculation.layoutMargins.left
+         } else {
+diff --git a/Wikipedia/Code/ExploreViewController.swift b/Wikipedia/Code/ExploreViewController.swift
+index ba964ae..dda6dcf 100644
+--- a/Wikipedia/Code/ExploreViewController.swift
++++ b/Wikipedia/Code/ExploreViewController.swift
+@@ -757,6 +757,11 @@ class ExploreViewController: ColumnarCollectionViewController, ExploreCardViewCo
+             return estimate
+         }
+         configure(cell: placeholderCell, forItemAt: indexPath, layoutOnly: true)
++        if divisionUsedByLayout != nil {
++            // iPhone Duo (Even grid): measure with the margins the live cell gets, so a card's height fits its
++            // narrower fold-aligned column (366 pt); the placeholder's default margins left "In the news" 7 pt short.
++            placeholderCell.layoutMargins = layout.itemLayoutMargins
++        }
+         estimate.height = placeholderCell.sizeThatFits(CGSize(width: columnWidth, height: UIView.noIntrinsicMetric), apply: false).height
+         estimate.precalculated = true
+         layoutCache.setHeight(estimate.height, forCellWithIdentifier: identifier, columnWidth: columnWidth, groupKey: group.inMemoryKey, userInfo: userInfo)
+@@ -778,7 +783,36 @@ class ExploreViewController: ColumnarCollectionViewController, ExploreCardViewCo
+     }
+ 
+     override func metrics(with size: CGSize, readableWidth: CGFloat, layoutMargins: UIEdgeInsets) -> ColumnarCollectionViewLayoutMetrics {
+-        return ColumnarCollectionViewLayoutMetrics.exploreViewMetrics(with: size, readableWidth: readableWidth, layoutMargins: layoutMargins)
++        // iPhone Duo (Even grid): the fold sets the gutter, for the collection view's own width only (not for the
++        // height estimates made at other widths).
++        let division = size.width.isEqual(to: collectionView.bounds.width) ? WMFFold.verticalDivision(in: collectionView, includeInactive: true) : nil
++        if size.width.isEqual(to: collectionView.bounds.width) {
++            divisionUsedByLayout = division
++        }
++        return ColumnarCollectionViewLayoutMetrics.exploreViewMetrics(with: size, readableWidth: readableWidth, layoutMargins: layoutMargins, verticalDivision: division)
++    }
++
++    // MARK: - iPhone Duo: Even grid
++
++    /// The fold the current layout was made for; nil without one.
++    private var divisionUsedByLayout: CGRect?
++    private var didAddHingeInteraction = false
++
++    override func viewDidLayoutSubviews() {
++        super.viewDidLayoutSubviews()
++        if !didAddHingeInteraction {
++            didAddHingeInteraction = true
++            if let hingeInteraction = WMFFold.hingeInteraction(onChange: { [weak self] in self?.view.setNeedsLayout() }) {
++                view.addInteraction(hingeInteraction)
++            }
++        }
++        // Reserved regions arrive a moment after the first layout in a new pose and have no callback of their own:
++        // lay the columns out again when the fold the layout used is not the one there now.
++        let division = WMFFold.verticalDivision(in: collectionView, includeInactive: true)
++        if division?.minX != divisionUsedByLayout?.minX || division?.maxX != divisionUsedByLayout?.maxX {
++            divisionUsedByLayout = division
++            layout.invalidateLayout()
++        }
+     }
+ 
+     override func collectionView(_ collectionView: UICollectionView, shouldShowFooterForSection section: Int) -> Bool {
+diff --git a/Wikipedia/Code/NavigationStateController.swift b/Wikipedia/Code/NavigationStateController.swift
+index 026e47d..1c978fb 100644
+--- a/Wikipedia/Code/NavigationStateController.swift
++++ b/Wikipedia/Code/NavigationStateController.swift
+@@ -2,6 +2,7 @@ import WMF
+ import UIKit
+ import CocoaLumberjackSwift
+ import WMFData
++import WMFComponents
+ 
+ @objc(WMFNavigationStateController)
+ final class NavigationStateController: NSObject {
+@@ -18,9 +19,24 @@ final class NavigationStateController: NSObject {
+     private typealias Presentation = ViewController.Presentation
+     private typealias Info = ViewController.Info
+     
+-    @objc func saveNavigationState(for tabBarController: UITabBarController, in moc: NSManagedObjectContext) {
++    /// The selected tab's navigation controller. iPhone Duo: Saved, Activity and Search sit in a fold split container
++    /// on iOS 27.1; its list is the tab's stack, and while split an open article is in its detail stack.
++    @MainActor private func selectedNavigationController(in tabBarController: UITabBarController, holdingArticle: Bool) -> UINavigationController? {
++        if let navigationController = tabBarController.selectedViewController as? UINavigationController {
++            return navigationController
++        }
++        guard let container = tabBarController.selectedViewController as? WMFFoldSplitContainerViewController else {
++            return nil
++        }
++        if holdingArticle, container.isSplit, container.detailNavigationController.topViewController is ArticleViewController {
++            return container.detailNavigationController
++        }
++        return container.listNavigationController
++    }
++
++    @MainActor @objc func saveNavigationState(for tabBarController: UITabBarController, in moc: NSManagedObjectContext) {
+         
+-        guard let selectedNavigationController = tabBarController.selectedViewController as? UINavigationController else {
++        guard let selectedNavigationController = selectedNavigationController(in: tabBarController, holdingArticle: true) else {
+             return
+         }
+         
+@@ -42,7 +58,7 @@ final class NavigationStateController: NSObject {
+     /// Finds the topmost article from persisted NavigationState and pushes it onto navigationController
+     @MainActor @objc func restoreLastArticle(for tabBarController: UITabBarController, in moc: NSManagedObjectContext, with theme: Theme, completion: @escaping () -> Void) {
+ 
+-        guard let selectedNavigationController = tabBarController.selectedViewController as? UINavigationController else {
++        guard let selectedNavigationController = selectedNavigationController(in: tabBarController, holdingArticle: false) else {
+             completion()
+             return
+         }
+diff --git a/Wikipedia/Code/SearchViewController.swift b/Wikipedia/Code/SearchViewController.swift
+index 5c2f019..99a38a3 100644
+--- a/Wikipedia/Code/SearchViewController.swift
++++ b/Wikipedia/Code/SearchViewController.swift
+@@ -418,7 +418,11 @@ class SearchViewController: ThemeableViewController, WMFNavigationBarConfiguring
+         NSUserActivity.wmf_makeActive(NSUserActivity.wmf_searchView())
+ 
+         let returningFromArticle = pushedArticleSource != nil
+-        switch pushedArticleSource {
++        // iPhone Duo (Fold-aligned split): when the phone opens, an article opened from here moves to the detail pane
++        // beside the search, which appears again. The article is still open: the search stays as it is, without the
++        // keyboard, until the article comes back on top of it (the phone closes) or another one is opened.
++        let articleIsBeside = navigationController.map { WMFFoldSplitContainerViewController.containing($0)?.isSplit == true } ?? false
++        switch articleIsBeside ? nil : pushedArticleSource {
+         case .searchResults:
+             // On iPad the search field can't become first responder yet in viewDidAppear, so wait a turn.
+             Task { @MainActor [weak self] in
+@@ -429,7 +433,9 @@ class SearchViewController: ThemeableViewController, WMFNavigationBarConfiguring
+         case nil:
+             break
+         }
+-        pushedArticleSource = nil
++        if !articleIsBeside {
++            pushedArticleSource = nil
++        }
+ 
+         if isRootTabView {
+             ArticleTabsFunnel.shared.logIconImpression(interface: .search, project: nil)
+diff --git a/Wikipedia/Code/ViewControllerRouter.swift b/Wikipedia/Code/ViewControllerRouter.swift
+index 7bed6fb..6eb9b0e 100644
+--- a/Wikipedia/Code/ViewControllerRouter.swift
++++ b/Wikipedia/Code/ViewControllerRouter.swift
+@@ -221,7 +221,8 @@ class ViewControllerRouter: NSObject {
+     }
+ 
+     private func watchlistTargetNavigationController() -> UINavigationController? {
+-        var targetNavigationController: UINavigationController? = appViewController.currentTabNavigationController
++        // iPhone Duo: the detail pane's stack while it shows an article, so the watchlist stacks on what it was opened from.
++        var targetNavigationController: UINavigationController? = appViewController.currentTabFrontNavigationController
+         if let presentedNavigationController = appViewController.presentedViewController as? UINavigationController,
+            presentedNavigationController.viewControllers[0] is SettingsTabViewController {
+             targetNavigationController = presentedNavigationController
+diff --git a/Wikipedia/Code/WMFAppViewController+Extensions.swift b/Wikipedia/Code/WMFAppViewController+Extensions.swift
+index be53785..28492e0 100644
+--- a/Wikipedia/Code/WMFAppViewController+Extensions.swift
++++ b/Wikipedia/Code/WMFAppViewController+Extensions.swift
+@@ -44,7 +44,8 @@ extension WMFAppViewController {
+             return false
+         }
+ 
+-        guard let navigationController = self.currentTabNavigationController else {
++        // iPhone Duo: beside the list, a link followed from the open article stacks on the detail pane.
++        guard let navigationController = self.currentTabFrontNavigationController else {
+             return false
+         }
+ 
+@@ -188,8 +189,7 @@ extension WMFAppViewController {
+     // The user is deep linking in these states and we don't want to interrupt them
+     private var shouldPresentLanguageVariantAlerts: Bool {
+         guard presentedViewController == nil,
+-              let navigationController = currentTabNavigationController,
+-              navigationController.viewControllers.count == 1 else {
++              isCurrentTabAtRoot else {
+             return false
+         }
+         return true
+@@ -237,7 +237,7 @@ extension WMFAppViewController {
+ 
+         let dismissAndPushBlock = { [weak self] in
+             self?.dismissPresentedViewControllers()
+-            self?.currentTabNavigationController?.pushViewController(notificationsCenterViewController, animated: true)
++            self?.currentTabFrontNavigationController?.pushViewController(notificationsCenterViewController, animated: true)
+         }
+ 
+         guard let editingFlowViewController = editingFlowViewControllerInHierarchy,
+@@ -269,10 +269,32 @@ extension WMFAppViewController {
+         return nil
+     }
+ 
++    /// The selected tab's stack in front: for a fold split container (iPhone Duo) the detail stack while it shows an
++    /// article, so that what is opened from there stacks on it; otherwise the tab's stack.
++    var currentTabFrontNavigationController: WMFComponentNavigationController? {
++        if let container = selectedViewController as? WMFFoldSplitContainerViewController {
++            return container.frontNavigationController
++        }
++        return currentTabNavigationController
++    }
++
++    /// True when the selected tab is at its root: its stack at the first screen, and for a fold split container nothing
++    /// open in the detail pane either.
++    var isCurrentTabAtRoot: Bool {
++        if let container = selectedViewController as? WMFFoldSplitContainerViewController {
++            return container.isAtRoot
++        }
++        return currentTabNavigationController?.viewControllers.count == 1
++    }
++
+     @objc var currentTabNavigationController: WMFComponentNavigationController? {
+         if let componentNavVC = selectedViewController as? WMFComponentNavigationController {
+             return componentNavVC
+         }
++        // iPhone Duo: a list tab in a fold split container; articles pushed here go to its detail pane while split.
++        if let container = selectedViewController as? WMFFoldSplitContainerViewController {
++            return container.listNavigationController
++        }
+ 
+         return nil
+     }
+@@ -991,11 +1013,7 @@ extension WMFAppViewController {
+           }
+ 
+           // Loop through all view controllers
+-          for viewController in viewControllers {
+-              // Check if it's a navigation controller
+-              guard let navigationController = viewController as? UINavigationController else {
+-                  continue
+-              }
++          for navigationController in viewControllers.flatMap({ navigationControllers(inTab: $0) }) {
+ 
+               // Get all view controllers in the navigation stack
+               let viewControllers = navigationController.viewControllers
+@@ -1256,9 +1274,9 @@ extension WMFAppViewController {
+     }
+ 
+     @objc func logTabBarSelectionsForActivityTab(currentTabSelection: UIViewController, newTabSelection: UIViewController) {
+-        guard let currentNavVC = currentTabSelection as? UINavigationController,
++        guard let currentNavVC = navigationControllers(inTab: currentTabSelection).first,
+               currentNavVC.viewControllers.count > 0,
+-              let newTabNavVC = newTabSelection as? UINavigationController,
++              let newTabNavVC = navigationControllers(inTab: newTabSelection).first,
+               newTabNavVC.viewControllers.count > 0 else {
+             return
+         }
+@@ -1437,7 +1455,7 @@ extension WMFAppViewController {
+ 
+     private var evergreenAccountCreationContextForSelectedTab: WMFEvergreenAccountCreationDataController.PresentationContext? {
+         guard let rootViewController = currentTabNavigationController?.viewControllers.first,
+-              currentTabNavigationController?.viewControllers.count == 1 else {
++              isCurrentTabAtRoot else {
+             return nil
+         }
+ 
+diff --git a/Wikipedia/Code/WMFAppViewController.swift b/Wikipedia/Code/WMFAppViewController.swift
+index c28f5a5..c0eaf81 100644
+--- a/Wikipedia/Code/WMFAppViewController.swift
++++ b/Wikipedia/Code/WMFAppViewController.swift
+@@ -305,6 +305,23 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+         registerForTraitChanges([UITraitUserInterfaceStyle.self, UITraitPreferredContentSizeCategory.self]) { [weak self] (_: WMFAppViewController, _: UITraitCollection) in
+             self?.debounceTraitCollectionThemeUpdate()
+         }
++
++        // iPhone Duo: the hinge only says when to look at the fold again; placement comes from the reserved regions.
++        if let hingeInteraction = WMFFold.hingeInteraction(onChange: { [weak self] in self?.view.setNeedsLayout() }) {
++            view.addInteraction(hingeInteraction)
++        }
++    }
++
++    // MARK: - iPhone Duo: sheets on the trailing half in book (Fold-aligned split, the sheet rule)
++
++    override func viewDidLayoutSubviews() {
++        super.viewDidLayoutSubviews()
++        WMFFold.updateSheetPlacement(above: self)
++    }
++
++    override func present(_ viewControllerToPresent: UIViewController, animated flag: Bool, completion: (() -> Void)? = nil) {
++        WMFFold.prepareSheet(viewControllerToPresent, over: view)
++        super.present(viewControllerToPresent, animated: flag, completion: completion)
+     }
+ 
+     override var preferredStatusBarStyle: UIStatusBarStyle {
+@@ -391,18 +408,28 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+         rootTabAccessibilityIdentifiers = rootNavigationControllers.map { nav in
+             nav.viewControllers.first?.tabBarItem.accessibilityIdentifier
+         }
++        // iPhone Duo (Fold-aligned split): Saved, Activity and Search are lists that open articles. Where the window
++        // has a vertical fold their articles open in a pane of their own beside the list; elsewhere the container is
++        // invisible and the tab is its navigation stack, as before. Home and Places are not lists of this kind.
++        let tabRoots: [UIViewController] = rootNavigationControllers.enumerated().map { index, nav in
++            guard #available(iOS 27.1, *),
++                  [WMFAppTabType.saved.rawValue, WMFAppTabType.recent.rawValue, WMFAppTabType.search.rawValue].contains(index) else {
++                return nav
++            }
++            return foldSplitContainer(for: nav)
++        }
+ 
+         if #available(iOS 18.0, *) {
+             // A magic fix for https://phabricator.wikimedia.org/T403896
+             var potentialTabs: [UITab] = []
+-            for nav in rootNavigationControllers {
++            for (nav, tabRoot) in zip(rootNavigationControllers, tabRoots) {
+                 guard let rootVC = nav.viewControllers.first,
+                       let title = rootVC.title,
+                       let image = rootVC.tabBarItem.image else { continue }
+                 
+                 let identifier = rootVC.tabBarItem.accessibilityIdentifier ?? title
+                 let tab = UITab(title: title, image: image, identifier: identifier) { tab in
+-                    return nav
++                    return tabRoot
+                 }
+                 
+                 tab.preferredPlacement = .fixed
+@@ -413,7 +440,7 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+         }
+ 
+         // This should be called all the time for backward compatibility
+-        setViewControllers([nav1, nav2, nav3, nav4, nav5], animated: false)
++        setViewControllers(tabRoots, animated: false)
+         applyRootTabAccessibilityIdentifiers()
+ 
+         updateUserInterfaceStyleOfNavigationControllersForCurrentTheme()
+@@ -427,6 +454,80 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+         }
+     }
+ 
++    /// iPhone Duo: the Fold-aligned split container for a list tab. Articles go to its detail pane while it is split.
++    private func foldSplitContainer(for nav: WMFComponentNavigationController) -> WMFFoldSplitContainerViewController {
++        // The empty detail pane says what will appear there. Logged out, Activity has nothing to open yet, so its pane
++        // says where articles from the activity will open rather than that none is selected.
++        let isActivity = nav.viewControllers.first is WMFActivityTabViewController
++        let text = isActivity
++            ? WMFLocalizedString("fold-split-activity-detail-empty", value: "Articles you open from your activity appear here", comment: "Shown at the top of the empty right-hand pane beside the Activity tab on a folding iPhone held open sideways, before an article is opened from the activity.")
++            : WMFLocalizedString("fold-split-detail-empty", value: "No article selected", comment: "Shown at the top of the empty right-hand pane beside a list of articles (Saved, Search) on a folding iPhone held open sideways, before an article is opened.")
++        let placeholder = FoldSplitDetailPlaceholderViewController(text: text)
++        placeholder.theme = theme
++        let container = WMFFoldSplitContainerViewController(list: nav, placeholder: placeholder) { viewController in
++            viewController is ArticleViewController
++        }
++        container.detailNavigationController.delegate = self
++        return container
++    }
++
++    /// Back to the selected tab's root, as the app's routes do: for a fold split container, its list goes back to the
++    /// root and its detail pane empties (iPhone Duo); otherwise the tab's stack pops to its root, as before.
++    private func popCurrentTabToRoot(animated: Bool) {
++        if let container = selectedViewController as? WMFFoldSplitContainerViewController {
++            container.popToRoot(animated: animated)
++        } else {
++            currentTabNavigationController?.popToRootViewController(animated: animated)
++        }
++        updateTabBarForFoldSplitContainers(animated: animated)
++    }
++
++    // MARK: - iPhone Duo: the tab bar for tabs in a fold split container
++
++    /// True while the tab bar is hidden by `updateTabBarForFoldSplitContainers`, not by UIKit.
++    private var foldSplitHidTabBar = false
++
++    /// A navigation controller that is the tab hides the tab bar while a screen with `hidesBottomBarWhenPushed` is on
++    /// it above the root; UIKit does that. Inside a fold split container (Saved, Activity, Search on iOS 27.1) the stack
++    /// is not the tab and UIKit does not see it, so the same rule is applied here, and again on every change of the
++    /// selected tab so that it never carries over to another tab. Tabs that are their own stack keep UIKit's handling:
++    /// they are only touched to undo what was set here.
++    private func updateTabBarForFoldSplitContainers(animated: Bool) {
++        guard #available(iOS 18.0, *) else { return }
++        if let container = selectedViewController as? WMFFoldSplitContainerViewController {
++            let list = container.listNavigationController
++            let listHides = list.viewControllers.dropFirst().contains { $0.hidesBottomBarWhenPushed }
++            let hidden = listHides || container.detailHidesTabBar
++            foldSplitHidTabBar = hidden
++            if isTabBarHidden != hidden {
++                setTabBarHidden(hidden, animated: animated)
++            }
++        } else if foldSplitHidTabBar {
++            // A tab that is its own stack: clear only the hide set here and leave the rest to UIKit, as on main.
++            foldSplitHidTabBar = false
++            setTabBarHidden(false, animated: animated)
++        }
++    }
++
++    override var selectedIndex: Int {
++        didSet { updateTabBarForFoldSplitContainers(animated: false) }
++    }
++
++    override var selectedViewController: UIViewController? {
++        didSet { updateTabBarForFoldSplitContainers(animated: false) }
++    }
++
++    /// The navigation controllers a tab holds: the tab itself, or a fold split container's list and detail.
++    func navigationControllers(inTab tabRoot: UIViewController) -> [UINavigationController] {
++        if let container = tabRoot as? WMFFoldSplitContainerViewController {
++            return [container.listNavigationController, container.detailNavigationController]
++        }
++        if let nav = tabRoot as? UINavigationController {
++            return [nav]
++        }
++        return []
++    }
++
+     private func rootNavigationController(with rootViewController: UIViewController) -> WMFComponentNavigationController {
+         let navigationController = WMFComponentNavigationController(rootViewController: rootViewController, modalPresentationStyle: .overFullScreen, customBarBackgroundColor: nil)
+         navigationController.delegate = self
+@@ -667,6 +768,10 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+     }
+ 
+     @objc func visibleViewController() -> UIViewController? {
++        // iPhone Duo: beside the list, an open article in the fold split's detail pane is what the person is looking at.
++        if let container = selectedViewController as? WMFFoldSplitContainerViewController, container.detailHidesTabBar {
++            return container.detailNavigationController.visibleViewController
++        }
+         let vc = currentTabNavigationController?.visibleViewController
+         if vc === self {
+             return selectedViewController
+@@ -1347,7 +1452,7 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+             
+             dismissPresentedViewControllers()
+             selectedIndex = WMFAppTabType.recent.rawValue
+-            currentTabNavigationController?.popToRootViewController(animated: animated)
++            popCurrentTabToRoot(animated: animated)
+ 
+         case .content:
+             dismissPresentedViewControllers()
+@@ -1380,7 +1485,7 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+         case .savedPages:
+             dismissPresentedViewControllers()
+             selectedIndex = WMFAppTabType.saved.rawValue
+-            currentTabNavigationController?.popToRootViewController(animated: animated)
++            popCurrentTabToRoot(animated: animated)
+ 
+         case .search:
+             switchToSearch(animated: animated)
+@@ -1456,7 +1561,7 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+     }
+ 
+     func visibleArticleViewController() -> ArticleViewController? {
+-        guard let topVC = currentTabNavigationController?.topViewController else { return nil }
++        guard let topVC = currentTabFrontNavigationController?.topViewController else { return nil }
+         return topVC as? ArticleViewController
+     }
+ 
+@@ -1725,7 +1830,7 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+         if selectedIndex != WMFAppTabType.search.rawValue {
+             selectedIndex = WMFAppTabType.search.rawValue
+         }
+-        currentTabNavigationController?.popToRootViewController(animated: animated)
++        popCurrentTabToRoot(animated: animated)
+     }
+ 
+     /// Switches to the Search tab, optionally focusing the search bar. Dismisses any presented flow (e.g. modally presented Settings) first.
+@@ -1811,6 +1916,7 @@ final class WMFAppViewController: UITabBarController, AppTabBarDelegate {
+ extension WMFAppViewController: UITabBarControllerDelegate {
+ 
+     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
++        updateTabBarForFoldSplitContainers(animated: false)
+         wmf_hideKeyboard()
+         logDidSelectViewController(viewController)
+         recordEvergreenAccountCreationAppOpenIfNeeded()
+@@ -1835,8 +1941,20 @@ extension WMFAppViewController: UITabBarControllerDelegate {
+                 break
+             }
+ 
+-            if (currentTabNavigationController?.viewControllers.count ?? 0) > 1 {
++            // iPhone Duo: a fold split container is below its root also when only its detail pane shows something.
++            let isBelowRoot: Bool
++            if let container = viewController as? WMFFoldSplitContainerViewController {
++                isBelowRoot = !container.isAtRoot
++            } else {
++                isBelowRoot = (currentTabNavigationController?.viewControllers.count ?? 0) > 1
++            }
++            if isBelowRoot {
+                 logTabBarSelectionsForActivityTab(currentTabSelection: current, newTabSelection: selected)
++                // iPhone Duo: the tab bar pops a navigation controller that is the tab itself; inside a fold split
++                // container it does not see it, so the list goes back to its root here, as before.
++                if let container = viewController as? WMFFoldSplitContainerViewController {
++                    container.popToRoot(animated: true)
++                }
+                 return true
+             } else {
+                 // Must return NO if already visible to prevent unintended effect when tapping the Search tab bar button multiple times.
+@@ -1847,7 +1965,7 @@ extension WMFAppViewController: UITabBarControllerDelegate {
+         logTabBarSelectionsForActivityTab(currentTabSelection: current, newTabSelection: selected)
+ 
+         // When switching to Activity via tab bar button, increment the visit count
+-        if let navVC = viewController as? UINavigationController,
++        if let navVC = navigationControllers(inTab: viewController).first,
+            navVC.viewControllers.count == 1,
+            navVC.viewControllers[0] is WMFActivityTabViewController {
+             incrementActivityTabVisitCount()
+@@ -1872,6 +1990,45 @@ extension WMFAppViewController: UINavigationControllerDelegate {
+ 
+     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+         updateActiveTitleAccessibilityButton(viewController)
++        updateTabBarForFoldSplitList(navigationController, showing: viewController, animated: animated)
++    }
++
++    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
++        updateTabBarForFoldSplitList(navigationController, showing: viewController, animated: false)
++    }
++
++    /// iPhone Duo: inside a fold split container the tab bar no longer sees the list's pushes, so it is hidden here
++    /// as `hidesBottomBarWhenPushed` would hide it for a navigation controller that is the tab itself.
++    private func updateTabBarForFoldSplitList(_ navigationController: UINavigationController, showing viewController: UIViewController, animated: Bool) {
++        guard let container = navigationController.parent as? WMFFoldSplitContainerViewController else {
++            return
++        }
++        // The contents an article showed in the list pane go when another screen takes the detail pane.
++        if navigationController === container.detailNavigationController {
++            container.detailDidShow(viewController)
++        }
++        guard container === selectedViewController else {
++            return
++        }
++        // As for a stack that is the tab: a pushed article hides the tab bar. Beside the list it does too, as it did
++        // full-screen before the split, which leaves the vertical bar to the article's own items. During a push or a
++        // pop the bar moves with the transition (and with the finger in a back swipe), and a cancelled swipe puts it
++        // back, as UIKit does for a stack that is the tab.
++        if #available(iOS 18.0, *), animated, let coordinator = navigationController.transitionCoordinator {
++            let wasHidden = isTabBarHidden
++            let wasHiddenHere = foldSplitHidTabBar
++            coordinator.animate(alongsideTransition: { [weak self] _ in
++                self?.updateTabBarForFoldSplitContainers(animated: false)
++            }, completion: { [weak self] context in
++                guard let self, context.isCancelled else { return }
++                self.foldSplitHidTabBar = wasHiddenHere
++                if self.isTabBarHidden != wasHidden {
++                    self.setTabBarHidden(wasHidden, animated: false)
++                }
++            })
++            return
++        }
++        updateTabBarForFoldSplitContainers(animated: animated)
+     }
+ 
+     func navigationController(_ navigationController: UINavigationController, interactionControllerFor animationController: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
+@@ -1962,11 +2119,11 @@ extension WMFAppViewController: Themeable {
+                 if vc !== self, let themeable = vc as? Themeable {
+                     themeable.apply(theme: theme)
+                 }
+-                if let presented = vc.presentedViewController as? UINavigationController {
++                for presented in themedNavigationControllers(presentedBy: vc) {
+                     foundNavigationControllers.insert(presented)
+                 }
+             }
+-            if let presented = nc.presentedViewController as? UINavigationController {
++            for presented in themedNavigationControllers(presentedBy: nc) {
+                 foundNavigationControllers.insert(presented)
+             }
+         }
+@@ -1981,9 +2138,7 @@ extension WMFAppViewController: Themeable {
+     private func allNavigationControllers() -> [UINavigationController] {
+         var navControllers: [UINavigationController] = []
+         for vc in viewControllers ?? [] {
+-            if let nav = vc as? UINavigationController {
+-                navControllers.append(nav)
+-            }
++            navControllers.append(contentsOf: navigationControllers(inTab: vc))
+         }
+         if let settingsNav = _settingsNavigationController {
+             navControllers.append(settingsNav)
+@@ -1998,13 +2153,26 @@ extension WMFAppViewController: Themeable {
+             themeable.apply(theme: theme)
+         }
+ 
+-        if let navController = viewController.presentedViewController as? UINavigationController {
+-            applyTheme(theme, toNavigationControllers: [navController])
++        let presentedStacks = themedNavigationControllers(presentedBy: viewController)
++        if !presentedStacks.isEmpty {
++            applyTheme(theme, toNavigationControllers: presentedStacks)
+         } else {
+             applyTheme(theme, toPresentedViewController: viewController.presentedViewController)
+         }
+     }
+ 
++    /// The navigation stacks a theme pass follows into what `viewController` presents: a presented navigation
++    /// controller, or both stacks of a presented fold split container (iPhone Duo).
++    private func themedNavigationControllers(presentedBy viewController: UIViewController) -> [UINavigationController] {
++        if let nav = viewController.presentedViewController as? UINavigationController {
++            return [nav]
++        }
++        if let container = viewController.presentedViewController as? WMFFoldSplitContainerViewController {
++            return [container.listNavigationController, container.detailNavigationController]
++        }
++        return []
++    }
++
+     func apply(theme: Theme) {
+         self.theme = theme
+ 
+@@ -2075,7 +2243,7 @@ extension WMFAppViewController: Themeable {
+ 
+     private func updateUserInterfaceStyleOfNavigationControllersForCurrentTheme() {
+         for vc in viewControllers ?? [] {
+-            if let nav = vc as? UINavigationController {
++            for nav in navigationControllers(inTab: vc) {
+                 nav.overrideUserInterfaceStyle = overrideUserInterfaceStyle
+             }
+         }
+@@ -2171,7 +2339,7 @@ extension WMFAppViewController {
+         if let nav = presented as? UINavigationController {
+             return nav
+         }
+-        return currentTabNavigationController
++        return currentTabFrontNavigationController
+     }
+ 
+     private func showSearchInCurrentNavigationController(animated: Bool) {
+@@ -2188,7 +2356,7 @@ extension WMFAppViewController {
+     func showImportedReadingList(_ readingList: ReadingList) {
+         dismissPresentedViewControllers()
+         selectedIndex = WMFAppTabType.saved.rawValue
+-        currentTabNavigationController?.popToRootViewController(animated: false)
++        popCurrentTabToRoot(animated: false)
+         let detailVC = ReadingListDetailViewController(for: readingList, with: dataStore, fromImport: true, theme: theme)
+         currentTabNavigationController?.pushViewController(detailVC, animated: true)
+     }
+@@ -2265,7 +2433,7 @@ extension WMFAppViewController {
+ extension WMFAppViewController {
+ 
+     private func logDidSelectViewController(_ viewController: UIViewController) {
+-        guard let navVC = viewController as? UINavigationController,
++        guard let navVC = navigationControllers(inTab: viewController).first,
+               let rootViewController = navVC.viewControllers.first else { return }
+ 
+         if rootViewController is HomeViewController {
+@@ -2434,3 +2602,43 @@ private extension UITab {
+         badgeValue = shouldShow ? wmfYearInReviewTabBadgeGlyph : nil
+     }
+ }
++
++/// iPhone Duo: a fold split's detail pane before anything is opened. One line at the top of the pane says what will
++/// appear there (duo-patterns' Fold-aligned split puts an empty detail's placeholder at the top, clear of a horizontal
++/// fold).
++final class FoldSplitDetailPlaceholderViewController: ThemeableViewController {
++    private let label = UILabel()
++    private let text: String
++
++    init(text: String) {
++        self.text = text
++        super.init(nibName: nil, bundle: nil)
++    }
++
++    required init?(coder: NSCoder) {
++        fatalError("init(coder:) has not been implemented")
++    }
++
++    override func viewDidLoad() {
++        label.text = text
++        label.font = UIFont.preferredFont(forTextStyle: .body)
++        label.adjustsFontForContentSizeCategory = true
++        label.textAlignment = .center
++        label.numberOfLines = 0
++        label.translatesAutoresizingMaskIntoConstraints = false
++        view.addSubview(label)
++        NSLayoutConstraint.activate([
++            label.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 48),
++            label.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
++            label.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor)
++        ])
++        super.viewDidLoad()
++    }
++
++    override func apply(theme: Theme) {
++        super.apply(theme: theme)
++        guard viewIfLoaded != nil else { return }
++        view.backgroundColor = theme.colors.paperBackground
++        label.textColor = theme.colors.secondaryText
++    }
++}
+diff --git a/Wikipedia/Localizations/en.lproj/Localizable.strings b/Wikipedia/Localizations/en.lproj/Localizable.strings
+index b160ba6..1e570e3 100644
+--- a/Wikipedia/Localizations/en.lproj/Localizable.strings
++++ b/Wikipedia/Localizations/en.lproj/Localizable.strings
+@@ -685,6 +685,9 @@
+ "find-replace-header" = "Find and replace";
+ "find-replace-header-close-accessibility" = "Close find and replace";
+ "find-textfield-accessibility" = "Find";
++"fold-split-activity-detail-empty" = "Articles you open from your activity appear here";
++"fold-split-detail-empty" = "No article selected";
++"fold-split-home-button-accessibility-label" = "Wikipedia, return to $1";
+ "for-you-empty-feed-add-interests-link" = "some interests";
+ "for-you-empty-feed-subtitle" = "Your \"For you\" feed will populate with personalized articles as you explore.";
+ "for-you-empty-feed-title" = "Your feed is empty for now";
+diff --git a/Wikipedia/Localizations/qqq.lproj/Localizable.strings b/Wikipedia/Localizations/qqq.lproj/Localizable.strings
+index 20ea556..3e55b4e 100644
+--- a/Wikipedia/Localizations/qqq.lproj/Localizable.strings
++++ b/Wikipedia/Localizations/qqq.lproj/Localizable.strings
+@@ -685,6 +685,9 @@
+ "find-replace-header" = "Find and replace header title.";
+ "find-replace-header-close-accessibility" = "Accessibility label for closing the find and replace view.";
+ "find-textfield-accessibility" = "Accessibility label for the find text field.";
++"fold-split-activity-detail-empty" = "Shown at the top of the empty right-hand pane beside the Activity tab on a folding iPhone held open sideways, before an article is opened from the activity.";
++"fold-split-detail-empty" = "Shown at the top of the empty right-hand pane beside a list of articles (Saved, Search) on a folding iPhone held open sideways, before an article is opened.";
++"fold-split-home-button-accessibility-label" = "Accessibility label for the 'W' logo above an article shown beside a list (Saved, Activity, Search) on a folding iPhone held open sideways. Tapping it closes the article and returns to the list. $1 is the list's name, for example Saved.";
+ "for-you-empty-feed-add-interests-link" = "Tappable link text within the add interests suggestion on the For You feed empty state. It opens the interests settings screen.";
+ "for-you-empty-feed-subtitle" = "Message on the For You feed empty state, explaining the feed fills with personalized articles as the reader uses the app.";
+ "for-you-empty-feed-title" = "Heading on the For You feed empty state, shown when there is no personalized content yet.";

@@ -1,0 +1,18 @@
+HomeAssistant/launch book: T1 onboarding.welcome.continue (265.7–685.7) intersects the active division (455.5–495.5)
+HomeAssistant/launch book: T1 Learn more (432.8–518.5) intersects the active division (455.5–495.5)
+HomeAssistant/launch book: T5 single text column 194.5–756.8 (562 pt) runs across the active division (455.5–495.5)
+HomeAssistant/launch closed-sideways: T10 Learn more (110 × 36 pt, text) stays in the horizontal bar while the bar is vertical (leading)
+HomeAssistant/launch closed-sideways: T10 onboarding.welcome.continue (91 × 36 pt, text) stays in the horizontal bar while the bar is vertical (leading)
+HomeAssistant/launch flat-sideways: T5 single text column 194.5–756.8 (562 pt) runs across the inactive division (455.5–495.5)
+HomeAssistant/manual-url book: T15 sheet 8–467.5 sits on the leading half while the fold (455.5–495.5) is active
+HomeAssistant/servers book: T1 searching-servers-dots (306.3–561.0) intersects the active division (455.5–495.5)
+HomeAssistant/servers book: T1 logo-in-circle (387.7–479.6) intersects the active division (455.5–495.5)
+HomeAssistant/servers book: T1 Check that your Home Assistant is powered on and you're connected to the same ne (17.8–849.2) intersects the active division (455.5–495.5)
+HomeAssistant/servers book: T1 onboarding.servers.manualEntry (325–542.3) intersects the active division (455.5–495.5)
+HomeAssistant/servers book: T5 single text column 213.2–653.8 (440 pt) runs across the active division (455.5–495.5)
+HomeAssistant/servers flat-sideways: T5 single text column 213.2–653.8 (440 pt) runs across the inactive division (455.5–495.5)
+HomeAssistant/servers laptop: T1 searching-servers-dots (y 350.0–599.3) intersects the active division (y 455.5–495.5)
+HomeAssistant/servers laptop: T1 logo-in-circle (y 430.1–519.3) intersects the active division (y 455.5–495.5)
+HomeAssistant/servers tent: T1 searching-servers-dots (y 347.4–602.0) intersects the active division (y 455.5–495.5)
+HomeAssistant/servers tent: T1 logo-in-circle (y 428.7–520.6) intersects the active division (y 455.5–495.5)
+28 captures, 17 findings

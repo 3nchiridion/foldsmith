@@ -1,0 +1,23 @@
+# Wikipedia iOS (wikipedia-ios 2031b89) on the iPhone Duo, logged out. The launch arguments are the app's own UI-test
+# switches (WikipediaUITests/Config): onboarding done, no announcements, no tips. Taps use the app's accessibility
+# identifiers (WMFComponents/Utility/AccessibilityIdentifiers.swift). The article is reached by searching "Moon" so it
+# is the same page every capture; the Home feeds change daily. Places asks for location: springboard:Don declines.
+# The article's toolbar buttons stay disabled until the page loads: wait before tapping Table of Contents.
+# -TableOfContentsIsVisibleInline <false/> (fourth review): the app carries open contents from one article to the next through
+# this preference; every capture starts with it off, as the before capture did, so a screen shows contents only if its
+# own taps open them.
+BUNDLE=org.wikimedia.wikipedia
+LAUNCH_ARGS="-TableOfContentsIsVisibleInline <false/> -DidShowOnboarding5.3 YES -WMFSuppressActivityTabOnboardingForTesting YES -WMFSuppressGamesAnnouncementForTesting YES -WMFSuppressHomeOnboardingForTesting YES -WMFSuppressYearInReviewAnnouncementForTesting YES -WMFHideTipsForTesting YES"
+SCREENS=(
+  "community=Root Tab Home Button;Community"
+  "for-you=Root Tab Home Button;For You"
+  "search=Search Tab Button"
+  "article=Search Tab Button;Search Field;type:Moon;Search Result Moon"
+  "contents=Search Tab Button;Search Field;type:Moon;Search Result Moon;wait:5;Article Table of Contents Button"
+  "places=Root Tab Places Button;springboard:Don"
+  "saved=Root Tab Saved Button"
+  "activity=Root Tab Activity Button"
+  "tabs=Tabs Button"
+  "profile=profile-button"
+  "settings=profile-button;Settings"
+)

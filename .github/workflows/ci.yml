@@ -1,0 +1,118 @@
+name: ci
+# Runs on GitHub's hosted `xcode-27` image (Xcode 27.1 and the iOS 27.1 runtime with an iPhone Duo simulator), so no
+# runner on anyone's machine executes workflow code. The workflow token is read-only and actions are pinned to a commit.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      goldens:
+        description: "Also run G2: capture the catalog in every pose and diff it against the goldens (about 18 min on the working repository's runner; not yet run on the hosted image)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    runs-on: xcode-27
+    defaults:
+      run:
+        shell: bash   # -eo pipefail, so `| tail` can't hide a failing command
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Select Xcode 27.1
+        run: |
+          # Pick the 27.1 app (hosted name Xcode_27.1.app, local name Xcode-27.1.0.app)
+          # through DEVELOPER_DIR for every later step. Without it the gates cannot run, so the job fails.
+          APP=$(ls -d /Applications/Xcode*27.1*.app 2>/dev/null | head -1 || true)
+          [ -n "$APP" ] || { echo "::error::No Xcode 27.1 in /Applications ($(ls /Applications | grep -i xcode | tr '\n' ' '))"; exit 1; }
+          echo "DEVELOPER_DIR=$APP/Contents/Developer" >> "$GITHUB_ENV"
+          DEVELOPER_DIR="$APP/Contents/Developer" xcodebuild -version
+      - name: Detector tests (G3 on the committed pattern captures)
+        run: swift test --package-path . 2>&1 | tail -50
+      - name: Skill references and tools match the repository
+        run: python3 scripts/sync-skill-references.py --check
+      - name: The progress file's regression check
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: The skill's bundled detectors build on their own
+        run: swift build --package-path skills/iphone-duo-patterns/tools/detect 2>&1 | tail -5
+      - name: Find Duo simulator
+        id: duo
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next((x["udid"] for v in d["devices"].values() for x in v if "Duo" in x["name"]),""))')
+          [ -n "$UDID" ] || { echo "::error::No iPhone Duo simulator"; exit 1; }
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"; echo "Duo: $UDID"
+      - name: Build pattern catalog (G1)
+        run: |
+          command -v xcodegen >/dev/null || brew install xcodegen >/dev/null
+          (cd Examples/Catalog && xcodegen generate)
+          xcodebuild -project Examples/Catalog/Catalog.xcodeproj -scheme Catalog -destination "platform=iOS Simulator,id=${{ steps.duo.outputs.udid }}" build | tail -20
+      - name: Build the tap runner (G1, harness)
+        run: |
+          command -v xcodegen >/dev/null || brew install xcodegen >/dev/null
+          (cd Tap && xcodegen generate)
+          xcodebuild build-for-testing -project Tap/DuoTap.xcodeproj -scheme DuoTapUITests -destination "platform=iOS Simulator,id=${{ steps.duo.outputs.udid }}" -derivedDataPath Tap/build | tail -5
+
+  goldens:
+    # G2 (EVAL.md): capture the catalog in every pose and compare it with the committed matrices, the goldens. On
+    # demand only (Actions → ci → Run workflow, "goldens" ticked; `gh workflow run ci.yml -f goldens=true`): a full
+    # capture takes about 18 minutes of macOS runner time (measured on the working repository's runner; not yet timed
+    # on the hosted image).
+    if: github.event_name == 'workflow_dispatch' && inputs.goldens
+    runs-on: xcode-27
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Select Xcode 27.1
+        run: |
+          APP=$(ls -d /Applications/Xcode*27.1*.app 2>/dev/null | head -1 || true)
+          [ -n "$APP" ] || { echo "::error::No Xcode 27.1 in /Applications"; exit 1; }
+          echo "DEVELOPER_DIR=$APP/Contents/Developer" >> "$GITHUB_ENV"
+      - name: Find the Duo simulator and boot it
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next((x["udid"] for v in d["devices"].values() for x in v if "Duo" in x["name"]),""))')
+          [ -n "$UDID" ] || { echo "::error::No iPhone Duo simulator"; exit 1; }
+          xcrun simctl bootstatus "$UDID" -b >/dev/null
+          echo "DUO_UDID=$UDID" >> "$GITHUB_ENV"; echo "Duo: $UDID"
+      - name: The duo.py driver, at a fixed commit
+        run: |
+          # The driver the skill uses (SKILL.md), outside the checkout and pinned, so a change upstream cannot move the
+          # poses unseen. It never creates, clones or shuts down a simulator, nor runs `simctl io … screenConfig`.
+          D="$HOME/Library/Caches/duo-driver"; SHA=60cdda2f487434c9c3cd4dad9431e12a48ec1d04
+          if [ "$(git -C "$D" rev-parse HEAD 2>/dev/null)" != "$SHA" ]; then
+            rm -rf "${D:?}"; git init -q "$D"
+            git -C "$D" fetch -q --depth 1 https://github.com/WhitenWhiten/iphone-duo-simulator-skill "$SHA"
+            git -C "$D" checkout -q FETCH_HEAD
+          fi
+          echo "DUO_PY=$D/scripts/duo.py" >> "$GITHUB_ENV"
+      - name: Build the catalog and install it
+        run: |
+          command -v xcodegen >/dev/null || brew install xcodegen >/dev/null
+          (cd Examples/Catalog && xcodegen generate)
+          xcodebuild -project Examples/Catalog/Catalog.xcodeproj -scheme Catalog -destination "platform=iOS Simulator,id=$DUO_UDID" -derivedDataPath Examples/Catalog/build build | tail -5
+          xcrun simctl install "$DUO_UDID" Examples/Catalog/build/Build/Products/Debug-iphonesimulator/Catalog.app
+      - name: Capture the catalog in every pose (G2)
+        run: OUT="$RUNNER_TEMP/goldens" scripts/capture-catalog.sh
+      - name: Compare with the committed matrices (G2)
+        run: python3 scripts/diff-matrix.py "$RUNNER_TEMP/goldens" verification/matrices
+      - name: Keep the capture when it differs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: goldens-capture
+          path: ${{ runner.temp }}/goldens
+          retention-days: 7

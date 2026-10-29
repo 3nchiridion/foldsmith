@@ -1,0 +1,23 @@
+build/
+*.xcodeproj
+!Probe/project.yml
+.build/
+DerivedData/
+raw/corpus/*/
+!raw/corpus/README.md
+!raw/corpus/evidence/
+*.png.tmp
+.DS_Store
+
+# Apple's agent skills, verbatim: regenerate with `xcrun agent skills export --output-dir "$PWD/raw/sdk/apple-skill"`
+raw/sdk/apple-skill/
+# Verbatim SDK excerpts from scripts/extract-sdk.sh (Apple SDK license): regenerate locally
+raw/sdk/*.txt
+!raw/sdk/SDK.txt
+__pycache__/
+
+# Xcode and SwiftPM per-user state, and local tool settings
+.swiftpm/
+xcuserdata/
+*.xcresult
+.claude/settings.local.json

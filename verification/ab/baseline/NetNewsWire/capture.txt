@@ -1,0 +1,40 @@
+app: NetNewsWire (com.ranchero.NetNewsWire.iOS-DEBUG)
+flow: verification/ab/flows/NetNewsWire.flow sha256 c0fe1cb51f0f32b6214d5683cea9e62657d068fe84c21bb9e6c55a1c898b6f9f
+captured: 2026-10-27T12:14:12Z on iPhone Duo (<Duo simulator UDID>) (Booted) 
+settle: WAIT=6 TAP_WAIT=2
+== pose closed
+  launch
+  timeline
+  article
+  settings
+== pose closed-sideways
+  launch
+  timeline
+  article
+  settings
+== pose book
+  launch
+  timeline
+  article
+  settings
+== pose laptop
+  launch
+  timeline
+  article
+  settings
+== pose tent
+  launch
+  timeline
+  article
+  settings
+== pose flat-sideways
+  launch
+  timeline
+  article
+  settings
+== pose flat-upright
+  launch
+  timeline
+  article
+  settings
+done → verification/ab/baseline/NetNewsWire

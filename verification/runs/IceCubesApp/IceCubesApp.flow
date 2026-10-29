@@ -1,0 +1,12 @@
+# Ice Cubes (Mastodon client) on iPhone Duo, logged out: no account exists on the simulator and none may be created.
+# Logged out, the app opens on the Add Account sheet over mastodon.social's Trending timeline; Cancel dismisses it.
+# The logged-out tab bar has two tabs, Timeline and Settings. Posts are strangers' content: the status detail is
+# reached with cell:2 (the first post; cell 1 is the timeline's 20 pt scroll-to-top row).
+BUNDLE=dev.enchiridion.corpus.IceCubesApp
+SCREENS=(
+  "add-account="
+  "timeline=Cancel"
+  "status=Cancel;cell:2"
+  "settings=Cancel;Settings"
+  "settings-display=Cancel;Settings;Display Settings"
+)

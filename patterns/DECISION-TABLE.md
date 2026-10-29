@@ -1,0 +1,120 @@
+# Pattern decision table — filled in Phase 2, 2026-10-26
+
+Inputs are things an agent can read from source or measure; outputs are pattern names.
+A cell is valid only with a citation: `[apple-apps/<app>/<pose>]`, `[metrics:<pose>]`, or Apple's published guidance
+`[tt-<id> m:ss]` / `[hig <section>]` / `[doc <symbol>]` from `raw/apple-docs/` (EVAL.md §5, amended 2026-10-26).
+Tech-talk citations give the chapter's start time. Corpus findings never justify a cell; they are the defects the cells
+prevent (`patterns/TAXONOMY.md`). A cell with no citation reads `UNJUSTIFIED`, and its pattern cannot ship there.
+
+## Inputs
+
+**I1 Content relationship** (from the screen's model, not its current layout)
+- `hierarchical` — detail is meaningful alone; list selects it (mail, feeds-with-detail, settings)
+- `peer` — elements are equivalent; grouping by size/proximity (feed, grid, gallery, dashboard tiles)
+- `supporting` — secondary only meaningful next to primary (tools, comments, transcript, now-playing queue, inspector)
+- `continuous` — one scrolling surface (article, document, chat transcript, map)
+
+A feed is one of three by what its items are. Uniform rows in one order, each standing for a page of its own that a
+tap opens (a timeline of posts, a list of articles, search results, mail) → `hierarchical`: the list beside the item it
+opens. Cards of different kinds, each complete where it stands and browsed in any order, where a tap is a way further in
+rather than the point (Wikipedia's Explore: a featured article's summary, the picture of the day, a list of top reads, a
+game), and items that act in place (photo cards, tiles) → `peer`: columns of cards. One conversation read in order with
+nothing to open (a chat transcript) → `continuous`. IceCubesApp's timeline and Wikipedia's search results are
+hierarchical; Wikipedia's Explore is peer [verification/runs/IceCubesApp; verification/runs/Wikipedia].
+
+A map is `continuous`, but the row's cells (P2) are for text read in order, and no Apple source reflows a map. What
+holds for it is the rule every pattern carries: scrolling content may cross the fold, a fixed control may not
+[tt-111466 9:28; tt-111463 1:29]. A map pans, so it stays whole across the fold, with its pins and labels; a search
+field, a card or a button over it keeps off an active division, on one half or the other. This is a rule, not a cell:
+the screen gets no pattern, and its fix is to move what sits on the map. (The defect it prevents: Wikipedia's Places
+spans its search field across the fold in book, while its list panel already keeps to the leading half
+[raw/corpus/BUILDS.md wikipedia-ios].)
+- `object` — a single non-scrolling artifact with controls (player, game board, calculator, camera, a skeuomorphic object)
+
+**I2 Interaction mode** (what the hand is doing most of the time)
+- `viewing` · `editing` · `controlling` (frequent taps on a stable surface)
+
+**I3 Pose × size class** (measured, `raw/metrics.json`, iOS 27.1 simulator)
+| Pose | Display | Window (pt) | hClass | vClass | Division | Bars | Source |
+|---|---|---|---|---|---|---|---|
+| closed | outer | 466 × 678 | compact | regular | none | vertical, trailing (hardware side) | [metrics:closed] |
+| closed-sideways | outer | 678 × 466 | compact | compact | none | vertical, leading (camera side) | [metrics:closed-sideways] |
+| book (held, partially open) | inner | 951 × 669 | regular | regular | active, vertical, 455.5–495.5 | vertical, trailing | [metrics:book] |
+| laptop (resting, partially open) | inner | 669 × 951 | regular | regular | active, horizontal, 455.5–495.5 | horizontal (top) | [metrics:laptop] |
+| tent (standing on its edges, partially open) | inner | 669 × 951 | regular | regular | active, horizontal, 455.5–495.5 | horizontal (top) | [metrics:tent] |
+| flat-sideways | inner | 951 × 669 | regular | regular | inactive, vertical | vertical, trailing | [metrics:flat-sideways] |
+| flat-upright | inner | 669 × 951 | regular | regular | inactive, horizontal | horizontal (top) | [metrics:flat-upright] |
+| split-view half | inner | 475 × 669 | compact | regular | may be active | vertical, outer edge | not measurable headless; [hig vertical-controls], Group Lab #59 |
+
+Tent and laptop report identical windows, insets and division (`raw/METRICS-NOTES.md`), and both Apple apps draw them
+identically [apple-apps/settings/tent, apple-apps/safari/tent]. Geometry carries over; Apple's laptop rule for controls
+rests on a stable touch surface [tt-111463 4:00], which tent does not have, so tent cells for editing and controlling
+stay `UNJUSTIFIED`.
+
+## Patterns
+
+| Id | Name | For | One line |
+|---|---|---|---|
+| P1 | **Fold-aligned split** | hierarchical | One pane closed; two panes open, the boundary on the division when folded, the leading pane narrower when flat |
+| P2 | **Reflowing columns** | continuous | One column closed; two columns with the gutter on the division across a sideways inner display; one column scrolling across a horizontal fold |
+| P3 | **Even grid** | peer | Even column count on the inner display, gutter on the division, each container inside its region |
+| P4 | **Arrangement** | supporting | Primary and secondary as an `ArrangementView` split or overlay; the split axis follows the shape |
+| P5 | **Whole object** | object | The object fills its region and changes aspect instead of letterboxing; controls leave the fold |
+
+## Output cells
+
+| I1 / I2 \ pose | closed | closed-sideways | book | laptop | tent | flat-sideways | flat-upright | split-view half |
+|---|---|---|---|---|---|---|---|---|
+| hierarchical / viewing | P1 one pane [hig split-views; apple-apps/settings/closed] | P1 one pane [metrics:closed-sideways; apple-apps/settings/closed-sideways] | P1 two panes, boundary on the division [hig reserved-regions; hig alt-text Notes folded; apple-apps/settings/book] | P1 two panes; lists scroll across the fold [apple-apps/settings/laptop; tt-111466 9:28] | P1 as laptop [apple-apps/settings/tent; metrics:tent] | P1 two panes, leading narrower [hig alt-text Notes open; apple-apps/settings/flat-sideways] | P1 two panes [apple-apps/settings/flat-upright] | P1 one pane [hig split-views] |
+| hierarchical / editing | P1 one pane [hig split-views] | P1 one pane [metrics:closed-sideways] | P1 two panes; fields off the fold [hig reserved-regions; tt-111466 9:28] | P1; fields on the raised half above the keyboard [tt-111463 4:00] | UNJUSTIFIED | P1 two panes [hig split-views; hig alt-text Notes open] | P1 two panes [hig split-views; apple-apps/settings/flat-upright] | P1 one pane [hig split-views] |
+| peer / viewing | P3 compact columns [hig best-practices 1] | P3 wider, shorter grid [metrics:closed-sideways; hig best-practices 1] | P3 even columns, gutter on the division [hig reserved-regions; tt-111463 5:12] | P3 grid scrolls across the fold [tt-111466 9:28; tt-111463 2:26] | P3 as laptop [metrics:tent] | P3 even columns on the inactive division [tt-111463 7:50] | P3 even columns [tt-111463 7:50] | P3 compact columns [hig best-practices 1] |
+| peer / controlling | P3 compact columns [hig best-practices 1] | P3 [metrics:closed-sideways; hig best-practices 1] | P3 even columns, gutter on the division [hig reserved-regions; tt-111463 5:12] | P3 tiles on the flat half, read-outs on the raised half [tt-111463 4:00] | UNJUSTIFIED | P3 even columns [tt-111463 7:50] | P3 even columns [tt-111463 7:50] | P3 compact columns [hig best-practices 1] |
+| supporting / viewing | P4 primary only, secondary collapses [hig arrangement-views; tt-111463 13:21] | P4 split if it fits, else one view [tt-111463 12:00] | P4 primary leading half, secondary trailing [hig alt-text split arrangement; hig arrangement-views] | P4 vertical split: primary raised, secondary flat [tt-111463 12:00; tt-111463 4:00] | P4 vertical split [tt-111463 12:00; metrics:tent] | P4 side by side; overlay stacks [hig arrangement-views] | P4 vertical split [tt-111463 12:00] | P4 split by shape, else one view [tt-111463 12:00] |
+| supporting / editing | P4 primary only, secondary collapses [hig arrangement-views] | P4 one view [tt-111463 12:00] | P4 editor leading, secondary trailing [hig alt-text split arrangement] | P4 editor raised, keyboard and secondary flat [tt-111463 4:00] | UNJUSTIFIED | P4 side by side [hig arrangement-views] | P4 vertical split [tt-111463 12:00] | P4 one view [tt-111463 12:00] |
+| supporting / controlling | P4 primary only [hig arrangement-views; tt-111463 9:20] | P4 split if it fits [tt-111463 12:00] | P4 primary leading, controls trailing, off the fold [hig alt-text split arrangement; tt-111466 0:28] | P4 content raised, controls flat [tt-111463 4:00] | UNJUSTIFIED | P4 side by side [hig arrangement-views] | P4 vertical split [tt-111463 12:00] | P4 split by shape [tt-111463 12:00] |
+| continuous / viewing | P2 one column [hig best-practices 2; tt-111463 2:26] | P2 one column [metrics:closed-sideways] | P2 two columns, gutter on the division [tt-111466 7:34; hig reserved-regions] | P2 one column scrolling across the fold; fixed controls off it [tt-111466 9:28; tt-111463 2:26; apple-apps/safari/laptop] | P2 as laptop [apple-apps/safari/tent; metrics:tent] | P2 two columns on the inactive division [tt-111466 7:34; tt-111463 7:50] | P2 one column [apple-apps/safari/flat-upright] | P2 one column [hig split-views] |
+| continuous / editing | P2 one column [tt-111463 2:26] | P2 one column [metrics:closed-sideways] | UNJUSTIFIED | P2 text raised, keyboard flat [tt-111463 4:00] | UNJUSTIFIED | UNJUSTIFIED | P2 one column [tt-111463 2:26] | P2 one column [hig split-views] |
+| object / viewing | P5 fills the display [hig best-practices 5] | P5 fills, aspect changes [hig best-practices 5; metrics:closed-sideways] | P5 off the fold: one half, or displaced [tt-111463 1:29; tt-111463 2:26] | P5 on the raised half [tt-111463 4:00] | UNJUSTIFIED | P5 fills the display [hig best-practices 5] | P5 fills the display [hig best-practices 5] | P5 fills its half [hig best-practices 5] |
+| object / controlling | P5 full width without bars; layout reflows [hig vertical-controls; hig alt-text Calculator] | P5 aspect changes [hig best-practices 5; metrics:closed-sideways] | P5 object off the fold, controls to the sides or bottom [tt-111466 0:28; tt-111463 2:26] | P5 object raised, controls flat [tt-111463 4:00] | UNJUSTIFIED | P5 fills [hig best-practices 5] | P5 fills [hig best-practices 5] | P5 fills its half [hig best-practices 5] |
+
+88 cells: 79 cited, 9 `UNJUSTIFIED`. Seven are tent cells for editing, controlling and object viewing,
+where Apple never says which half faces the person. The other two are `continuous / editing` in book and flat sideways,
+where Apple says nothing about editing one continuous surface across the fold. A physical Duo or new Apple guidance can
+close them.
+
+## Rules every pattern carries
+
+| Rule | Prevents | Source |
+|---|---|---|
+| No fixed control, text line or focal image on an active division; scrolling content may cross it | T1 | [tt-111466 9:28; tt-111463 1:29] |
+| In book, place sheets and alerts on the trailing half (`presentationPlacement(.trailing)` while the division is active); centred when flat | T15 | [tt-111463 4:00; tt-111466 8:36; doc presentationPlacement] |
+| Bars come from navigation containers; a custom bar reads `toolbarVerticalEdge` and adapts | T3 | [tt-111462 2:00; tt-111462 10:07] |
+| Bar items are symbols with a title; text-only items stay horizontal where the bar goes vertical, and so do custom views unless set `axisBehavior = .verticalPreferred`. What does not fit the vertical bar goes to its overflow: choose what stays with `visibilityPriority`, and add the app's own menu items to the overflow (`additionalOverflowItems`) rather than nesting a More inside it | T10, T7 | [tt-111462 5:56; tt-111462 8:00; tt-111462 11:40; tt-111462 13:10] |
+| Keep functionality, element state and control positions across poses; small adjustments, not rearrangement | T7, T8 | [hig best-practices 2–3; hig reserved-regions; hig vertical-controls] |
+| Columns and panes never straddle the division; even column counts | T14 | [hig reserved-regions; tt-111463 5:12] |
+
+## Where Apple's sources disagree, and what the table follows
+
+1. **Book, continuous content.** Safari leaves its Start Page cards across the fold [apple-apps/safari/book]; the
+   design talk says to use the width with two reflowing columns [tt-111466 7:34]. The table follows the talk: Safari
+   shows web content it does not lay out.
+2. **Laptop, hierarchical content.** Settings keeps its sidebar and detail side by side across the horizontal fold
+   [apple-apps/settings/laptop]; an arrangement would split vertically because the window is taller than wide
+   [tt-111463 12:00]. The table follows Settings for `hierarchical` (system split views adapt on their own
+   [tt-111463 8:39]) and the shape rule for `supporting`.
+3. **Laptop, controls.** Neither Apple app moves controls to the lower half (`raw/apple-apps/README.md`), as the talk
+   advises for a stable touch surface [tt-111463 4:00]. The table follows the talk for `controlling` and `editing`
+   rows, and the apps for `viewing` rows.
+4. **Sheets in book.** The talk sends alerts to the trailing side [tt-111463 4:00]; the system's automatic placement
+   puts sheets on the leading half (T15, four apps), and no API states "trailing when folded, centred when flat" (Group
+   Lab 847797). The table makes apps set placement explicitly.
+
+## Where the v0 reference implementations fall short of a cell (Phase 3; Arrangement, Phase 4 step 12)
+
+| Cell | The table says | The reference does | Why | Closes when |
+|---|---|---|---|---|
+| `hierarchical / *` in laptop, tent, flat-upright | P1 two panes [apple-apps/settings/laptop, flat-upright] | one pane (the detail), the sidebar one tap away | SwiftUI's `NavigationSplitView` overlays its sidebar in the 669 pt upright window whatever the style, visibility or sidebar width (`patterns/fold-aligned-split.md`); Settings is a UIKit split that tiles | closed. UIKit apps: `.tile` with `minimumSecondaryColumnWidth = 320` tiles two panes at 669 pt (NetNewsWire, `verification/runs/NetNewsWire/`; `patterns/fold-aligned-split.md` § UIKit). SwiftUI apps: `FoldAlignedTiledSplit` does the same upright and stays `FoldAlignedSplit` where the system draws a vertical bar (catalog `tiled`, `tiled-three`: sidebar 0–320, detail 320–669 pt), at the cost of rebuilding both panes when the phone moves between the two |
+| `supporting / *` closed | P4 primary only (viewing and editing: secondary collapses) [hig arrangement-views; tt-111463 13:21; tt-111463 9:20] | `Arrangement(.split)`: both views, one above the other (primary y 82–363, secondary 363–644 pt); `.overlay`: the primary over the secondary | the system's split stacks two views in a window taller than wide [tt-111463 12:00], and the citations name the overlay's collapsing, which the reference's overlay does not do (`patterns/arrangement.md`) | an Apple frame of an arrangement on the cover, or a split whose secondary collapses on the cover is captured |
+
+The cells stay as cited: the first records what Apple's app does, the second what Apple's guidance says. The gaps are
+the reference implementations'.

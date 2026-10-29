@@ -1,0 +1,508 @@
+[
+  {
+    "name": "closed",
+    "display": "outer",
+    "window": [
+      466,
+      678
+    ],
+    "safeArea": {
+      "top": 0,
+      "leading": 0,
+      "bottom": 34,
+      "trailing": 84
+    },
+    "hSizeClass": "compact",
+    "vSizeClass": "regular",
+    "toolbarVerticalEdge": "trailing",
+    "divisions": [],
+    "occlusions": [
+      {
+        "frame": [
+          [
+            399.6666666666667,
+            29.333333333333332
+          ],
+          [
+            37,
+            37
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": true
+      },
+      {
+        "frame": [
+          [
+            382,
+            0
+          ],
+          [
+            84,
+            174
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "name": "closed-sideways",
+    "display": "outer",
+    "window": [
+      678,
+      466
+    ],
+    "safeArea": {
+      "top": 0,
+      "leading": 84,
+      "bottom": 34,
+      "trailing": 0
+    },
+    "hSizeClass": "compact",
+    "vSizeClass": "compact",
+    "toolbarVerticalEdge": "leading",
+    "divisions": [],
+    "occlusions": [
+      {
+        "frame": [
+          [
+            29.333333333333332,
+            29.333333333333314
+          ],
+          [
+            37,
+            37
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": true
+      },
+      {
+        "frame": [
+          [
+            0,
+            0
+          ],
+          [
+            84,
+            82
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "name": "book",
+    "display": "inner",
+    "window": [
+      951,
+      669
+    ],
+    "safeArea": {
+      "top": 0,
+      "leading": 0,
+      "bottom": 34,
+      "trailing": 84
+    },
+    "hSizeClass": "regular",
+    "vSizeClass": "regular",
+    "toolbarVerticalEdge": "trailing",
+    "divisions": [
+      {
+        "frame": [
+          [
+            455.5,
+            0
+          ],
+          [
+            40,
+            669
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 20,
+          "top": 0,
+          "trailing": 20
+        },
+        "isActive": true
+      }
+    ],
+    "occlusions": [
+      {
+        "frame": [
+          [
+            677.3333333333334,
+            21
+          ],
+          [
+            58,
+            37
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": false
+      },
+      {
+        "frame": [
+          [
+            867,
+            0
+          ],
+          [
+            84,
+            124
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "name": "laptop",
+    "display": "inner",
+    "window": [
+      669,
+      951
+    ],
+    "safeArea": {
+      "top": 82,
+      "leading": 0,
+      "bottom": 34,
+      "trailing": 0
+    },
+    "hSizeClass": "regular",
+    "vSizeClass": "regular",
+    "toolbarVerticalEdge": null,
+    "divisions": [
+      {
+        "frame": [
+          [
+            0,
+            455.5
+          ],
+          [
+            669,
+            40
+          ]
+        ],
+        "margins": {
+          "bottom": 20,
+          "leading": 0,
+          "top": 20,
+          "trailing": 0
+        },
+        "isActive": true
+      }
+    ],
+    "occlusions": [
+      {
+        "frame": [
+          [
+            21,
+            215.66666666666666
+          ],
+          [
+            37,
+            57.99999999999997
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": false
+      },
+      {
+        "frame": [
+          [
+            525,
+            0
+          ],
+          [
+            144,
+            82
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "name": "tent",
+    "display": "inner",
+    "window": [
+      669,
+      951
+    ],
+    "safeArea": {
+      "top": 82,
+      "leading": 0,
+      "bottom": 34,
+      "trailing": 0
+    },
+    "hSizeClass": "regular",
+    "vSizeClass": "regular",
+    "toolbarVerticalEdge": null,
+    "divisions": [
+      {
+        "frame": [
+          [
+            0,
+            455.5
+          ],
+          [
+            669,
+            40
+          ]
+        ],
+        "margins": {
+          "bottom": 20,
+          "leading": 0,
+          "top": 20,
+          "trailing": 0
+        },
+        "isActive": true
+      }
+    ],
+    "occlusions": [
+      {
+        "frame": [
+          [
+            611,
+            677.3333333333334
+          ],
+          [
+            37,
+            58
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": false
+      },
+      {
+        "frame": [
+          [
+            525,
+            0
+          ],
+          [
+            144,
+            82
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "name": "flat-sideways",
+    "display": "inner",
+    "window": [
+      951,
+      669
+    ],
+    "safeArea": {
+      "top": 0,
+      "leading": 0,
+      "bottom": 34,
+      "trailing": 84
+    },
+    "hSizeClass": "regular",
+    "vSizeClass": "regular",
+    "toolbarVerticalEdge": "trailing",
+    "divisions": [
+      {
+        "frame": [
+          [
+            455.5,
+            0
+          ],
+          [
+            40,
+            669
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 20,
+          "top": 0,
+          "trailing": 20
+        },
+        "isActive": false
+      }
+    ],
+    "occlusions": [
+      {
+        "frame": [
+          [
+            677.3333333333334,
+            21
+          ],
+          [
+            58,
+            37
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": false
+      },
+      {
+        "frame": [
+          [
+            867,
+            0
+          ],
+          [
+            84,
+            124
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "name": "flat-upright",
+    "display": "inner",
+    "window": [
+      669,
+      951
+    ],
+    "safeArea": {
+      "top": 82,
+      "leading": 0,
+      "bottom": 34,
+      "trailing": 0
+    },
+    "hSizeClass": "regular",
+    "vSizeClass": "regular",
+    "toolbarVerticalEdge": null,
+    "divisions": [
+      {
+        "frame": [
+          [
+            0,
+            455.5
+          ],
+          [
+            669,
+            40
+          ]
+        ],
+        "margins": {
+          "bottom": 20,
+          "leading": 0,
+          "top": 20,
+          "trailing": 0
+        },
+        "isActive": false
+      }
+    ],
+    "occlusions": [
+      {
+        "frame": [
+          [
+            21,
+            215.66666666666666
+          ],
+          [
+            37,
+            57.99999999999997
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": false
+      },
+      {
+        "frame": [
+          [
+            525,
+            0
+          ],
+          [
+            144,
+            82
+          ]
+        ],
+        "margins": {
+          "bottom": 0,
+          "leading": 0,
+          "top": 0,
+          "trailing": 0
+        },
+        "isActive": true
+      }
+    ]
+  }
+]

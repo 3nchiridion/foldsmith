@@ -1,0 +1,911 @@
+{
+  "app": "Wikipedia",
+  "phase": "done",
+  "poses": [
+    "closed",
+    "closed-sideways",
+    "book",
+    "laptop",
+    "tent",
+    "flat-sideways",
+    "flat-upright"
+  ],
+  "screens": [
+    {
+      "name": "community",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/community-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/community-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/community-closed-sideways-cover.png",
+          "after": ".duo/captures/Wikipedia/after/community-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/community-book-inner.png",
+          "label": "Even grid",
+          "after": ".duo/captures/Wikipedia/after/community-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/community-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/community-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/community-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/community-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/community-flat-sideways-inner.png",
+          "label": "Even grid",
+          "after": ".duo/captures/Wikipedia/after/community-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/community-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/community-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Even grid"
+    },
+    {
+      "name": "for-you",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/for-you-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/for-you-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/for-you-closed-sideways-cover.png",
+          "label": "T4",
+          "after": ".duo/captures/Wikipedia/after/for-you-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/for-you-book-inner.png",
+          "label": "T5",
+          "after": ".duo/captures/Wikipedia/after/for-you-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/for-you-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/for-you-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/for-you-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/for-you-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/for-you-flat-sideways-inner.png",
+          "label": "T5",
+          "after": ".duo/captures/Wikipedia/after/for-you-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/for-you-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/for-you-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    },
+    {
+      "name": "search",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/search-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/search-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/search-closed-sideways-cover.png",
+          "after": ".duo/captures/Wikipedia/after/search-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/search-book-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/search-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/search-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/search-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/search-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/search-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/search-flat-sideways-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/search-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/search-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/search-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    },
+    {
+      "name": "article",
+      "cells": {
+        "closed": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/article-closed-cover.png",
+          "label": "Reflowing columns (bars)",
+          "after": ".duo/captures/Wikipedia/after/article-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/article-closed-sideways-cover.png",
+          "label": "Reflowing columns (bars)",
+          "after": ".duo/captures/Wikipedia/after/article-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/article-book-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/article-book-inner.png"
+        },
+        "laptop": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/article-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/article-laptop-inner.png",
+          "label": "toolbar: plain items"
+        },
+        "tent": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/article-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/article-tent-inner.png",
+          "label": "toolbar: plain items"
+        },
+        "flat-sideways": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/article-flat-sideways-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/article-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/article-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/article-flat-upright-inner.png",
+          "label": "toolbar: plain items"
+        }
+      },
+      "pattern": "Reflowing columns"
+    },
+    {
+      "name": "contents",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/contents-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/contents-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/contents-closed-sideways-cover.png",
+          "after": ".duo/captures/Wikipedia/after/contents-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/contents-book-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/contents-book-inner.png"
+        },
+        "laptop": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/contents-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/contents-laptop-inner.png",
+          "label": "toolbar: plain items, contents inline as before"
+        },
+        "tent": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/contents-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/contents-tent-inner.png",
+          "label": "toolbar: plain items, contents inline as before"
+        },
+        "flat-sideways": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/contents-flat-sideways-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/contents-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/contents-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/contents-flat-upright-inner.png",
+          "label": "toolbar: plain items, contents inline as before"
+        }
+      },
+      "pattern": "Arrangement (no page yet)"
+    },
+    {
+      "name": "places",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/places-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/places-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/places-closed-sideways-cover.png",
+          "after": ".duo/captures/Wikipedia/after/places-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/places-book-inner.png",
+          "label": "T1",
+          "after": ".duo/captures/Wikipedia/after/places-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/places-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/places-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/places-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/places-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/places-flat-sideways-inner.png",
+          "after": ".duo/captures/Wikipedia/after/places-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/places-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/places-flat-upright-inner.png"
+        }
+      },
+      "pattern": "none (map)"
+    },
+    {
+      "name": "saved",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/saved-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/saved-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/saved-closed-sideways-cover.png",
+          "after": ".duo/captures/Wikipedia/after/saved-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/saved-book-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/saved-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/saved-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/saved-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/saved-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/saved-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/saved-flat-sideways-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/saved-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/saved-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/saved-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    },
+    {
+      "name": "activity",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/activity-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/activity-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/activity-closed-sideways-cover.png",
+          "after": ".duo/captures/Wikipedia/after/activity-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/activity-book-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/activity-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/activity-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/activity-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/activity-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/activity-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/activity-flat-sideways-inner.png",
+          "label": "T14",
+          "after": ".duo/captures/Wikipedia/after/activity-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/activity-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/activity-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    },
+    {
+      "name": "tabs",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/tabs-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/tabs-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/tabs-closed-sideways-cover.png",
+          "after": ".duo/captures/Wikipedia/after/tabs-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/tabs-book-inner.png",
+          "label": "Even grid",
+          "after": ".duo/captures/Wikipedia/after/tabs-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/tabs-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/tabs-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/tabs-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/tabs-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/tabs-flat-sideways-inner.png",
+          "label": "Even grid",
+          "after": ".duo/captures/Wikipedia/after/tabs-flat-sideways-inner.png"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/tabs-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/tabs-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Even grid"
+    },
+    {
+      "name": "profile",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/profile-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/profile-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/profile-closed-sideways-cover.png",
+          "after": ".duo/captures/Wikipedia/after/profile-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "verified",
+          "before": ".duo/captures/Wikipedia/before/profile-book-inner.png",
+          "label": "Fold-aligned split",
+          "after": ".duo/captures/Wikipedia/after/profile-book-inner.png"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/profile-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/profile-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/profile-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/profile-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/profile-flat-sideways-inner.png",
+          "after": ".duo/captures/Wikipedia/after/profile-flat-sideways-inner.png",
+          "label": "T5"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/profile-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/profile-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split"
+    },
+    {
+      "name": "settings",
+      "cells": {
+        "closed": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/settings-closed-cover.png",
+          "after": ".duo/captures/Wikipedia/after/settings-closed-cover.png"
+        },
+        "closed-sideways": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/settings-closed-sideways-cover.png",
+          "after": ".duo/captures/Wikipedia/after/settings-closed-sideways-cover.png"
+        },
+        "book": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/settings-book-inner.png",
+          "after": ".duo/captures/Wikipedia/after/settings-book-inner.png",
+          "label": "T5"
+        },
+        "laptop": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/settings-laptop-inner.png",
+          "after": ".duo/captures/Wikipedia/after/settings-laptop-inner.png"
+        },
+        "tent": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/settings-tent-inner.png",
+          "after": ".duo/captures/Wikipedia/after/settings-tent-inner.png"
+        },
+        "flat-sideways": {
+          "state": "finding",
+          "before": ".duo/captures/Wikipedia/before/settings-flat-sideways-inner.png",
+          "after": ".duo/captures/Wikipedia/after/settings-flat-sideways-inner.png",
+          "label": "T5"
+        },
+        "flat-upright": {
+          "state": "unchanged",
+          "before": ".duo/captures/Wikipedia/before/settings-flat-upright-inner.png",
+          "after": ".duo/captures/Wikipedia/after/settings-flat-upright-inner.png"
+        }
+      },
+      "pattern": "Fold-aligned split (reverted)"
+    }
+  ],
+  "done": [
+    "community: Even grid, verified in book and flat-sideways, unchanged in the other five poses",
+    "tabs: Even grid, verified in book and flat-sideways, unchanged in the other five poses"
+  ],
+  "todo": [
+    "for-you: Fold-aligned split not applied: the Home tab holds For You (hierarchical) and Community (peer, Even grid) in one stack, so a list/detail split for the tab would undo Community's grid; the logged-out feed is empty, so only its end card was captured: T5 in book and flat-sideways, T1 in book (the illustration, x 434–539, not in the accessibility tree, sits on the active fold), T4 in closed-sideways",
+    "settings: Fold-aligned split reverted (third review): pages pushed by Settings' sub-coordinators from a detail page replaced it, the donation reminder's buttons popped the wrong stack, and the .settings / .appearanceSettings routes were never split; carrying a dozen coordinators that push and pop one stack across two panes is a rewrite of Settings' navigation. T5 in book and flat-sideways (rows across the fold), as before",
+    "article and contents from Home or Places: Reflowing columns not built (a WKWebView: contents jumps, find in page, scroll restoration and the native lead image use vertical offsets). Opened from Saved, Activity or Search the article and its contents open beside the list; from Home or Places the article is one 827 pt column in book and flat-sideways (T5), and its contents still open in the app's inline form beside that column, across the fold",
+    "profile: T5 flat-sideways (third review): the centred Account sheet's text column (186–760 pt) crosses the inactive division. Unchanged from before the migration: the pattern's sheet rule centres sheets while flat; no pattern page says how a sheet's own content should reflow. Book is fixed (trailing half, verified)",
+    "places: no pattern yet (a map: Reflowing columns is for text read in order); T1 in book: the search field spans the fold. The detector's T14 there (a column 100–480 pt) is hidden list text, a false hit",
+    "saved, search, activity, article, contents: T14 in book and flat-sideways. The search field in the list pane's navigation bar stops at 371 of 455 pt (316 with Cancel, beside an article: saved, search, article; detector), the list pane's top-bar capsule ends at 417 pt, about 18 pt short of its margin (saved, search, activity; eye), and the detail pane's top bar stops 38–42 pt short of its edge (W at 512, its last item ends at 825 of 867: article, contents; eye). UIKit gives a navigation bar the vertical bar's trailing inset wherever its stack sits. Tried: the bar's layout margins, the search bar's margins, a vertical-bar opt-out for the list's stack, a negative additionalSafeAreaInsets on the stack, and a UINavigationBar subclass reporting no trailing inset; none moves them. Everything else in both panes reaches its edges"
+  ],
+  "log": [
+    "14:11 started Wikipedia",
+    "14:16 static scans: no T9, no SwiftUI T10, no T14, scene lifecycle present (Wikipedia-Info.plist); T3 scan 7 custom UIToolbar/UINavigationBar; T10 scan 16 UIBarButtonItem(title:)",
+    "14:16 built the unmodified app against the iOS 27.1 SDK, installed over the old build",
+    "14:31 flow .duo/flows/Wikipedia.flow: 11 screens, each reached on the shut phone (closed check, 9 min); saved Moon and Mount Everest so Saved has rows",
+    "14:31 phase audit",
+    "14:32 before shot community / closed",
+    "14:32 before shot community / closed-sideways",
+    "14:32 before shot community / book",
+    "14:33 before shot community / laptop",
+    "14:33 before shot community / tent",
+    "14:33 before shot community / flat-sideways",
+    "14:34 before shot community / flat-upright",
+    "14:35 before shot for-you / closed",
+    "14:35 before shot for-you / closed-sideways",
+    "14:35 before shot for-you / book",
+    "14:36 before shot for-you / laptop",
+    "14:36 before shot for-you / tent",
+    "14:37 before shot for-you / flat-sideways",
+    "14:37 before shot for-you / flat-upright",
+    "14:38 before shot search / closed",
+    "14:38 before shot search / closed-sideways",
+    "14:38 before shot search / book",
+    "14:39 before shot search / laptop",
+    "14:39 before shot search / tent",
+    "14:40 before shot search / flat-sideways",
+    "14:40 before shot search / flat-upright",
+    "14:41 before shot article / closed",
+    "14:41 before shot article / closed-sideways",
+    "14:42 before shot article / book",
+    "14:42 before shot article / laptop",
+    "14:43 before shot article / tent",
+    "14:43 before shot article / flat-sideways",
+    "14:44 before shot article / flat-upright",
+    "14:46 before shot contents / closed",
+    "14:47 before shot contents / closed-sideways",
+    "14:47 before shot contents / book",
+    "14:47 before shot contents / laptop",
+    "14:48 before shot contents / tent",
+    "14:49 before shot contents / flat-sideways",
+    "14:50 before shot contents / flat-upright",
+    "14:51 before shot places / closed",
+    "14:51 before shot places / closed-sideways",
+    "14:51 before shot places / book",
+    "14:52 before shot places / laptop",
+    "14:53 before shot places / tent",
+    "14:54 before shot places / flat-sideways",
+    "14:55 before shot places / flat-upright",
+    "14:56 before shot saved / closed",
+    "14:56 before shot saved / closed-sideways",
+    "14:56 before shot saved / book",
+    "14:56 before shot saved / laptop",
+    "14:57 before shot saved / tent",
+    "14:57 before shot saved / flat-sideways",
+    "14:57 before shot saved / flat-upright",
+    "14:58 before shot activity / closed",
+    "14:58 before shot activity / closed-sideways",
+    "14:59 before shot activity / book",
+    "14:59 before shot activity / laptop",
+    "15:00 before shot activity / tent",
+    "15:00 before shot activity / flat-sideways",
+    "15:00 before shot activity / flat-upright",
+    "15:01 before shot tabs / closed",
+    "15:01 before shot tabs / closed-sideways",
+    "15:02 before shot tabs / book",
+    "15:02 before shot tabs / laptop",
+    "15:03 before shot tabs / tent",
+    "15:03 before shot tabs / flat-sideways",
+    "15:04 before shot tabs / flat-upright",
+    "15:05 before shot profile / closed",
+    "15:05 before shot profile / closed-sideways",
+    "15:05 before shot profile / book",
+    "15:05 before shot profile / laptop",
+    "15:06 before shot profile / tent",
+    "15:06 before shot profile / flat-sideways",
+    "15:07 before shot profile / flat-upright",
+    "15:08 before shot settings / closed",
+    "15:08 before shot settings / closed-sideways",
+    "15:08 before shot settings / book",
+    "15:08 before shot settings / laptop",
+    "15:09 before shot settings / tent",
+    "15:09 before shot settings / flat-sideways",
+    "15:10 before shot settings / flat-upright",
+    "15:14 tabs had one tab: opened three more (four tabs) so the grid shows its columns; contents missed its tap (toolbar disabled until load): flow waits 5 s; recapturing both",
+    "15:15 before shot contents / closed",
+    "15:15 before shot contents / closed-sideways",
+    "15:16 before shot contents / book",
+    "15:16 before shot contents / laptop",
+    "15:16 before shot contents / tent",
+    "15:17 before shot contents / flat-sideways",
+    "15:18 before shot contents / flat-upright",
+    "15:19 before shot tabs / closed",
+    "15:19 before shot tabs / closed-sideways",
+    "15:19 before shot tabs / book",
+    "15:19 before shot tabs / laptop",
+    "15:20 before shot tabs / tent",
+    "15:20 before shot tabs / flat-sideways",
+    "15:21 before shot tabs / flat-upright",
+    "15:22 audit: 77 cells captured (tabs and contents recaptured); 23 findings after looking at every shot",
+    "15:22 phase classify",
+    "15:22 classified: community, tabs peer → Even grid; for-you, search, saved, activity, profile, settings hierarchical → Fold-aligned split; article continuous → Reflowing columns; contents supporting → Arrangement (no page); places a map → no page fits",
+    "15:22 phase migrate",
+    "15:22 done settings: Fold-aligned split, no finding in any pose: unchanged",
+    "15:27 profile: sheet rule (WMFFold, present overrides in WMFAppViewController and WMFComponentNavigationController, hinge + layout update); probe: book trailing 483–867, flat sideways centred, closed unchanged",
+    "15:31 community: Even grid in ColumnarCollectionViewLayoutMetrics (one column per half, gutter on the fold, inactive included); probe closed/book/laptop/flat-sideways: 0 findings",
+    "15:38 article: toolbar items titled plain items on iOS 27.1 (join the vertical bar: T10, T7 fixed in probe), W becomes a bar item while the book fold is active (T1 fixed); T5 left for the columns",
+    "15:42 tabs: Even grid in WMFArticleTabsView (two columns per half, gutter on the fold, inactive included); probe closed/book/laptop/flat-sideways: 0 findings",
+    "16:09 saved, activity, search: WMFFoldSplitContainerViewController (list 0–455, detail from 495.5 where a vertical division exists; invisible elsewhere); ArticleCoordinator opens articles in the detail pane; tab bar hiding forwarded; probes: lists 0 findings in closed/book/laptop/flat-sideways, a saved article survives closed→book→laptop→flat",
+    "16:31 search: an article moved beside the search no longer re-focuses the field (keyboard on unfold) nor drops the results after a fold round trip; a compact trait override for the panes was tried and dropped (it flipped the contents between inline and modal on every unfold)",
+    "16:31 phase verify",
+    "16:32 after shot community / closed",
+    "16:32 after shot community / closed-sideways",
+    "16:33 after shot community / book",
+    "16:33 after shot community / laptop",
+    "16:33 after shot community / tent",
+    "16:34 after shot community / flat-sideways",
+    "16:35 after shot community / flat-upright",
+    "16:36 after shot for-you / closed",
+    "16:36 after shot for-you / closed-sideways",
+    "16:36 after shot for-you / book",
+    "16:36 after shot for-you / laptop",
+    "16:37 after shot for-you / tent",
+    "16:37 after shot for-you / flat-sideways",
+    "16:37 after shot for-you / flat-upright",
+    "16:38 after shot search / closed",
+    "16:38 after shot search / closed-sideways",
+    "16:39 after shot search / book",
+    "16:39 after shot search / laptop",
+    "16:40 after shot search / tent",
+    "16:40 after shot search / flat-sideways",
+    "16:41 after shot search / flat-upright",
+    "16:42 after shot article / closed",
+    "16:42 after shot article / closed-sideways",
+    "16:42 after shot article / book",
+    "16:43 after shot article / laptop",
+    "16:43 after shot article / tent",
+    "16:44 after shot article / flat-sideways",
+    "16:45 after shot article / flat-upright",
+    "16:46 after shot contents / closed",
+    "16:46 after shot contents / closed-sideways",
+    "16:46 after shot contents / book",
+    "16:47 after shot contents / laptop",
+    "16:47 after shot contents / tent",
+    "16:48 after shot contents / flat-sideways",
+    "16:48 after shot contents / flat-upright",
+    "16:49 after shot places / closed",
+    "16:49 after shot places / closed-sideways",
+    "16:50 after shot places / book",
+    "16:51 after shot places / laptop",
+    "16:52 after shot places / tent",
+    "16:53 after shot places / flat-sideways",
+    "16:54 after shot places / flat-upright",
+    "16:54 after shot saved / closed",
+    "16:55 after shot saved / closed-sideways",
+    "16:55 after shot saved / book",
+    "16:55 after shot saved / laptop",
+    "16:56 after shot saved / tent",
+    "16:56 after shot saved / flat-sideways",
+    "16:56 after shot saved / flat-upright",
+    "16:57 after shot activity / closed",
+    "16:57 after shot activity / closed-sideways",
+    "16:58 after shot activity / book",
+    "16:58 after shot activity / laptop",
+    "16:58 after shot activity / tent",
+    "16:59 after shot activity / flat-sideways",
+    "16:59 after shot activity / flat-upright",
+    "17:00 after shot tabs / closed",
+    "17:00 after shot tabs / closed-sideways",
+    "17:01 after shot tabs / book",
+    "17:01 after shot tabs / laptop",
+    "17:02 after shot tabs / tent",
+    "17:02 after shot tabs / flat-sideways",
+    "17:02 after shot tabs / flat-upright",
+    "17:03 after shot profile / closed",
+    "17:03 after shot profile / closed-sideways",
+    "17:03 after shot profile / book",
+    "17:04 after shot profile / laptop",
+    "17:04 after shot profile / tent",
+    "17:05 after shot profile / flat-sideways",
+    "17:05 after shot profile / flat-upright",
+    "17:06 after shot settings / closed",
+    "17:06 after shot settings / closed-sideways",
+    "17:06 after shot settings / book",
+    "17:07 after shot settings / laptop",
+    "17:07 after shot settings / tent",
+    "17:08 after shot settings / flat-sideways",
+    "17:08 after shot settings / flat-upright",
+    "17:13 after capture: 77 cells, detectors 10 cells with findings (21 before); every shot looked at; final build (tab reselect commit) probed: saved and article same in closed, book, flat-sideways",
+    "17:13 done community: Even grid, verified in book and flat-sideways, unchanged in the other five poses",
+    "17:13 done tabs: Even grid, verified in book and flat-sideways, unchanged in the other five poses",
+    "17:13 done profile: Fold-aligned split (sheet rule), verified in book, unchanged in the other six poses",
+    "17:13 done saved: Fold-aligned split, verified in book and flat-sideways, unchanged in the other five poses",
+    "17:13 done search: Fold-aligned split, verified in book and flat-sideways, unchanged in the other five poses",
+    "17:13 done activity: Fold-aligned split, verified in book and flat-sideways, unchanged in the other five poses",
+    "17:13 done article: verified in closed and closed-sideways (toolbar joins the vertical bar) and in book and flat-sideways (W off the fold, toolbar back, detail pane of the Search tab), unchanged upright",
+    "17:14 report written: .duo/REPORT.md",
+    "17:14 phase done",
+    "18:06 review: list content stopped 84 pt short of the fold and the contents were cramped and clipped in the detail pane; fixing and recapturing saved, search, activity, article, contents",
+    "18:07 after shot search / closed",
+    "18:07 after shot search / closed-sideways",
+    "18:08 after shot search / book",
+    "18:08 after shot search / laptop",
+    "18:08 after shot search / tent",
+    "18:09 after shot search / flat-sideways",
+    "18:09 after shot search / flat-upright",
+    "18:10 after shot article / closed",
+    "18:11 after shot article / closed-sideways",
+    "18:11 after shot article / book",
+    "18:12 after shot article / laptop",
+    "18:12 after shot article / tent",
+    "18:13 after shot article / flat-sideways",
+    "18:13 after shot article / flat-upright",
+    "18:15 after shot contents / closed",
+    "18:15 after shot contents / closed-sideways",
+    "18:15 after shot contents / book",
+    "18:15 after shot contents / laptop",
+    "18:16 after shot contents / tent",
+    "18:16 after shot contents / flat-sideways",
+    "18:17 after shot contents / flat-upright",
+    "18:18 after shot saved / closed",
+    "18:18 after shot saved / closed-sideways",
+    "18:18 after shot saved / book",
+    "18:19 after shot saved / laptop",
+    "18:19 after shot saved / tent",
+    "18:20 after shot saved / flat-sideways",
+    "18:20 after shot saved / flat-upright",
+    "18:21 after shot activity / closed",
+    "18:21 after shot activity / closed-sideways",
+    "18:22 after shot activity / book",
+    "18:22 after shot activity / laptop",
+    "18:23 after shot activity / tent",
+    "18:23 after shot activity / flat-sideways",
+    "18:24 after shot activity / flat-upright",
+    "18:24 done contents: no pattern of its own (Arrangement has no page); its findings were cleared by the article's bar fix, the Search tab's Fold-aligned split and the overlay in the detail pane: verified in book and flat-sideways, unchanged in the other five poses (the detector's T7 for the cover's Close button in laptop, tent and flat-upright is a presentation change)",
+    "18:24 review fixes recaptured (saved, search, activity, article, contents, all seven poses): detector cells 8 (contents T7 ×3 not counted, for-you ×2, places ×3); every shot looked at",
+    "19:29 second review: settings rows ran across the fold in book and flat-sideways (T5 by the taxonomy's own corpus case, missed in the audit): classified hierarchical, migrated to Fold-aligned split",
+    "19:30 after shot community / closed",
+    "19:30 after shot community / closed-sideways",
+    "19:30 after shot community / book",
+    "19:30 after shot community / laptop",
+    "19:31 after shot community / tent",
+    "19:31 after shot community / flat-sideways",
+    "19:32 after shot community / flat-upright",
+    "19:33 after shot search / closed",
+    "19:33 after shot search / closed-sideways",
+    "19:33 after shot search / book",
+    "19:34 after shot search / laptop",
+    "19:34 after shot search / tent",
+    "19:34 after shot search / flat-sideways",
+    "19:35 after shot search / flat-upright",
+    "19:36 after shot article / closed",
+    "19:36 after shot article / closed-sideways",
+    "19:37 after shot article / book",
+    "19:37 after shot article / laptop",
+    "19:38 after shot article / tent",
+    "19:38 after shot article / flat-sideways",
+    "19:39 after shot article / flat-upright",
+    "19:40 after shot contents / closed",
+    "19:40 after shot contents / closed-sideways",
+    "19:41 after shot contents / book",
+    "19:41 after shot contents / laptop",
+    "19:42 after shot contents / tent",
+    "19:42 after shot contents / flat-sideways",
+    "19:43 after shot contents / flat-upright",
+    "19:44 after shot saved / closed",
+    "19:44 after shot saved / closed-sideways",
+    "19:44 after shot saved / book",
+    "19:44 after shot saved / laptop",
+    "19:45 after shot saved / tent",
+    "19:45 after shot saved / flat-sideways",
+    "19:46 after shot saved / flat-upright",
+    "19:47 after shot activity / closed",
+    "19:47 after shot activity / closed-sideways",
+    "19:47 after shot activity / book",
+    "19:47 after shot activity / laptop",
+    "19:48 after shot activity / tent",
+    "19:48 after shot activity / flat-sideways",
+    "19:49 after shot activity / flat-upright",
+    "19:50 after shot settings / closed",
+    "19:50 after shot settings / closed-sideways",
+    "19:50 after shot settings / book",
+    "19:51 after shot settings / laptop",
+    "19:51 after shot settings / tent",
+    "19:52 after shot settings / flat-sideways",
+    "19:52 after shot settings / flat-upright",
+    "20:03 after shot article / closed",
+    "20:04 after shot article / closed-sideways",
+    "20:04 after shot article / book",
+    "20:04 after shot article / laptop",
+    "20:05 after shot article / tent",
+    "20:06 after shot article / flat-sideways",
+    "20:06 after shot article / flat-upright",
+    "20:07 after shot contents / closed",
+    "20:08 after shot contents / closed-sideways",
+    "20:08 after shot contents / book",
+    "20:08 after shot contents / laptop",
+    "20:09 after shot contents / tent",
+    "20:09 after shot contents / flat-sideways",
+    "20:10 after shot contents / flat-upright",
+    "20:13 done settings: Fold-aligned split (second review), verified in book and flat-sideways, unchanged in the other five poses; supersedes the earlier unchanged line",
+    "20:13 second review: results list, tab bar beside an article, theme, Activity copy, contents in the list pane, toolbar overflow and priorities, contents button look, W in the detail pane, community card heights, settings split; recaptured saved, search, activity, article, contents, community, settings in all seven poses; overflow and article-from-Home probes",
+    "20:15 phase done",
+    "20:57 retracted done settings:",
+    "20:57 third review: Settings split reverted; hierarchy walks unwrapped (state restoration, theme, tab bar on every selection, back-to-root routes); contents follow the detail's top article and hide the covered list; margins, W label, search gate, overflow disabled with the toolbar",
+    "20:57 phase verify",
+    "20:58 after shot search / closed",
+    "20:58 after shot search / closed-sideways",
+    "20:58 after shot search / book",
+    "20:59 after shot search / laptop",
+    "20:59 after shot search / tent",
+    "21:00 after shot search / flat-sideways",
+    "21:00 after shot search / flat-upright",
+    "21:02 after shot article / closed",
+    "21:02 after shot article / closed-sideways",
+    "21:02 after shot article / book",
+    "21:03 after shot article / laptop",
+    "21:04 after shot article / tent",
+    "21:04 after shot article / flat-sideways",
+    "21:05 after shot article / flat-upright",
+    "21:06 after shot contents / closed",
+    "21:06 after shot contents / closed-sideways",
+    "21:07 after shot contents / book",
+    "21:07 after shot contents / laptop",
+    "21:08 after shot contents / tent",
+    "21:08 after shot contents / flat-sideways",
+    "21:09 after shot contents / flat-upright",
+    "21:10 after shot saved / closed",
+    "21:10 after shot saved / closed-sideways",
+    "21:10 after shot saved / book",
+    "21:10 after shot saved / laptop",
+    "21:11 after shot saved / tent",
+    "21:11 after shot saved / flat-sideways",
+    "21:12 after shot saved / flat-upright",
+    "21:13 after shot activity / closed",
+    "21:13 after shot activity / closed-sideways",
+    "21:13 after shot activity / book",
+    "21:14 after shot activity / laptop",
+    "21:14 after shot activity / tent",
+    "21:14 after shot activity / flat-sideways",
+    "21:15 after shot activity / flat-upright",
+    "21:16 after shot settings / closed",
+    "21:16 after shot settings / closed-sideways",
+    "21:17 after shot settings / book",
+    "21:17 after shot settings / laptop",
+    "21:17 after shot settings / tent",
+    "21:18 after shot settings / flat-sideways",
+    "21:18 after shot settings / flat-upright",
+    "21:23 after shot article / closed",
+    "21:23 after shot article / closed-sideways",
+    "21:24 after shot article / book",
+    "21:24 after shot article / laptop",
+    "21:25 after shot article / tent",
+    "21:26 after shot article / flat-sideways",
+    "21:26 after shot article / flat-upright",
+    "21:28 after shot contents / closed",
+    "21:28 after shot contents / closed-sideways",
+    "21:28 after shot contents / book",
+    "21:29 after shot contents / laptop",
+    "21:29 after shot contents / tent",
+    "21:30 after shot contents / flat-sideways",
+    "21:30 after shot contents / flat-upright",
+    "21:31 retracted done saved:",
+    "21:31 retracted done search:",
+    "21:31 retracted done article:",
+    "21:31 retracted done contents:",
+    "21:31 done contents (from Saved, Activity, Search): no pattern of its own (Arrangement has no page); in book and flat-sideways the contents take the list pane beside the article (third review: they follow the article on top, the covered list is hidden from VoiceOver); verified in all seven poses; the detector's T7 in the inner poses is the cover's Close button, a presentation change",
+    "21:31 third review recaptured saved, search, activity, article, contents, settings (seven poses) and article and contents again; synced detectors on the full before and after",
+    "21:31 phase done",
+    "21:32 retracted done profile:",
+    "22:12 retracted done activity:",
+    "22:12 retracted done contents",
+    "22:12 fourth review: routes from the detail pane stack on it, at-root checks, tab bar (plain tabs: only our hide cleared; container stacks alongside the transition), Edit disabled, open-contents fill, themes label, contents carry-over and top check; activity and contents top bars classified with Saved's (T14, todo); article and contents upright marked changed",
+    "22:13 after shot article / closed",
+    "22:13 after shot article / closed-sideways",
+    "22:14 after shot article / book",
+    "22:15 after shot article / laptop",
+    "22:16 after shot article / tent",
+    "22:17 after shot article / flat-sideways",
+    "22:18 after shot article / flat-upright",
+    "22:19 after shot contents / closed",
+    "22:19 after shot contents / closed-sideways",
+    "22:20 after shot contents / book",
+    "22:20 after shot contents / laptop",
+    "22:21 after shot contents / tent",
+    "22:21 after shot contents / flat-sideways",
+    "22:22 after shot contents / flat-upright",
+    "22:25 after shot article / closed",
+    "22:25 after shot article / closed-sideways",
+    "22:25 after shot article / book",
+    "22:26 after shot article / laptop",
+    "22:26 after shot article / tent",
+    "22:27 after shot article / flat-sideways",
+    "22:28 after shot article / flat-upright",
+    "22:29 after shot contents / closed",
+    "22:29 after shot contents / closed-sideways",
+    "22:29 after shot contents / book",
+    "22:30 after shot contents / laptop",
+    "22:30 after shot contents / tent",
+    "22:31 after shot contents / flat-sideways",
+    "22:31 after shot contents / flat-upright",
+    "22:42 fourth review: E0–E22 and U0–U3 fixed or corrected (4e0f095, 3c385e8); two more list-stack walks found by grep and fixed (3c66733: the watchlist route, a second tap on the tab); article and contents recaptured in all seven poses; detectors rerun over the full before (44 lines) and after (17); activity and contents back to todo (T14 top bars, E16/E20)"
+  ],
+  "simulator": "<Duo simulator UDID>"
+}

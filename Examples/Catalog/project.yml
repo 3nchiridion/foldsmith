@@ -1,0 +1,30 @@
+# XcodeGen spec. `cd Examples/Catalog && xcodegen generate`; CI builds it for the iPhone Duo simulator (gate G1).
+# The catalog hosts the reference implementations in Sources/Patterns (compiled as-is, so the copy-in files are what
+# is tested) next to "before" variants that reproduce the corpus defects. Pose matrices are captured from it by
+# scripts/capture-catalog.sh; nothing in verification/matrices is hand-made.
+name: Catalog
+options:
+  bundleIdPrefix: dev.enchiridion.duopatterns
+  deploymentTarget:
+    iOS: "27.1"
+  xcodeVersion: "27.1"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+    INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+targets:
+  Catalog:
+    type: application
+    platform: iOS
+    sources:
+      - Catalog
+      - path: ../../Sources/Patterns
+        group: Patterns
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.enchiridion.duopatterns.catalog
+        GENERATE_INFOPLIST_FILE: YES
