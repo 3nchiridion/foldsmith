@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       goldens:
-        description: "Also run G2: capture the catalog in every pose and diff it against the goldens (about 18 min on the working repository's runner; not yet run on the hosted image)"
+        description: "Also run G2: capture the catalog in every pose and diff it against the goldens (about 42 min on the hosted image)"
         type: boolean
         default: false
 
@@ -65,9 +65,8 @@ jobs:
   goldens:
     # G2 (EVAL.md): capture the catalog in every pose and compare it with the goldens, the matrices kept in the evidence
     # repository (3nchiridion/foldsmith-evidence, verification/matrices). On
-    # demand only (Actions → ci → Run workflow, "goldens" ticked; `gh workflow run ci.yml -f goldens=true`): a full
-    # capture takes about 18 minutes of macOS runner time (measured on the working repository's runner; not yet timed
-    # on the hosted image).
+    # demand only (Actions → ci → Run workflow, "goldens" ticked; `gh workflow run ci.yml -f goldens=true`): the job
+    # takes about 42 minutes on the hosted image (run 41080119680, 2026-10-30; 18 on the working repository's runner).
     if: github.event_name == 'workflow_dispatch' && inputs.goldens
     runs-on: xcode-27
     timeout-minutes: 60
