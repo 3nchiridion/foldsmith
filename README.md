@@ -86,6 +86,26 @@ If `--marketplace` is not offered, Claude Code is older than 2.1.308: run `claud
 In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with
 `3nchiridion/foldsmith`, then Add plugin. Run `/foldsmith demo` to preview the pane with sample data.
 
+### Other agents
+The skill, `foldsmith-duo`, needs no Claude Code: its tools are shell, Python and Swift, and its progress file is plain
+JSON. Only the pane and `/foldsmith-start` are Claude Code's. From a shell:
+
+```
+npx skills add 3nchiridion/foldsmith                     # asks which agents; -g installs for every project
+gh skill install 3nchiridion/foldsmith foldsmith-duo     # GitHub CLI 2.90 or later
+```
+
+Or copy `skills/foldsmith-duo/` by hand into one of:
+- `~/.claude/skills/` (every project) or `.claude/skills/` in your app: Claude Code;
+- `.agents/skills/` in your app, or `~/.agents/skills/`: Codex, GitHub Copilot, Gemini CLI, OpenCode, Amp, Cursor;
+- `.cursor/skills/` in your app, or `~/.cursor/skills/`: Cursor.
+
+Then ask your agent to adapt the app for iPhone Duo. Codex can also install the plugin from this repository, whose
+`.claude-plugin/marketplace.json` it reads: `codex plugin marketplace add 3nchiridion/foldsmith`, then
+`codex plugin add foldsmith@foldsmith`. Only the skill comes through: Codex skips the pane's hooks file with a startup
+warning, and leaves out `/foldsmith-start`, whose prompt takes an argument (worked out from Codex 0.166's source; not yet
+tried end to end).
+
 ## Build and test
 With Xcode 27.1 and xcodegen:
 - `swift test`: the detectors on the committed captures' frame records and accessibility snapshots (`Tests/Fixtures/`,

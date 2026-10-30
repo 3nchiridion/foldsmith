@@ -55,7 +55,7 @@ if [ -f "$PROGRESS" ] && { [ "$KIND" = before ] || [ "$KIND" = after ]; }; then
 fi
 
 OUT="$OUT" SNAPSHOT=1 WAIT="${WAIT:-6}" TAP_WAIT="${TAP_WAIT:-2}" LAUNCH_ARGS="$LAUNCH_ARGS" APP_PATH="$APP_PATH" \
-  ONLY="${ONLY:-}" ON_SHOT="$ON_SHOT" "$HERE/capture-corpus-flow.sh" "$NAME" "$BUNDLE" "${SCREENS[@]}" | tee -a "$OUT/capture.txt"
+  ONLY="${ONLY:-}" ON_SHOT="$ON_SHOT" bash "$HERE/capture-corpus-flow.sh" "$NAME" "$BUNDLE" "${SCREENS[@]}" | tee -a "$OUT/capture.txt"
 
 # The detectors: the skill's own package (tools/detect), built outside the skill's folder, or this repository's.
 PKG="$HERE/detect"; BUILD=(--scratch-path "$HOME/Library/Caches/duo-detect")

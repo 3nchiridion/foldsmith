@@ -1,6 +1,6 @@
 ---
 name: foldsmith-duo
-description: Adapt a whole existing iOS app to iPhone Duo (Apple's foldable, iOS 27.1), hands-free, from one prompt to every screen verified in every pose. Classifies each screen against a measured decision table, applies a named layout pattern, proves every pose with screenshots, and keeps .duo/migration.json current so the Foldsmith pane shows progress and a later session resumes. Use when the user mentions iPhone Duo, foldable iPhone, the fold or crease or hinge, book or laptop pose, vertical toolbars or tab bars, ArrangementView, ReservedRegion, "squeezed when half open", or asks to make an app work on the Duo's inner and outer displays.
+description: Adapt a whole existing iOS app to iPhone Duo (Apple's foldable, iOS 27.1), hands-free, from one prompt to every screen verified in every pose. Classifies each screen against a measured decision table, applies a named layout pattern, proves every pose with screenshots, and keeps .duo/migration.json current, so the user can follow it (in Claude Code the Foldsmith plugin's pane draws it) and a later session resumes. Use when the user mentions iPhone Duo, foldable iPhone, the fold or crease or hinge, book or laptop pose, vertical toolbars or tab bars, ArrangementView, ReservedRegion, "squeezed when half open", or asks to make an app work on the Duo's inner and outer displays.
 license: MIT
 ---
 
@@ -11,8 +11,10 @@ endorsed by Apple Inc.
 
 This skill routes; the knowledge lives in `references/` (the pattern pages in `references/patterns/`). Do not improvise a layout rule that is not in the decision table.
 
+Paths here (`references/`, `tools/`) are relative to this skill's folder, wherever it is installed (`~/.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, a plugin); run the tools from the app's repository by that folder's path, with their interpreters (`bash …/tools/capture-app.sh`, `python3 …/tools/progress.py`), since an installer may not keep the executable bit. Nothing here needs Claude Code: the tools are shell, Python and Swift, and the progress file is plain JSON.
+
 ## Hands-free
-One prompt takes the whole app from audit to verified. The user watches the Foldsmith pane and can interrupt at any time; you do not wait for them.
+One prompt takes the whole app from audit to verified. The user follows `.duo/migration.json` (in Claude Code, the Foldsmith plugin's pane draws it) and can interrupt at any time; you do not wait for them.
 - Never ask a question or stop for approval. Where a choice is needed, take the one the decision table and the pattern page give, and write why in the log.
 - Never stop at a problem. Record it in `todo` with the reason, and go on to the next screen. The run ends only when every screen is verified or listed in `todo`.
 - Commit in the app's repository after each change, on a branch `duo-migration`, so each can be reviewed or reverted on its own: `Duo: <screen> → <pattern>`, naming every screen the change fixes when it fixes several (`Duo: timeline, article → Fold-aligned split`: one split view serves both). Commit `.duo/migration.json`, `.duo/flows/` and the reports with it; keep `.duo/captures/` and `.duo/.migration.lock` out of git (add them to `.git/info/exclude`). Never push.
@@ -36,7 +38,7 @@ One prompt takes the whole app from audit to verified. The user watches the Fold
 closed · closed-sideways · book · laptop · tent · flat-sideways · flat-upright. These are Apple's six HIG poses (closed, book, laptop, tent — standing on its edges —, flat upright, flat sideways), plus the outer display sideways. A screen is done only when every one is captured and verified. Pose control: the `duo.py` driver (see `references/simulator.md`); tent is laptop's fold turned hinge-up (`duo.py fold laptop`, `orient landscape-right`). Split View's half window cannot be driven headless: lay out from size classes and it follows.
 
 ## Progress file
-After every step, and after each screen within a step, update `.duo/migration.json` in the app's repo, so the Foldsmith pane and the next session see where things stand. Change it only through `tools/progress.py` (`phase`, `screen`, `cell`, `todo`, `done`, `waive`, `log`, and `check` to read the regressions; `todo --remove` and `done --remove` take a wrong line back; `references/simulator.md`), which locks it and writes it whole, so a capture running beside you loses nothing and the pane never reads half a file.
+After every step, and after each screen within a step, update `.duo/migration.json` in the app's repo, so the user (or the Foldsmith pane, in Claude Code) and the next session see where things stand. Change it only through `tools/progress.py` (`phase`, `screen`, `cell`, `todo`, `done`, `waive`, `log`, and `check` to read the regressions; `todo --remove` and `done --remove` take a wrong line back; `references/simulator.md`), which locks it and writes it whole, so a capture running beside you loses nothing and the pane never reads half a file.
 ```json
 {
   "app": "Mail",
