@@ -62,5 +62,5 @@ Cell `state`: `pending` (not captured), `unchanged` (fine as is), `finding` (lab
 - Layout from size classes and reserved regions; hinge angle only for effects.
 - Continuously scrolling content does not displace across the fold.
 - Bars: use navigation-container toolbars; every item needs title + symbol; don't override default placement; overflow priorities on frequent and status-bearing items.
-- Laptop pose: viewed content on the upper half, controls on the lower half. Book pose: alerts and sheets to the trailing half.
+- Laptop pose: viewed content on the upper half, controls on the lower half. Book pose: alerts move to the trailing half, and sheets slide off the fold (the patterns put them trailing; T15).
 - Request inactive division regions when a column count or split depends on the fold.
