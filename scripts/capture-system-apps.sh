@@ -5,7 +5,8 @@
 # and, like Mail and Music, need a physical Duo; their NOTES.md say so.
 set -euo pipefail
 UDID="${DUO_UDID:?}"
-OUT="$(cd "$(dirname "$0")/.." && pwd)/raw/apple-apps"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+OUT="${FOLDSMITH_EVIDENCE:-$ROOT/../foldsmith-evidence}/raw/apple-apps"   # the evidence repository
 APPS=(
   "settings|com.apple.Preferences"
   "notes|com.apple.mobilenotes"

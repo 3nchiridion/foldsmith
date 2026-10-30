@@ -6,12 +6,14 @@ references/ — copied (with repo-relative links rewritten to the GitHub reposit
   patterns/TAXONOMY.md            → taxonomy.md
   patterns/<pattern>.md           → patterns/<pattern>.md   (the shipped pattern pages)
   Sources/Patterns/<Pattern>.swift → patterns/<Pattern>.swift (their reference implementations; links point here)
-  verification/matrices/<m>.png   → patterns/matrices/<m>.png
-A repository path named in backticks in a copied page becomes a link to GitHub, since the installed skill has no raw/.
+  docs/images/matrices/<m>.png    → patterns/matrices/<m>.png (the small samples; the full matrices are in the evidence
+                                    repository)
+A repository path named in backticks in a copied page becomes a link to GitHub, since the installed skill has none of
+them; raw/ and verification/ paths link to github.com/3nchiridion/foldsmith-evidence, where those folders live.
 LICENSE → the skill's root (beside SKILL.md) and the plugin's root (plugins/foldsmith/LICENSE): the plugin travels
 alone.
 Generated:
-  raw/metrics.json                → metrics.md
+  patterns/metrics.json           → metrics.md (a copy of the evidence repository's raw/metrics.json)
 Hand-written, condensed from raw/ with citations, and left alone here: apple.md, simulator.md, detectors-static.md.
 
 tools/ — the capture scripts, the tap runner and the detectors, copied verbatim, so an agent using the skill outside
@@ -39,6 +41,8 @@ SKILL = ROOT / "skills" / "foldsmith-duo"
 PLUGIN_SKILL = ROOT / "plugins" / "foldsmith" / "skills" / "foldsmith-duo"
 LOCAL = (".build", ".swiftpm", "build")   # a local build of the tools, git-ignored
 REPO = "https://github.com/3nchiridion/foldsmith/blob/main/"
+EVIDENCE = "https://github.com/3nchiridion/foldsmith-evidence/blob/main/"   # raw/ and verification/ live there
+MOVED = ("raw/", "verification/")
 PAGES = ["fold-aligned-split", "even-grid", "reflowing-columns", "arrangement"]
 POSES = ["closed", "closed-sideways", "book", "laptop", "tent", "flat-sideways", "flat-upright"]
 
@@ -63,12 +67,12 @@ def relink(text, src):
             return m.group(0)
         path, _, anchor = target.partition("#")
         resolved = (base / path).resolve().relative_to(ROOT).as_posix()
-        if resolved.startswith("verification/matrices/") and resolved.endswith(".png"):
+        if resolved.startswith(("verification/matrices/", "docs/images/matrices/")) and resolved.endswith(".png"):
             return f"{label}(matrices/{pathlib.Path(resolved).name})"
         if (resolved.startswith("patterns/") and pathlib.Path(resolved).stem in PAGES) or (
                 resolved.startswith("Sources/Patterns/") and resolved.endswith(".swift")):
             return f"{label}({'' if beside_pages(src) else 'patterns/'}{pathlib.Path(resolved).name})"
-        return f"{label}({REPO}{resolved}{'#' + anchor if anchor else ''})"
+        return f"{label}({EVIDENCE if resolved.startswith(MOVED) else REPO}{resolved}{'#' + anchor if anchor else ''})"
 
     text = re.sub(r"(!?\[[^\]]*\])\(([^)\s]+)\)", fix, text)
     return code_paths(text, src)
@@ -93,6 +97,11 @@ def code_paths(text, src):
         if clean.startswith("skills/foldsmith-duo/") and (ROOT / clean).exists():
             here = "references/patterns" if beside_pages(src) else "references"
             return f"{before}[`{path}`]({os.path.relpath(clean[len('skills/foldsmith-duo/'):], here)})"
+        if clean.startswith(MOVED):   # not in this checkout: link by its shape (a glob or a placeholder stays plain text)
+            if any(c in clean for c in "*?<>"):
+                return m.group(0)
+            folder = path.endswith("/") or "." not in clean.rsplit("/", 1)[-1]
+            return f"{before}[`{path}`]({EVIDENCE.replace('/blob/', '/tree/') if folder else EVIDENCE}{clean})"
         if not (clean.startswith(ROOTS) or clean in ROOT_FILES) or not (ROOT / clean).exists() or ignored(clean):
             return m.group(0)
         if clean.startswith("patterns/") and pathlib.Path(clean).stem in PAGES:
@@ -110,7 +119,7 @@ def code_paths(text, src):
 
 
 def metrics():
-    d = json.loads((ROOT / "raw/metrics.json").read_text())
+    d = json.loads((ROOT / "patterns/metrics.json").read_text())
     def extent(r):
         f = r["frame"]
         lo, size = (f["x"], f["w"]) if f["h"] > f["w"] else (f["y"], f["h"])
@@ -128,9 +137,10 @@ def metrics():
         at = f"{hinge['status']} {hinge['angleDegrees']:.1f}°" if hinge.get("angleDegrees") is not None else "not read"
         rows.append(f"| {pose} | {s['window']['w']:g} × {s['window']['h']:g} | {inset} | {s['hSizeClass']}/{s['vSizeClass']} | "
                     f"{'none' if edge in (None, 'nil') else edge} | {div} | {occ} | {at} |")
-    return (header("raw/metrics.json") + "# Measured pose metrics\n\n"
+    return (header("patterns/metrics.json") + "# Measured pose metrics\n\n"
             "iPhone Duo simulator, iOS 27.1. Points, window coordinates; division frames include their 20 pt margins. "
-            "Source: `raw/metrics.json` (settled sample after launch), notes in `raw/METRICS-NOTES.md`.\n\n"
+            "Source: `raw/metrics.json` (settled sample after launch; copied to `patterns/metrics.json`), notes in "
+            "`raw/METRICS-NOTES.md`.\n\n"
             "| Pose | Window | Safe area | Classes h/v | Vertical bar | Division | Active occlusions | Hinge |\n"
             "|---|---|---|---|---|---|---|---|\n" + "\n".join(rows) + "\n")
 
@@ -174,7 +184,7 @@ def plan():
     out = {
         "references/decision-table.md": header("patterns/DECISION-TABLE.md") + relink((ROOT / "patterns/DECISION-TABLE.md").read_text(), "patterns/DECISION-TABLE.md"),
         "references/taxonomy.md": header("patterns/TAXONOMY.md") + relink((ROOT / "patterns/TAXONOMY.md").read_text(), "patterns/TAXONOMY.md"),
-        "references/metrics.md": code_paths(metrics(), "raw/metrics.json"),
+        "references/metrics.md": code_paths(metrics(), "patterns/metrics.json"),
     }
     for page in PAGES:
         src = f"patterns/{page}.md"
@@ -182,7 +192,7 @@ def plan():
             out[f"references/patterns/{page}.md"] = header(src) + relink((ROOT / src).read_text(), src)
     for f in sorted((ROOT / "Sources/Patterns").glob("*.swift")):
         out[f"references/patterns/{f.name}"] = f.read_bytes()
-    for m in sorted((ROOT / "verification/matrices").glob("*.png")):
+    for m in sorted((ROOT / "docs/images/matrices").glob("*.png")):
         out[f"references/patterns/matrices/{m.name}"] = m.read_bytes()
 
     out["LICENSE"] = (ROOT / "LICENSE").read_bytes()

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Phase 3: capture the pattern catalog in every pose → verification/matrices/<pattern>/<config>-<pose>.{png,json}
+# Phase 3: capture the pattern catalog in every pose → verification/matrices/<pattern>/<config>-<pose>.{png,json} in the
+# evidence repository (3nchiridion/foldsmith-evidence, checked out beside this one or at $FOLDSMITH_EVIDENCE); the
+# frame records (.json) are copied to Tests/Fixtures/matrices/, where the tests read them.
 #
 # Usage:
 #   DUO_UDID=<udid> DUO_PY=/path/to/duo.py scripts/capture-catalog.sh [<config> ...]
@@ -18,7 +20,9 @@ UDID="${DUO_UDID:?set DUO_UDID}"
 DUO_PY="${DUO_PY:?set DUO_PY to duo.py}"
 BUNDLE=dev.enchiridion.duopatterns.catalog
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="${OUT:-$ROOT/verification/matrices}"
+EVIDENCE="${FOLDSMITH_EVIDENCE:-$ROOT/../foldsmith-evidence}"
+DEFAULT_OUT="$EVIDENCE/verification/matrices"
+OUT="${OUT:-$DEFAULT_OUT}"
 WAIT="${WAIT:-6}"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 
@@ -106,4 +110,8 @@ for entry in "${POSES[@]}"; do
   done
 done
 xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
+if [ "$OUT" = "$DEFAULT_OUT" ]; then
+  (cd "$OUT" && find . -mindepth 2 -name '*.json' -exec rsync -R {} "$ROOT/Tests/Fixtures/matrices/" \;)
+  echo "frame records → Tests/Fixtures/matrices"
+fi
 echo "done → $OUT"

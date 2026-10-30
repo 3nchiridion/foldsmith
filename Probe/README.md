@@ -6,7 +6,7 @@ margins and active state, hinge angle and status, scene and screen bounds. One J
 with `seq`, `t` and `sinceLastChange` so first-frame vs settled behaviour is measurable.
 
 Compiled and run on the iOS 27.1 iPhone Duo simulator on 2026-10-25, in all seven drivable poses
-(`raw/METRICS-NOTES.md`). What the SDK says about the API questions it was written around is in `raw/sdk/DIFF.md`.
+([`raw/METRICS-NOTES.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/METRICS-NOTES.md)). What the SDK says about the API questions it was written around is in [`raw/sdk/DIFF.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/sdk/DIFF.md).
 
 ## Build
 ```sh
@@ -19,6 +19,6 @@ xcrun simctl install "$DUO_UDID" build/Build/Products/Debug-iphonesimulator/DuoP
 Then `DUO_UDID=… DUO_PY=… ../scripts/run-probe.sh`.
 
 ## Output
-`raw/metrics.jsonl` (schema in `Metrics.swift`, `schema: 2`), `raw/apple-apps/_probe/<pose>-inner.png` or
+[`raw/metrics.jsonl`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.jsonl) (schema in `Metrics.swift`, `schema: 2`), [`raw/apple-apps/_probe/<pose>-inner.png`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/_probe) or
 `<pose>-cover.png` (the display that was drawing) with the overlay:
 blue = safe-area frame, red = active division, orange = inactive division, purple = occlusion.

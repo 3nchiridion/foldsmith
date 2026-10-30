@@ -1,7 +1,0 @@
-2b2e1dc Duo: feeds → Fold-aligned split, three levels (the sidebar beside the article)
-20a5cb1 Duo: report
-2b5f2a9 Duo: add-feed → Fold-aligned split
-936019c Duo: settings → Fold-aligned split
-ebe206a Duo: timeline → Fold-aligned split
-67b5cc7 Duo: article → Fold-aligned split
-3f422d7 Duo: audit of the unmodified app

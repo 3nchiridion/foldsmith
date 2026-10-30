@@ -8,10 +8,10 @@ the player's controls over the text, Accessibility Reader's shape) and the "befo
 fixed third of the width beside the transcript, in an `HStack`, the shape of Wikipedia's inline contents). The red
 band is the active division; a dashed outline is the inactive one.
 
-![Arrangement pose matrix](../verification/matrices/arrangement.png)
+![Arrangement pose matrix](../docs/images/matrices/arrangement.png)
 
-Citations: `[tt-<id> m:ss]` is an Apple tech talk at that chapter (notes in `raw/apple-docs/`), `[hig …]` the HIG
-article, `[apple-apps/<app>/<pose>]` a screenshot in `raw/apple-apps/`, `[metrics:<pose>]` `raw/metrics.json`;
+Citations: `[tt-<id> m:ss]` is an Apple tech talk at that chapter (notes in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/)), `[hig …]` the HIG
+article, `[apple-apps/<app>/<pose>]` a screenshot in [`raw/apple-apps/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/), `[metrics:<pose>]` [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.json);
 T-codes are the defect classes in `patterns/TAXONOMY.md`, P-numbers the patterns in `patterns/DECISION-TABLE.md`,
 and G1–G6 the gates in `EVAL.md`.
 
@@ -19,7 +19,7 @@ and G1–G6 the gates in `EVAL.md`.
 Supporting content: a secondary view that means something only next to its primary (a transcript, a queue, an
 inspector, a table of contents). Decision table rows `supporting / viewing`, `supporting / editing` and `supporting /
 controlling`. Corpus: Wikipedia's table of contents, an inline sidebar of 0–318 pt beside the article on the inner
-display, whose article pane runs across the fold in book (`verification/runs/Wikipedia/audit.md`, `contents`).
+display, whose article pane runs across the fold in book ([`verification/runs/Wikipedia/audit.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/runs/Wikipedia/audit.md), `contents`).
 Apple: Podcasts sets its Now Playing screen beside its transcript as a split, and Accessibility Reader floats its
 controls over the text as an overlay [tt-111463 9:20, 14:39].
 
@@ -38,7 +38,7 @@ controls over the text as an overlay [tt-111463 9:20, 14:39].
   folding then moves the boundary; the inner display's other patterns lay out the flat phone as if it were folded.
 
 ## Solution
-Measured in the catalog (`verification/matrices/arrangement/`, window points; the vertical bar is the trailing or
+Measured in the catalog ([`verification/matrices/arrangement/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/matrices/arrangement/), window points; the vertical bar is the trailing or
 leading 84 pt band).
 
 | Pose | Split (`aligned`) | Overlay (`overlay`) | Source |
@@ -48,7 +48,7 @@ leading 84 pt band).
 | book | side by side: primary 0–455.5, secondary 495.5–867.2; the boundary is the division | side by side: secondary 0–455.7, the primary (controls 597.2–765.2) centred on the trailing half, at its foot | [hig alt text split arrangement; hig arrangement views; overview] |
 | laptop, tent | one above the other: primary y 82–455.5 on the top half, secondary 495.5–917 on the bottom half | secondary y 82–455.5, primary on the bottom half, at its foot | split [tt-111463 12:00]; overlay [overview; tt-111463 4:00] |
 | flat-sideways | as book: primary 0–455.5, secondary 495.5–867.2, the boundary told where the inactive division is | the secondary fills 0–867, the primary centred at its foot (controls 349.5–517.5, across the inactive division) | [hig arrangement views; tt-111463 7:50] |
-| flat-upright | as laptop: primary y 82–455.5, secondary 495.5–917 (**differs from Podcasts' upright frame**, `verification/oracle/arrangement.md`) | the secondary fills, the primary at its foot | [tt-111463 12:00; tt-111463 7:50] |
+| flat-upright | as laptop: primary y 82–455.5, secondary 495.5–917 (**differs from Podcasts' upright frame**, [`verification/oracle/arrangement.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/arrangement.md)) | the secondary fills, the primary at its foot | [tt-111463 12:00; tt-111463 7:50] |
 
 The rule: put the two views in one `ArrangementView` and let the system place them. Use `.split` when neither view
 may cover the other (a transcript, a queue you read) and `.overlay` when the primary is a foreground over scrollable
@@ -73,13 +73,13 @@ half [overview].
   folding its boundary moved 22 pt (433.5 to 455.5) and its text about 62 pt (453.5 to 515.7). The upright pose was
   not measured before the rule. The ratio is the system's input, not a frame: where the system cannot honour it, its
   own split wins. The overlay takes no ratio: flat sideways its controls stay centred across the inactive division
-  (349.5–517.5), as Accessibility Reader's do (`verification/oracle/arrangement.md`), and move to the trailing half
+  (349.5–517.5), as Accessibility Reader's do ([`verification/oracle/arrangement.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/arrangement.md)), and move to the trailing half
   on folding (597.2–765.2).
 - In laptop and tent the split puts a player's controls on the top half, where the talk puts media controls on the
   bottom one [tt-111463 4:00]; a primary that is mostly controls fits the overlay better, which puts them there.
 - A folded overlay gives its primary a whole half. Controls alone leave that half mostly empty (the catalog's laptop
   pose): an overlay suits a primary with something to show in a half, as Podcasts' queue beside its player
-  [tt-111463 13:21; frame 14:10, `verification/oracle/arrangement.md`, which draws no crease, so whether that phone is
+  [tt-111463 13:21; frame 14:10, [`verification/oracle/arrangement.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/arrangement.md), which draws no crease, so whether that phone is
   folded is not shown].
 - The turned cover shows the primary alone in a split, so whatever the secondary holds must be reachable from the
   primary there (a button that presents it). Neither the reference nor the catalog does this: the catalog's Queue
@@ -91,13 +91,13 @@ half [overview].
 ## Known uses
 - Apple: Podcasts' Now Playing beside its transcript (split) and Accessibility Reader's controls over its text
   (overlay), shown in the talk *Strike a pose with adaptive layouts on iPhone Duo* [tt-111463 9:20, 14:39]; not on
-  the 27.1 simulator. G4 sets the reference beside those frames (`verification/oracle/arrangement.md`): flat sideways
+  the 27.1 simulator. G4 sets the reference beside those frames ([`verification/oracle/arrangement.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/arrangement.md)): flat sideways
   and in book, the same assignment as Podcasts (player leading, transcript trailing, clear of the division), with
   different bars; upright it differs, since Podcasts shows one screen with its transcript above its controls and its
   bar at the foot, where the reference stacks the whole player above the transcript; the overlay has Accessibility
   Reader's assignment flat sideways; no frame of either app was found on the cover or in tent.
 - Corpus before: Wikipedia's table of contents, book: an inline sidebar of 0–318 pt and the article pane across the
-  fold (T14), with the "W" on it (T1) (`verification/runs/Wikipedia/audit.md`; the shot is in the run's working
+  fold (T14), with the "W" on it (T1) ([`verification/runs/Wikipedia/audit.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/runs/Wikipedia/audit.md); the shot is in the run's working
   copy, not in git). The catalog's `inline` variant reproduces the shape: its transcript's text spans 309–847 pt in
   book, and the artwork, centred in its full-height pane, lies across the fold in laptop and tent. Wikipedia shows
   the contents as a modal at compact width and inline at regular width, and recreates their view controller each
@@ -135,7 +135,7 @@ tent). The split's two views are recorded as panes, the overlay's secondary as a
 reads, its leaves and its text. Run on every capture by `swift test` (`Tests/DuoPoseTestingTests/MatrixTests.swift`);
 the `inline` variant must show T5 in book and flat sideways, T1 in laptop and tent, and nothing else.
 
-Result on the committed captures (`swift run duo-detect verification/matrices`; · = no finding):
+Result on the committed captures (`swift run duo-detect Tests/Fixtures/matrices`; · = no finding):
 
 | config | closed | closed-sideways | book | laptop | tent | flat-sideways | flat-upright |
 |---|---|---|---|---|---|---|---|

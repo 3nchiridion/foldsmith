@@ -4,7 +4,7 @@
 
 Inputs are things an agent can read from source or measure; outputs are pattern names.
 A cell is valid only with a citation: `[apple-apps/<app>/<pose>]`, `[metrics:<pose>]`, or Apple's published guidance
-`[tt-<id> m:ss]` / `[hig <section>]` / `[doc <symbol>]` from [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith/tree/main/raw/apple-docs) (EVAL.md §5, amended 2026-10-26).
+`[tt-<id> m:ss]` / `[hig <section>]` / `[doc <symbol>]` from [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/) (EVAL.md §5, amended 2026-10-26).
 Tech-talk citations give the chapter's start time. Corpus findings never justify a cell; they are the defects the cells
 prevent ([`patterns/TAXONOMY.md`](https://github.com/3nchiridion/foldsmith/blob/main/patterns/TAXONOMY.md)). A cell with no citation reads `UNJUSTIFIED`, and its pattern cannot ship there.
 
@@ -22,7 +22,7 @@ opens. Cards of different kinds, each complete where it stands and browsed in an
 rather than the point (Wikipedia's Explore: a featured article's summary, the picture of the day, a list of top reads, a
 game), and items that act in place (photo cards, tiles) → `peer`: columns of cards. One conversation read in order with
 nothing to open (a chat transcript) → `continuous`. IceCubesApp's timeline and Wikipedia's search results are
-hierarchical; Wikipedia's Explore is peer [verification/runs/IceCubesApp; verification/runs/Wikipedia].
+hierarchical; Wikipedia's Explore is peer [[verification/runs/IceCubesApp](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/IceCubesApp); [verification/runs/Wikipedia](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/Wikipedia)].
 
 A map is `continuous`, but the row's cells (P2) are for text read in order, and no Apple source reflows a map. What
 holds for it is the rule every pattern carries: scrolling content may cross the fold, a fixed control may not
@@ -30,13 +30,13 @@ holds for it is the rule every pattern carries: scrolling content may cross the 
 field, a card or a button over it keeps off an active division, on one half or the other. This is a rule, not a cell:
 the screen gets no pattern, and its fix is to move what sits on the map. (The defect it prevents: Wikipedia's Places
 spans its search field across the fold in book, while its list panel already keeps to the leading half
-[raw/corpus/BUILDS.md wikipedia-ios].)
+[[raw/corpus/BUILDS.md](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/BUILDS.md) wikipedia-ios].)
 - `object` — a single non-scrolling artifact with controls (player, game board, calculator, camera, a skeuomorphic object)
 
 **I2 Interaction mode** (what the hand is doing most of the time)
 - `viewing` · `editing` · `controlling` (frequent taps on a stable surface)
 
-**I3 Pose × size class** (measured, [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith/blob/main/raw/metrics.json), iOS 27.1 simulator)
+**I3 Pose × size class** (measured, [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.json), iOS 27.1 simulator)
 | Pose | Display | Window (pt) | hClass | vClass | Division | Bars | Source |
 |---|---|---|---|---|---|---|---|
 | closed | outer | 466 × 678 | compact | regular | none | vertical, trailing (hardware side) | [metrics:closed] |
@@ -48,7 +48,7 @@ spans its search field across the fold in book, while its list panel already kee
 | flat-upright | inner | 669 × 951 | regular | regular | inactive, horizontal | horizontal (top) | [metrics:flat-upright] |
 | split-view half | inner | 475 × 669 | compact | regular | may be active | vertical, outer edge | not measurable headless; [hig vertical-controls], Group Lab #59 |
 
-Tent and laptop report identical windows, insets and division ([`raw/METRICS-NOTES.md`](https://github.com/3nchiridion/foldsmith/blob/main/raw/METRICS-NOTES.md)), and both Apple apps draw them
+Tent and laptop report identical windows, insets and division ([`raw/METRICS-NOTES.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/METRICS-NOTES.md)), and both Apple apps draw them
 identically [apple-apps/settings/tent, apple-apps/safari/tent]. Geometry carries over; Apple's laptop rule for controls
 rests on a stable touch surface [tt-111463 4:00], which tent does not have, so tent cells for editing and controlling
 stay `UNJUSTIFIED`.
@@ -104,7 +104,7 @@ close them.
    [apple-apps/settings/laptop]; an arrangement would split vertically because the window is taller than wide
    [tt-111463 12:00]. The table follows Settings for `hierarchical` (system split views adapt on their own
    [tt-111463 8:39]) and the shape rule for `supporting`.
-3. **Laptop, controls.** Neither Apple app moves controls to the lower half ([`raw/apple-apps/README.md`](https://github.com/3nchiridion/foldsmith/blob/main/raw/apple-apps/README.md)), as the talk
+3. **Laptop, controls.** Neither Apple app moves controls to the lower half ([`raw/apple-apps/README.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/apple-apps/README.md)), as the talk
    advises for a stable touch surface [tt-111463 4:00]. The table follows the talk for `controlling` and `editing`
    rows, and the apps for `viewing` rows.
 4. **Sheets in book.** The talk sends alerts to the trailing side [tt-111463 4:00]; the system's automatic placement
@@ -115,7 +115,7 @@ close them.
 
 | Cell | The table says | The reference does | Why | Closes when |
 |---|---|---|---|---|
-| `hierarchical / *` in laptop, tent, flat-upright | P1 two panes [apple-apps/settings/laptop, flat-upright] | one pane (the detail), the sidebar one tap away | SwiftUI's `NavigationSplitView` overlays its sidebar in the 669 pt upright window whatever the style, visibility or sidebar width ([`patterns/fold-aligned-split.md`](patterns/fold-aligned-split.md)); Settings is a UIKit split that tiles | closed. UIKit apps: `.tile` with `minimumSecondaryColumnWidth = 320` tiles two panes at 669 pt (NetNewsWire, [`verification/runs/NetNewsWire/`](https://github.com/3nchiridion/foldsmith/tree/main/verification/runs/NetNewsWire); [`patterns/fold-aligned-split.md`](patterns/fold-aligned-split.md) § UIKit). SwiftUI apps: `FoldAlignedTiledSplit` does the same upright and stays `FoldAlignedSplit` where the system draws a vertical bar (catalog `tiled`, `tiled-three`: sidebar 0–320, detail 320–669 pt), at the cost of rebuilding both panes when the phone moves between the two |
+| `hierarchical / *` in laptop, tent, flat-upright | P1 two panes [apple-apps/settings/laptop, flat-upright] | one pane (the detail), the sidebar one tap away | SwiftUI's `NavigationSplitView` overlays its sidebar in the 669 pt upright window whatever the style, visibility or sidebar width ([`patterns/fold-aligned-split.md`](patterns/fold-aligned-split.md)); Settings is a UIKit split that tiles | closed. UIKit apps: `.tile` with `minimumSecondaryColumnWidth = 320` tiles two panes at 669 pt (NetNewsWire, [`verification/runs/NetNewsWire/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/NetNewsWire/); [`patterns/fold-aligned-split.md`](patterns/fold-aligned-split.md) § UIKit). SwiftUI apps: `FoldAlignedTiledSplit` does the same upright and stays `FoldAlignedSplit` where the system draws a vertical bar (catalog `tiled`, `tiled-three`: sidebar 0–320, detail 320–669 pt), at the cost of rebuilding both panes when the phone moves between the two |
 | `supporting / *` closed | P4 primary only (viewing and editing: secondary collapses) [hig arrangement-views; tt-111463 13:21; tt-111463 9:20] | `Arrangement(.split)`: both views, one above the other (primary y 82–363, secondary 363–644 pt); `.overlay`: the primary over the secondary | the system's split stacks two views in a window taller than wide [tt-111463 12:00], and the citations name the overlay's collapsing, which the reference's overlay does not do ([`patterns/arrangement.md`](patterns/arrangement.md)) | an Apple frame of an arrangement on the cover, or a split whose secondary collapses on the cover is captured |
 
 The cells stay as cited: the first records what Apple's app does, the second what Apple's guidance says. The gaps are

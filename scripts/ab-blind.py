@@ -18,6 +18,7 @@ Needs Pillow for the matrix image (pip install pillow); without it the packet is
 import csv
 import hashlib
 import json
+import os
 import pathlib
 import random
 import secrets
@@ -25,7 +26,7 @@ import shutil
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-AB = ROOT / "verification" / "ab"
+AB = pathlib.Path(os.environ.get("FOLDSMITH_EVIDENCE", ROOT.parent / "foldsmith-evidence")) / "verification" / "ab"
 POSES = ["closed", "closed-sideways", "book", "laptop", "tent", "flat-sideways", "flat-upright"]
 CRITERIA = [f"R{i}" for i in range(1, 8)]
 

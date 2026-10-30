@@ -1,8 +1,8 @@
 // duo-detect — run the taxonomy detectors on captures: the pattern catalog's frame records, or the accessibility
 // snapshots of any app (scripts/capture-corpus-flow.sh with SNAPSHOT=1, scripts/capture-poses.sh).
 //
-//   swift run duo-detect verification/matrices                    # every <pattern>/<config>-<pose>.json below it
-//   swift run duo-detect verification/ab/baseline                 # every <app>/<screen>-<pose>.json below it
+//   swift run duo-detect Tests/Fixtures/matrices                  # every <pattern>/<config>-<pose>.json below it
+//   swift run duo-detect ../foldsmith-evidence/verification/ab/baseline   # every <app>/<screen>-<pose>.json below it
 //   swift run duo-detect <dir> --markdown FILE                    # also write the config × pose table
 //
 // A catalog record carries its own pose; an accessibility snapshot takes the measured pose of its name from

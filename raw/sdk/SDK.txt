@@ -1,5 +1,0 @@
-SDK: /Applications/Xcode-27.1.0.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.1.sdk
-Xcode 27.1
-Build version 27A9275
-      "BuildVersionPlatformID" => "7"
-  "Version" => "27.1"

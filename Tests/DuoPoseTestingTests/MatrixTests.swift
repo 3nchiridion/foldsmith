@@ -4,10 +4,11 @@ import Foundation
 
 // The pattern gate on real captures: every reference implementation is clean in every pose, and each "before"
 // variant shows the defect it was built to reproduce, in book (and for T5 flat-sideways, for T1 laptop and tent). The captures are
-// verification/matrices/<pattern>/<config>-<pose>.json, written by scripts/capture-catalog.sh on the Duo simulator.
+// Tests/Fixtures/matrices/<pattern>/<config>-<pose>.json: the frame records scripts/capture-catalog.sh writes on the Duo
+// simulator beside each shot (the shots are in foldsmith-evidence, verification/matrices/), copied here by it.
 private let matrices = URL(fileURLWithPath: #filePath)
     .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-    .appendingPathComponent("verification/matrices")
+    .appendingPathComponent("Tests/Fixtures/matrices")
 
 /// config ("pattern/stem") → pose → classes found
 private func run() throws -> [String: [String: Set<String>]] {

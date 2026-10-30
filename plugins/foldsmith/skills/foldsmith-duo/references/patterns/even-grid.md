@@ -10,15 +10,15 @@ the active division; a dashed outline is the inactive one.
 
 ![Even grid pose matrix](matrices/grid.png)
 
-Citations: `[tt-<id> m:ss]` is an Apple tech talk at that chapter (notes in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith/tree/main/raw/apple-docs)), `[hig …]` the HIG
-article, `[apple-apps/<app>/<pose>]` a screenshot in [`raw/apple-apps/`](https://github.com/3nchiridion/foldsmith/tree/main/raw/apple-apps), `[metrics:<pose>]` [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith/blob/main/raw/metrics.json);
+Citations: `[tt-<id> m:ss]` is an Apple tech talk at that chapter (notes in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/)), `[hig …]` the HIG
+article, `[apple-apps/<app>/<pose>]` a screenshot in [`raw/apple-apps/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/), `[metrics:<pose>]` [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.json);
 T-codes are the defect classes in [`patterns/TAXONOMY.md`](https://github.com/3nchiridion/foldsmith/blob/main/patterns/TAXONOMY.md), P-numbers the patterns in [`patterns/DECISION-TABLE.md`](https://github.com/3nchiridion/foldsmith/blob/main/patterns/DECISION-TABLE.md),
 and G1–G6 the gates in [`EVAL.md`](https://github.com/3nchiridion/foldsmith/blob/main/EVAL.md).
 
 ## Context
 Peer content: items of equal standing, browsed or controlled one at a time. Decision table rows `peer / viewing`
 (feeds, galleries, photo grids) and `peer / controlling` (dashboard tiles). Corpus: Wikipedia's Explore feed, whose
-trailing column starts at 458.7 pt, inside the fold [raw/corpus/defects.csv, T14]. Apple: Fitness's grid keeps its
+trailing column starts at 458.7 pt, inside the fold [[raw/corpus/defects.csv](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/defects.csv), T14]. Apple: Fitness's grid keeps its
 outer margins and widens the spacing at the hinge [tt-111463 5:12].
 
 ## Forces
@@ -46,7 +46,7 @@ The rule: wherever the window has a vertical division, active or inactive, each 
 of the same width, set by the narrower half; the outer margins stay 16 pt and the spare width goes into the gutter at
 the hinge. Rows line up across the fold because every column is the same width. Fitness keeps its margins and widens
 the spacing at the hinge too [tt-111463 5:12], but only to the division: its frames show its leading columns wider
-than its trailing ones ([`verification/oracle/even-grid.md`](https://github.com/3nchiridion/foldsmith/blob/main/verification/oracle/even-grid.md)). With no vertical division it is an ordinary grid, rounded
+than its trailing ones ([`verification/oracle/even-grid.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/even-grid.md)). With no vertical division it is an ordinary grid, rounded
 down to an even count once the window is 600 pt or wider.
 
 ## Consequences
@@ -54,7 +54,7 @@ down to an even count once the window is 600 pt or wider.
   keeps a 40 pt gutter but makes the trailing tiles shorter, so rows no longer line up (seen in the catalog before
   this rule; trailing tiles sat lower than leading ones). Fitness takes that alternative without that cost: its
   cards' heights do not follow their widths, so its rows still line up across the fold
-  ([`verification/oracle/even-grid.md`](https://github.com/3nchiridion/foldsmith/blob/main/verification/oracle/even-grid.md)).
+  ([`verification/oracle/even-grid.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/even-grid.md)).
 - Four columns where five fit: about 20 % less density in book than the naive grid.
 - The narrower half decides: a minimum cell width above 171.75 pt leaves one column per half in book; 110.5 pt or less
   gives three per half.
@@ -66,16 +66,16 @@ down to an even count once the window is 600 pt or wider.
 
 ## Known uses
 - Apple: Fitness, as described in [tt-111463 5:12] and shown in that talk's frames; not on the 27.1 simulator. G4 sets
-  the reference beside those frames ([`verification/oracle/even-grid.md`](https://github.com/3nchiridion/foldsmith/blob/main/verification/oracle/even-grid.md)): in book the same count, two columns a side,
+  the reference beside those frames ([`verification/oracle/even-grid.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/even-grid.md)): in book the same count, two columns a side,
   and the same bar placement, but Fitness widens its leading columns (about 212 pt against 171) where the reference
   widens the gutter, and the bar items differ; open flat, Fitness spaces its four columns evenly where the reference
   keeps its book layout.
 - Corpus before: Wikipedia Explore, book, a card column starting at 458.7 pt
-  ([`raw/corpus/evidence/Wikipedia/explore-book-inner.png`](https://github.com/3nchiridion/foldsmith/blob/main/raw/corpus/evidence/Wikipedia/explore-book-inner.png)). The catalog's `naive` variant reproduces the shape: its
+  ([`raw/corpus/evidence/Wikipedia/explore-book-inner.png`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/evidence/Wikipedia/explore-book-inner.png)). The catalog's `naive` variant reproduces the shape: its
   middle column spans 354.8–512.2 pt.
 - Corpus after: Wikipedia's Explore (Community), a UIKit collection view, one column per half, and its tabs grid, a
   SwiftUI grid, two per half; every column as wide as the narrower half allows, the spare width in the gutter: verified
-  in all seven poses by the skill ([`verification/runs/Wikipedia/`](https://github.com/3nchiridion/foldsmith/tree/main/verification/runs/Wikipedia)).
+  in all seven poses by the skill ([`verification/runs/Wikipedia/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/Wikipedia/)).
 
 ## When not to use it
 - Uniform rows that each stand for a page a tap opens (a timeline of posts, a list of articles, search results):
@@ -96,7 +96,7 @@ T1 (crease-straddle, for any fixed control over the grid), T14 (columns-off-fold
 `swift test` ([`Tests/DuoPoseTestingTests/MatrixTests.swift`](https://github.com/3nchiridion/foldsmith/blob/main/Tests/DuoPoseTestingTests/MatrixTests.swift)); the `naive` variant must show T14 in book and nothing
 else.
 
-Result on the committed captures (`swift run duo-detect verification/matrices`; · = no finding):
+Result on the committed captures (`swift run duo-detect Tests/Fixtures/matrices`; · = no finding):
 
 | config | closed | closed-sideways | book | laptop | tent | flat-sideways | flat-upright |
 |---|---|---|---|---|---|---|---|

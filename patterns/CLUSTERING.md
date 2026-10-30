@@ -1,14 +1,14 @@
 # Phase 2 clustering — 2026-10-26
 
-Input: `raw/corpus/defects.csv` at the end of Mac step 4 (49 rows, eight apps), `raw/metrics.json`, `raw/apple-apps/`,
-`raw/apple-docs/`, and Apple engineers' Group Lab answers (`raw/complaints/README.md §A`, now read in full).
+Input: [`raw/corpus/defects.csv`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/defects.csv) at the end of Mac step 4 (49 rows, eight apps), [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.json), [`raw/apple-apps/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/),
+[`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/), and Apple engineers' Group Lab answers (`raw/complaints/README.md §A`, now read in full).
 Output: the settled `patterns/TAXONOMY.md`, the reclassified `defects.csv` (29 rows), and the filled
 `patterns/DECISION-TABLE.md`. Citation rule as amended on 2026-10-26 (EVAL.md §5).
 
 ## 1. Two corrections before clustering
 
-**The fold band.** The division frame in `raw/metrics.json` starts at 455.5 pt and is 40 pt wide: 455.5–495.5 pt,
-centred on the display's middle (475.5 pt), 20 pt margin each side. `raw/METRICS-NOTES.md` said "centred at 455.5", and
+**The fold band.** The division frame in [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.json) starts at 455.5 pt and is 40 pt wide: 455.5–495.5 pt,
+centred on the display's middle (475.5 pt), 20 pt margin each side. [`raw/METRICS-NOTES.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/METRICS-NOTES.md) said "centred at 455.5", and
 Home Assistant, Wikipedia, Signal and Firefox were measured against 435.5–475.5. Every fold finding was re-measured
 against the frame. All book findings hold. Four laptop/tent rows fail (the element ends above 455.5 pt), and one new row
 appears: NetNewsWire's No selection label sits in the laptop band, which the pilot never measured.

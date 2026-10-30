@@ -39,10 +39,8 @@ At the prompt of a Claude Code terminal session:
 ```
 
 Answer `y` to add the marketplace, then pick a scope. From a shell: `claude plugin install foldsmith --marketplace 3nchiridion/foldsmith`.
-If `--marketplace` is not offered, Claude Code is older than 2.1.308: run `claude update` first. To skip the
-repository's evidence (about 79 MB in all): `claude plugin marketplace add 3nchiridion/foldsmith --sparse
-.claude-plugin plugins`, then `claude plugin install foldsmith@foldsmith`. In the desktop app: click + next to the prompt box, then Plugins, Add marketplace
-with `3nchiridion/foldsmith`, then Add plugin.
+If `--marketplace` is not offered, Claude Code is older than 2.1.308: run `claude update` first. In the desktop app: click +
+next to the prompt box, then Plugins, Add marketplace with `3nchiridion/foldsmith`, then Add plugin.
 
 ## Development
 The pane's hooks have tests in `hooks/register.test.tsx`; run them with `claude plugin test plugins/foldsmith`

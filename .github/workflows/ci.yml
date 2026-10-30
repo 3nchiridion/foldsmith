@@ -63,7 +63,8 @@ jobs:
           xcodebuild build-for-testing -project Tap/DuoTap.xcodeproj -scheme DuoTapUITests -destination "platform=iOS Simulator,id=${{ steps.duo.outputs.udid }}" -derivedDataPath Tap/build | tail -5
 
   goldens:
-    # G2 (EVAL.md): capture the catalog in every pose and compare it with the committed matrices, the goldens. On
+    # G2 (EVAL.md): capture the catalog in every pose and compare it with the goldens, the matrices kept in the evidence
+    # repository (3nchiridion/foldsmith-evidence, verification/matrices). On
     # demand only (Actions → ci → Run workflow, "goldens" ticked; `gh workflow run ci.yml -f goldens=true`): a full
     # capture takes about 18 minutes of macOS runner time (measured on the working repository's runner; not yet timed
     # on the hosted image).
@@ -76,6 +77,13 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          persist-credentials: false
+      - name: The goldens, from the evidence repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: 3nchiridion/foldsmith-evidence
+          path: evidence
+          sparse-checkout: verification/matrices
           persist-credentials: false
       - name: Select Xcode 27.1
         run: |
@@ -112,7 +120,7 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/venv"
           "$RUNNER_TEMP/venv/bin/pip" install -q --only-binary=:all: "pillow==13.0.0"
       - name: Compare with the committed matrices (G2)
-        run: '"$RUNNER_TEMP/venv/bin/python" scripts/diff-matrix.py "$RUNNER_TEMP/goldens" verification/matrices'
+        run: '"$RUNNER_TEMP/venv/bin/python" scripts/diff-matrix.py "$RUNNER_TEMP/goldens" evidence/verification/matrices'
       - name: Keep the capture when it differs
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

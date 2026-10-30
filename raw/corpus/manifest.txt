@@ -1,8 +1,0 @@
-NetNewsWire https://github.com/Ranchero-Software/NetNewsWire.git d9ec7df6f92c53dcd4bc0d9a26d14d9c0716bf8b
-IceCubesApp https://github.com/Dimillian/IceCubesApp.git 98098b9c4b5928f89f338203193c2bf40ab7f38c
-wikipedia-ios https://github.com/wikimedia/wikipedia-ios.git 2031b8955e61ab78ae192026f62310be66c33578
-Signal-iOS https://github.com/signalapp/Signal-iOS.git 3ace2d5b98ca5be0c1cf57fce5154ee3c05f0fb8
-firefox-ios https://github.com/mozilla-mobile/firefox-ios.git 783d862f7e2789643ce4e4bf8c640107e4e10c78
-iOS https://github.com/home-assistant/iOS.git 3ef43557fcd40dacd4f7b39cea8c37c1065635d3
-ios-oss https://github.com/kickstarter/ios-oss.git 5f5463cfb830413d253efed45bfcec0322c9f152
-2048 https://github.com/danqing/2048.git 6f89eab8f3e5e044f66c381095a9f5402bacaab5

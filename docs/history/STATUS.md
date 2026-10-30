@@ -21,43 +21,43 @@ public, and step 14 published it as this repository (the last two sections).
 ## Done
 
 ### Cloud part (2026-10-24, no Xcode)
-- `raw/apple-docs/` — six tech talks (chapter maps, API lists, published code, close paraphrase), the HIG article,
+- [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/) — six tech talks (chapter maps, API lists, published code, close paraphrase), the HIG article,
   the Technology Overview, SwiftUI and UIKit doc-page facts. Transcripts deliberately not stored verbatim.
-- `raw/precedent/` — Microsoft's five dual-screen patterns and the TwoPaneLayout/WindowState/FoldableLayout
+- [`raw/precedent/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/precedent/) — Microsoft's five dual-screen patterns and the TwoPaneLayout/WindowState/FoldableLayout
   source (MIT, pinned), Android canonical layouts, a first vocabulary mapping.
-- `raw/complaints/` — Apple engineers' Group Lab answers (read in full; the last fifth on 2026-10-26), the 43-thread UIKit Q&A
+- [`raw/complaints/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/complaints/) — Apple engineers' Group Lab answers (read in full; the last fifth on 2026-10-26), the 43-thread UIKit Q&A
   digest, 12 real-app issues/PRs, community-measured metrics, 10 seed defect classes.
-- `raw/corpus/` — eight apps profiled; `manifest.txt` + `clone.sh`.
+- [`raw/corpus/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/corpus/) — eight apps profiled; `manifest.txt` + `clone.sh`.
 - `EVAL.md` pre-registration; `patterns/DECISION-TABLE.md` (inputs defined, cells empty), `patterns/TAXONOMY.md`
   (12 provisional classes), `patterns/TEMPLATE.md`; `skills/iphone-duo-patterns/SKILL.md` routing skeleton;
   `Package.swift` + `Sources/DuoPoseTesting` (three detector sketches, unit tests).
 
 ### Mac step 1 — SDK truth (merged, PR 1)
-- `raw/sdk/DIFF.md`: every Duo signature and default checked against the 27.1 SDK. Headline mismatches: no
+- [`raw/sdk/DIFF.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/sdk/DIFF.md): every Duo signature and default checked against the 27.1 SDK. Headline mismatches: no
   `ToolbarVerticalEdge` type (`toolbarVerticalEdge` is `HorizontalEdge?`); `DeviceHinge.Status` is a struct with
   three static cases, UIKit's `UIHinge.Status` an enum with four; `ReservedRegion` is not
   `CustomStringConvertible`; `axisBehavior` takes `ToolbarItemAxisBehavior`; two `overlayArrangementEdge`
   overloads; `.prefersTabBar` and `presentationPlacement` undocumented in the notes.
-- `raw/sdk/APPLE-SKILL.md`: Apple's `app-resizability` skill (Xcode 27.1) is a UIKit code-migration skill
+- [`raw/sdk/APPLE-SKILL.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/sdk/APPLE-SKILL.md): Apple's `app-resizability` skill (Xcode 27.1) is a UIKit code-migration skill
   (UIScreen.main, orientation, scene lifecycle, safe area, idiom). It names no layout pattern. The catalog sits
   above it and must not duplicate it.
 - `scripts/extract-sdk.sh` refuses SDKs below 27.1. Verbatim SDK and skill text is git-ignored.
 
 ### Mac step 2 — Probe (merged, PR 2)
-- DuoProbe built and run on the iOS 27.1 Duo simulator; all 7 drivable poses. `raw/metrics.json`,
-  `raw/metrics.jsonl` (72 samples), `raw/METRICS-NOTES.md`, screenshots in `raw/apple-apps/_probe/`.
+- DuoProbe built and run on the iOS 27.1 Duo simulator; all 7 drivable poses. [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.json),
+  [`raw/metrics.jsonl`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.jsonl) (72 samples), [`raw/METRICS-NOTES.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/METRICS-NOTES.md), screenshots in [`raw/apple-apps/_probe/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/_probe/).
 - Pose set grew to 8 (tent added from the HIG). Split-view half cannot be driven headless; it is a unit-test
   size, not a simulator pose.
 - Key numbers: inner window 951×669 / 669×951, cover 466×678; division 40 pt centred at 455.5, active only
   when part-folded; closed-sideways is compact/compact; first frame has no regions (they arrive in 0.1–0.3 s).
 
 ### Mac step 3 — Apple's apps as oracle (merged, PR 3)
-- `raw/apple-apps/`: **2 of 11 apps captured** (Settings, Safari); the simulator runtime ships no others.
+- [`raw/apple-apps/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/): **2 of 11 apps captured** (Settings, Safari); the simulator runtime ships no others.
 - Settings moves its split boundary onto the active vertical fold in book; Safari ignores every fold; neither
   follows the HIG's laptop advice; neither draws a vertical bar on the inner display.
 
 ### Mac step 4 — Corpus (pilot merged, PR 4; continuing)
-- `raw/corpus/BUILDS.md`, `raw/corpus/defects.csv`, `raw/corpus/evidence/<app>/`.
+- [`raw/corpus/BUILDS.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/BUILDS.md), [`raw/corpus/defects.csv`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/defects.csv), [`raw/corpus/evidence/<app>/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/corpus/evidence).
 - Pilot: 3 of 8 apps, launch screen only. Three defects, one per app, none yet seen in a second app:
   NEW-1 2048 traps at launch (no scene lifecycle, rebuilt with SDK 27.1); NEW-2 NetNewsWire's book split sits
   at ≈323 pt, off the fold; NEW-3 IceCubes' Add Account sheet lands on the leading half in book.
@@ -88,8 +88,8 @@ public, and step 14 published it as this repository (the last two sections).
   shows a gap they would fill.
 
 ## Phase 2 — clustering and the decision table (merged 2026-10-26, PR 10)
-- Citation rule amended before any pattern was named: Apple's published guidance in `raw/apple-docs/` now counts
-  (EVAL.md §5, DEVIATIONS.md). The rest of the Group Lab thread read (R1–R23 in `raw/complaints/README.md`).
+- Citation rule amended before any pattern was named: Apple's published guidance in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/) now counts
+  (EVAL.md §5, DEVIATIONS.md). The rest of the Group Lab thread read (R1–R23 in [`raw/complaints/README.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/complaints/README.md)).
 - Two corrections first (`patterns/CLUSTERING.md §1`): the fold band is 455.5–495.5 pt, not 435.5–475.5; and scrolling
   content crossing the laptop fold is Apple's prescribed behaviour, not a defect. 49 rows → 29.
 - `patterns/TAXONOMY.md` settled: admitted T1 crease-straddle (5 apps), T3, T5, T13 no-scene-lifecycle (was NEW-1),
@@ -106,8 +106,8 @@ public, and step 14 published it as this repository (the last two sections).
 - `Examples/Catalog`: hosts each reference next to "before" variants that reproduce corpus defects (a fixed 320 pt
   sidebar, an adaptive grid, one wide column, a sheet left to automatic placement), and records every tracked view's
   window frame and the regions it saw.
-- `scripts/capture-catalog.sh`: nine configs × seven poses → `verification/matrices/<pattern>/` (shot + frame record);
-  `scripts/compose-matrix.py` → `verification/matrices/<pattern>.png`.
+- `scripts/capture-catalog.sh`: nine configs × seven poses → [`verification/matrices/<pattern>/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/matrices) (shot + frame record);
+  `scripts/compose-matrix.py` → [`verification/matrices/<pattern>.png`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/matrices).
 - Detectors made real (`Sources/DuoDetectors/Detectors/`, split out of `DuoPoseTesting` so `duo-detect` links without the Testing framework): T1 crease-straddle, T5 stretched-single-column, T14
   columns-off-fold, T15 sheet-in-book (T2, T4 kept). `swift run duo-detect verification/matrices`;
   `MatrixTests` makes `swift test` the gate: references clean in all seven poses, each "before" variant shows its
@@ -126,13 +126,13 @@ public, and step 14 published it as this repository (the last two sections).
   detectors' elements by stated rules; `duo-detect` reads either kind of capture. Checked against ground truth: the
   catalog captured both ways in all 63 config × pose cells gives the same classes (`AccessibilityTests`).
 - `scripts/capture-poses.sh` (named in EVAL.md §4): one A/B app, every pose, fixed settle times, frozen flows in
-  `verification/ab/flows/`, shots + snapshots + `detectors.md`.
-- `verification/ab/`: `PROTOCOL.md` (how the six runs are done; four owner decisions marked), `INSTRUCTIONS.md` (rater
+  [`verification/ab/flows/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/ab/flows/), shots + snapshots + `detectors.md`.
+- [`verification/ab/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/ab/): `PROTOCOL.md` (how the six runs are done; four owner decisions marked), `INSTRUCTIONS.md` (rater
   instructions, frozen at recruitment), `RECRUITMENT.md` (draft for the owner to post); `scripts/ab-blind.py` (random
   ids, shuffled items, the key sealed by its SHA-256) and `scripts/ab-score.py` (sheets → `RESULTS.md`).
 - The skill runs outside this repository: `skills/iphone-duo-patterns/tools/` carries the capture scripts, the tap
   runner and the detectors (generated, checked in CI); `references/simulator.md` says how to use them.
-- Baselines (`verification/ab/baseline/`): the three apps unmodified through the frozen flows, 77 shots with snapshots.
+- Baselines ([`verification/ab/baseline/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/ab/baseline/)): the three apps unmodified through the frozen flows, 77 shots with snapshots.
   18 findings, 11 on screen (Home Assistant T1/T5/T15, IceCubesApp T15, NetNewsWire T14/T15), 7 on covered elements;
   two misses seen only in the shots (an out-of-process Safari sheet, text in a scroll view too short to scroll).
 
@@ -153,7 +153,7 @@ public, and step 14 published it as this repository (the last two sections).
   when flat), Previous / Next / Next defect, Left and Done (one line each, full notes on demand), the activity newest
   first, and Resume migration, Open report, Show captures. Nine plugin tests (`claude plugin test`); the owner
   checked it in the Claude app on the NetNewsWire run (2026-10-27).
-- First run, NetNewsWire (`verification/runs/NetNewsWire/`: report, audit, progress file, patch; the shots stay
+- First run, NetNewsWire ([`verification/runs/NetNewsWire/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/NetNewsWire/): report, audit, progress file, patch; the shots stay
   outside): one prompt, no questions, about 1 h 45 min. Five screens found, all Fold-aligned split. Timeline, article,
   settings and Add Feed verified in all seven poses (G3 for a corpus app); feeds left in `todo` (T7: unfolding from the
   feeds list shows an empty timeline beside "No selection"; three levels, and P1 describes two). Detectors 3 → 0
@@ -183,7 +183,7 @@ public, and step 14 published it as this repository (the last two sections).
   the detail when unfolded from the sidebar, the list in its place once an item is picked. Written into P1 (SwiftUI: a
   two-column `NavigationSplitView` with a `NavigationStack` in the sidebar column, not yet in the catalog; UIKit:
   "Three levels" in the page's UIKit section) and the skill's migrate step.
-- NetNewsWire's feeds screen done that way (`verification/runs/NetNewsWire/`, last commit): while the split is expanded
+- NetNewsWire's feeds screen done that way ([`verification/runs/NetNewsWire/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/NetNewsWire/), last commit): while the split is expanded
   on a display with a fold, the feeds list moves onto the timeline column's navigation stack and the primary column's
   stack holds an empty controller; the stacks go back when the split collapses. Two ways that fail are on the page: a
   zero-width timeline column (a UIKit assertion), and moving controllers between columns (the cover pops to the
@@ -212,7 +212,7 @@ public, and step 14 published it as this repository (the last two sections).
   panes, a two-column `FoldAlignedSplit` whose sidebar column holds a `NavigationStack`, the empty detail's placeholder
   high in its pane. The New Item sheet's Cancel and Add are symbols now (T10).
 - Captured with `scripts/capture-catalog.sh` (frame records, 4 configs × 7 poses) and `capture-corpus-flow.sh`
-  (accessibility, the same 28): `verification/matrices` and `verification/accessibility` now hold 11 configs. Both
+  (accessibility, the same 28): [`verification/matrices`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/matrices) and [`verification/accessibility`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/accessibility) now hold 11 configs. Both
   three-level configs are clean in every pose by the frame records; book 0–455.7 | 495.7–867 pt, flat sideways
   0–320 | 320–867 pt. Across poses the accessibility detectors find T7 for `three` upright (laptop, tent,
   flat-upright): SwiftUI shows the detail alone there, empty at the top level. The adapter check against the frame
@@ -237,7 +237,7 @@ public, and step 14 published it as this repository (the last two sections).
 
 ## Phase 4, step 8 — a second app: IceCubesApp, SwiftUI (merged 2026-10-28, PR 21)
 - The skill alone, from `/duo-start`, on IceCubesApp at 98098b9, logged out (no account may be created): a subagent,
-  since headless `claude -p` was signed out (`verification/runs/IceCubesApp/`, report, audit, progress file, patch; the
+  since headless `claude -p` was signed out ([`verification/runs/IceCubesApp/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/IceCubesApp/), report, audit, progress file, patch; the
   shots stay outside, they show strangers' posts). About two hours, no questions. Five screens (Add Account, the
   Trending timeline, a post, Settings, Display Settings), all Fold-aligned split, all verified in all seven poses: G3
   for a second corpus app. Screens that need an account are in its `todo`.
@@ -260,7 +260,7 @@ public, and step 14 published it as this repository (the last two sections).
   in is left out.
 
 ## Phase 4, step 9 — a third app: Wikipedia, UIKit with a web view, and four review rounds (merged 2026-10-29, PR 22)
-- The skill alone, from `/duo-start`, on wikipedia-ios at 2031b89, logged out, by a subagent (`verification/runs/Wikipedia/`:
+- The skill alone, from `/duo-start`, on wikipedia-ios at 2031b89, logged out, by a subagent ([`verification/runs/Wikipedia/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/Wikipedia/):
   report, audit, progress file, flow, patch under MIT with the license beside it; the shots stay outside). Eleven
   screens. The run's own check passed defects, so its work was reviewed: once by the coordinator from the shots, then
   three times by independent reviewers with a skeptic re-checking each finding, and the run's agent fixed what each
@@ -306,10 +306,10 @@ public, and step 14 published it as this repository (the last two sections).
 ## Phase 4, step 11 — the v0 gates G2 and G4 (merged 2026-10-29, PR 24)
 - G2 runs in CI, on demand: a `goldens` job (Actions → ci → Run workflow, "goldens" ticked) boots the Duo simulator,
   takes the duo.py driver at a fixed commit, builds and installs the catalog, captures all 14 configs in all seven
-  poses into the runner's temp folder and diffs them against `verification/matrices`. First run (2026-10-29, run
+  poses into the runner's temp folder and diffs them against [`verification/matrices`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/matrices). First run (2026-10-29, run
   40896969902): 98 of 98 goldens compared, worst 0.00 %, none failed, in about 15 minutes. It is not run on every push
   because it holds the simulator that long.
-- G4 for Fold-aligned split: `verification/oracle/fold-aligned-split.md`, Settings against the skill's reference,
+- G4 for Fold-aligned split: [`verification/oracle/fold-aligned-split.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/fold-aligned-split.md), Settings against the skill's reference,
   measured pose by pose and re-checked. The same pane assignment and the same system bars in book (the split on the
   crease) and flat sideways (the inactive fold ignored), and one pane beside the same vertical bar on the cover; the
   bar items never match, since the apps draw different controls (Settings: search; the reference: Back, compose, a
@@ -318,14 +318,14 @@ public, and step 14 published it as this repository (the last two sections).
   that pose has no oracle.
 - G4 amended by the owner (EVAL.md §1): where the matched app is not on the simulator, the reference is set beside
   Apple's own published frames of it, linked at the frame and not stored.
-- G4 for Even grid: `verification/oracle/even-grid.md`, against Fitness in the talk 111463 (5:52–6:04). Book: the
+- G4 for Even grid: [`verification/oracle/even-grid.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/even-grid.md), against Fitness in the talk 111463 (5:52–6:04). Book: the
   same count, two columns a side, nothing on the fold, the margins kept, the bars in a trailing vertical bar (the items
   differ); but Fitness's gutter at the hinge is the division and its leading columns (about 212 pt) are wider than its
   trailing ones (about 171; estimates from the angled frame, which the amendment's face-on measurement does not
   cover), where the reference's are all 171.75 pt with a 124 pt gutter. Open flat: four columns in both, but Fitness spaces them evenly (columns about 199 pt, its middle
   gutter at about 434 pt, so the inactive division lies inside its third column) where the reference keeps its book
   layout (171.75 pt columns) so folding moves nothing. No frame of the grid found in the other five poses.
-- G4 for Reflowing columns: `verification/oracle/reflowing-columns.md`. No source in `raw/apple-docs/` and no frame of
+- G4 for Reflowing columns: [`verification/oracle/reflowing-columns.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/reflowing-columns.md). No source in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/) and no frame of
   the talks looked at shows a text in columns: Notes is a split view in the HIG's images (read through their alt
   text), Books is in no source collected, and the talk's example of two columns reflowing from one is Music's album
   page, two blocks side by side. The upright poses and the cover lay out as Safari's one column does (context, not an
@@ -346,7 +346,7 @@ public, and step 14 published it as this repository (the last two sections).
   Wikipedia's inline contents). 17 configs, 119 captures each way (frame records and accessibility, which agree in all
   119). `inline` shows T5 in book and flat sideways and T1 in laptop and tent; the references are clean everywhere.
 - T14 gains `PanesOffHorizontalFold` (panes one above the other against an active horizontal division); 42 tests.
-- G4: `verification/oracle/arrangement.md` against Apple's frames of Podcasts and Accessibility Reader (talk 111463).
+- G4: [`verification/oracle/arrangement.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/arrangement.md) against Apple's frames of Podcasts and Accessibility Reader (talk 111463).
   Flat sideways and book: the same assignment as Podcasts, player leading and transcript trailing, clear of the
   division, with different bars (Podcasts' actions at the foot of the transcript, the reference's at the top of the
   trailing bar); Podcasts' text starts about 12 pt nearer the division (about 503 pt against 515.7). Upright: Podcasts
@@ -386,23 +386,23 @@ public, and step 14 published it as this repository (the last two sections).
   repository, with its full history, pull requests and run logs, stays private.
 - Layout: the working logs (`STATUS.md`, `DEVIATIONS.md`, `MAC-PHASE.md`) moved to `docs/history/`; `EVAL.md`, the
   gates, stays at the root.
-- The screenshots of other apps (`raw/corpus/evidence/`, `raw/apple-apps/`, `verification/ab/baseline/`) are stored
+- The screenshots of other apps ([`raw/corpus/evidence/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/corpus/evidence/), [`raw/apple-apps/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/), [`verification/ab/baseline/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/ab/baseline/)) are stored
   as 256-colour PNGs at full resolution, about six times smaller; the pose matrices, which G2 compares, are unchanged.
 - CI runs on GitHub's hosted `xcode-27` image (Xcode 27.1, the iPhone Duo simulator), so no runner on anyone's machine
   executes workflow code; pull requests get CI.
 - The repository was named duo-patterns until it went public. That name remains in these logs, in the comments of the
-  migration patches (`verification/runs/*/*.patch`) and in the bundle identifiers (`dev.enchiridion.duopatterns.*`),
+  migration patches ([`verification/runs/*/*.patch`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs)) and in the bundle identifiers (`dev.enchiridion.duopatterns.*`),
   which the recorded snapshots carry. The simulator's UDID in the run records is replaced by a placeholder.
 
 ## Not done
-- Wikipedia's last review (`verification/runs/Wikipedia/README.md`, "Last check"): 15 items not fixed, two medium
+- Wikipedia's last review ([`verification/runs/Wikipedia/README.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/runs/Wikipedia/README.md), "Last check"): 15 items not fixed, two medium
   regressions among them, all in routes that miss the container (`setViewControllers`, a coordinator's own stack, a
   check that reads the list) or a setting read on every unfold.
-- Wikipedia's `todo` (`verification/runs/Wikipedia/REPORT.md`): the navigation bars' inset in a custom pane container,
+- Wikipedia's `todo` ([`verification/runs/Wikipedia/REPORT.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/runs/Wikipedia/REPORT.md)): the navigation bars' inset in a custom pane container,
   Reflowing columns for a web view, Settings' split (needs its coordinators to route through the container), Places'
   map, For You beside Community's grid. G3 for a third corpus app waits on the first two.
 - NetNewsWire's Reader View button, a custom-view toolbar item the step-9 T10 detector finds in 8 cells after its run:
-  not fixed (`verification/runs/NetNewsWire/README.md`).
+  not fixed ([`verification/runs/NetNewsWire/README.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/runs/NetNewsWire/README.md)).
 - Optional corpus depth: deeper screens for NetNewsWire and IceCubesApp with `scripts/capture-corpus-flow.sh`.
 - Oracle for 9 of 11 Apple apps: needs a physical iPhone Duo.
 - Gates (EVAL.md): G1 and G3 (patterns) run in CI on every push; G2 in CI on demand (step 12's run: 119 of 119
@@ -414,7 +414,7 @@ public, and step 14 published it as this repository (the last two sections).
   the bar items differ; spacing and widths differ open flat; no frame found in five poses) and for Arrangement against
   Podcasts and Accessibility Reader (step 12: the same assignment side by side with different bars, differs upright,
   no frame on the cover or in tent); open for Reflowing columns, which no Apple frame looked at shows, and which the
-  owner replaced as v0's third pattern by Arrangement. G5 set aside by the owner (2026-10-27); `verification/ab/`
+  owner replaced as v0's third pattern by Arrangement. G5 set aside by the owner (2026-10-27); [`verification/ab/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/ab/)
   stays as written. G6 tracked only.
 - Captures: about 27 s a cell now (step 3), and taps about 4 s each (step 8). Each inner pose still goes through the shut phone and posts each fold and
   turn with a settle of 2–3 s; going from pose to pose directly would save about a third more, at the cost of opening

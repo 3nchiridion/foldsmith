@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Mac phase step 4: screenshot one corpus app in every pose → raw/corpus/evidence/<name>/<screen>-<pose>-<panel>.png
+# Mac phase step 4: screenshot one corpus app in every pose → foldsmith-evidence's
+# raw/corpus/evidence/<name>/<screen>-<pose>-<panel>.png
 #
 # Usage:
 #   DUO_UDID=<udid> DUO_PY=/path/to/duo.py scripts/capture-corpus-app.sh <name> <bundle-id> [<screen>=<url> ...]
@@ -14,10 +15,18 @@ set -euo pipefail
 NAME="${1:?app name}"; BUNDLE="${2:?bundle id}"; shift 2
 UDID="${DUO_UDID:?set DUO_UDID}"
 DUO_PY="${DUO_PY:?set DUO_PY to duo.py}"
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-# In this repository shots go to raw/corpus/evidence; the skill's copy (skills/foldsmith-duo/tools) has no raw/
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$HERE/.." && pwd)"
+# Run from Foldsmith's scripts/, shots go to raw/corpus/evidence/<name>/ in the evidence repository (foldsmith-evidence
+# beside this one, or at $FOLDSMITH_EVIDENCE); the skill's copy (skills/foldsmith-duo/tools) has no evidence repository
 # and writes under the app being migrated instead. OUT=<dir> puts them elsewhere.
-if [ -d "$ROOT/raw/corpus" ]; then OUT="${OUT:-$ROOT/raw/corpus/evidence/$NAME}"; else OUT="${OUT:-$PWD/.duo/captures/$NAME}"; fi
+EV="${FOLDSMITH_EVIDENCE:-$ROOT/../foldsmith-evidence}"
+if [ "$(basename "$HERE")" = scripts ]; then
+  [ -n "${OUT:-}" ] || [ -d "$EV/raw/corpus" ] || { echo "no foldsmith-evidence checkout at $EV (clone it beside this repository, set FOLDSMITH_EVIDENCE, or pass OUT)" >&2; exit 2; }
+  OUT="${OUT:-$EV/raw/corpus/evidence/$NAME}"
+else
+  OUT="${OUT:-$PWD/.duo/captures/$NAME}"
+fi
 mkdir -p "$OUT"
 WAIT="${WAIT:-6}"   # seconds after launch or openurl before the shot
 

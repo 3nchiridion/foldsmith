@@ -9,17 +9,17 @@ reference (`aligned`, and `aligned-sheet` with the New Item sheet up), the plain
 `FoldAlignedTiledSplit`, which keeps two panes upright (`tiled`, `tiled-three`, `tiled-three-list`). The red band is the active
 division; a dashed outline is the inactive one.
 
-![Fold-aligned split pose matrix](../verification/matrices/split.png)
+![Fold-aligned split pose matrix](../docs/images/matrices/split.png)
 
-Citations: `[tt-<id> m:ss]` is an Apple tech talk at that chapter (notes in `raw/apple-docs/`), `[hig …]` the HIG
-article, `[apple-apps/<app>/<pose>]` a screenshot in `raw/apple-apps/`, `[metrics:<pose>]` `raw/metrics.json`;
+Citations: `[tt-<id> m:ss]` is an Apple tech talk at that chapter (notes in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/)), `[hig …]` the HIG
+article, `[apple-apps/<app>/<pose>]` a screenshot in [`raw/apple-apps/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/), `[metrics:<pose>]` [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.json);
 T-codes are the defect classes in `patterns/TAXONOMY.md`, P-numbers the patterns in `patterns/DECISION-TABLE.md`,
 and G1–G6 the gates in `EVAL.md`.
 
 ## Context
 Hierarchical content: a list whose items open into a detail. Decision table rows `hierarchical / viewing` and
 `hierarchical / editing`. Corpus: NetNewsWire's split boundary at about 323 pt in book, the article pane across the
-fold [raw/corpus/defects.csv, T14]. Apple: Settings moves its split onto the fold in book and drops back to a 320 pt
+fold [[raw/corpus/defects.csv](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/defects.csv), T14]. Apple: Settings moves its split onto the fold in book and drops back to a 320 pt
 sidebar when flat [apple-apps/settings/book, flat-sideways]; Notes equalizes its panes when folded [hig alt text].
 
 ## Forces
@@ -51,11 +51,11 @@ keeps the sidebar on screen, beside the detail): a two-column `NavigationSplitVi
 0–455.7 pt and the detail 495.7–867 pt; flat sideways 0–320 and 320–867 pt, as with two levels. Upright the split
 shows the detail alone, as it does with two levels (below); at the top level that detail is empty, and the
 accessibility detectors call it T7 across poses: the shut phone's collections are not on the inner display
-(`verification/accessibility/`). UIKit below.
+([`verification/accessibility/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/accessibility/)). UIKit below.
 
 A `TabView` whose tabs sit in a sidebar on the inner display (`.sidebarAdaptable`) is this pattern already: the system
 aligns that sidebar the same way, with no width set (IceCubesApp, measured: book 0–455.5 | 495.5–867 pt, flat sideways
-≈ 0–280 | 280–867 pt [verification/runs/IceCubesApp]). Keep it, as a system container; the sheet rule still applies,
+≈ 0–280 | 280–867 pt [[verification/runs/IceCubesApp](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/IceCubesApp)]). Keep it, as a system container; the sheet rule still applies,
 with `readsBookFold()` once on the window's root to set what `foldAwareSheetPlacement()` reads. Upright its tab's
 content fills the window and the sidebar is a tap away, the same shortfall as `FoldAlignedSplit`'s;
 `FoldAlignedTiledSplit` replaces a `NavigationSplitView`, not a `TabView`.
@@ -101,14 +101,14 @@ empty detail (no T7). UIKit apps: see UIKit below.
   with each tab selected.
 
 ## Known uses
-- Apple: Settings, every inner pose (`raw/apple-apps/settings/`).
-- Corpus before: NetNewsWire, book (`raw/corpus/evidence/NetNewsWire/launch-book-inner.png`); its sidebar width comes
+- Apple: Settings, every inner pose ([`raw/apple-apps/settings/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/settings/)).
+- Corpus before: NetNewsWire, book ([`raw/corpus/evidence/NetNewsWire/launch-book-inner.png`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/evidence/NetNewsWire/launch-book-inner.png)); its sidebar width comes
   from `SceneCoordinator.swift`. The catalog's `fixed` variant reproduces it: sidebar 0–320, detail 320–847 pt.
 - Corpus sheets on the leading half in book: IceCubesApp, Home Assistant, Signal, Firefox (T15). The catalog's
   `system-sheet` reproduces it: 8–467.3 pt.
-- Corpus after: NetNewsWire, a UIKit split (`verification/runs/NetNewsWire/`); IceCubesApp, a `TabView` sidebar with
-  the sheet rule (`verification/runs/IceCubesApp/`); Wikipedia, UIKit tabs with no split view, through a container of
-  its own (Saved, Activity, Search) and the sheet rule (`verification/runs/Wikipedia/`). NetNewsWire's and
+- Corpus after: NetNewsWire, a UIKit split ([`verification/runs/NetNewsWire/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/NetNewsWire/)); IceCubesApp, a `TabView` sidebar with
+  the sheet rule ([`verification/runs/IceCubesApp/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/IceCubesApp/)); Wikipedia, UIKit tabs with no split view, through a container of
+  its own (Saved, Activity, Search) and the sheet rule ([`verification/runs/Wikipedia/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/Wikipedia/)). NetNewsWire's and
   IceCubesApp's verified in all seven poses by the skill alone. Wikipedia's was reviewed four times and fixed in four
   rounds, and is not verified: the top bars of both its panes still stop short of their edges (the list's search field
   at 371 of 455 pt), and the last review found routes that still miss the container (its README lists them).
@@ -134,7 +134,7 @@ the selection and the sidebar's path in the caller (they survive the switch betw
 
 ## UIKit (`UISplitViewController`)
 Measured on NetNewsWire, a three-column UIKit split, in the hands-free run, not in the catalog
-(`verification/runs/NetNewsWire/`, the code in `NetNewsWire.patch`):
+([`verification/runs/NetNewsWire/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/NetNewsWire/), the code in `NetNewsWire.patch`):
 - **No column width.** When the window has a fold (`view.reservedRegions(kind: .division, options: .includeInactive)`
   is not empty), set all six `minimum…`, `maximum…` and `preferred…` `PrimaryColumnWidth` and
   `SupplementaryColumnWidth` to `UISplitViewController.automaticDimension`; keep the app's own widths where there is no
@@ -166,7 +166,7 @@ Measured on NetNewsWire, a three-column UIKit split, in the hands-free run, not 
 
 ## UIKit without a split view (tabs of navigation stacks)
 Measured on Wikipedia, whose list tabs (Saved, Activity, Search) are navigation stacks in a `UITabBarController` and
-push articles from 24 places (`verification/runs/Wikipedia/`, `WMFFoldSplitContainerViewController` in
+push articles from 24 places ([`verification/runs/Wikipedia/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/Wikipedia/), `WMFFoldSplitContainerViewController` in
 `Wikipedia.patch`), in the hands-free run and its four reviews:
 - **A container, not a `UISplitViewController`.** A split view expands wherever the width is regular, so it would also
   split those tabs on an iPad and on the upright inner display, where the app has no finding. The container shows two
@@ -244,7 +244,7 @@ push articles from 24 places (`verification/runs/Wikipedia/`, `WMFFoldSplitConta
 T14 (columns-off-fold), T15 (sheet-in-book), T1 (crease-straddle). Run on every capture by `swift test`; `fixed`
 must show T14 in book only, `system-sheet` T15 in book only.
 
-Result on the committed captures (`swift run duo-detect verification/matrices`; · = no finding):
+Result on the committed captures (`swift run duo-detect Tests/Fixtures/matrices`; · = no finding):
 
 | config | closed | closed-sideways | book | laptop | tent | flat-sideways | flat-upright |
 |---|---|---|---|---|---|---|---|

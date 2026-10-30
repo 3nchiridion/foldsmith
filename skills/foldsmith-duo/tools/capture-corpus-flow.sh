@@ -20,7 +20,8 @@
 # launch and reach a screen before it is skipped. APP_PATH=<.app> reinstalls the app before every screen,
 # for apps that remember their onboarding (Signal). LAUNCH_ARGS="A B" passes launch arguments to the app (an app's own
 # UI-test switches). Build the runner once: see Tap/README.md.
-# Shots → raw/corpus/evidence/<name>/<screen>-<pose>-<panel>.png (from the skill's copy: .duo/captures/<name>/; OUT=<dir>
+# Shots → foldsmith-evidence's raw/corpus/evidence/<name>/<screen>-<pose>-<panel>.png (from the skill's copy:
+# .duo/captures/<name>/; OUT=<dir>
 # puts them elsewhere); xcodebuild logs and the shut-phone snapshots → $XCODE_OUT (scratch). SNAPSHOT=1 also asks the
 # runner, once the phone is in the pose and shot, for the app's accessibility tree: <screen>-<pose>.json next to the
 # shot, for the detectors (swift run duo-detect <dir>); a screen's snapshots in the poses asked for are removed first,
@@ -35,9 +36,16 @@ DUO_PY="${DUO_PY:?set DUO_PY to duo.py}"
 XCTESTRUN="${DUO_TAP_XCTESTRUN:?set DUO_TAP_XCTESTRUN to the DuoTapUITests .xctestrun}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
-# In this repository shots go to raw/corpus/evidence; the skill's copy (skills/foldsmith-duo/tools) has no raw/
+# Run from Foldsmith's scripts/, shots go to raw/corpus/evidence/<name>/ in the evidence repository (foldsmith-evidence
+# beside this one, or at $FOLDSMITH_EVIDENCE); the skill's copy (skills/foldsmith-duo/tools) has no evidence repository
 # and writes under the app being migrated instead.
-if [ -d "$ROOT/raw/corpus" ]; then OUT="${OUT:-$ROOT/raw/corpus/evidence/$NAME}"; else OUT="${OUT:-$PWD/.duo/captures/$NAME}"; fi
+EV="${FOLDSMITH_EVIDENCE:-$ROOT/../foldsmith-evidence}"
+if [ "$(basename "$HERE")" = scripts ]; then
+  [ -n "${OUT:-}" ] || [ -d "$EV/raw/corpus" ] || { echo "no foldsmith-evidence checkout at $EV (clone it beside this repository, set FOLDSMITH_EVIDENCE, or pass OUT)" >&2; exit 2; }
+  OUT="${OUT:-$EV/raw/corpus/evidence/$NAME}"
+else
+  OUT="${OUT:-$PWD/.duo/captures/$NAME}"
+fi
 XOUT="${XCODE_OUT:-$(mktemp -d -t duo-tap)}"
 mkdir -p "$OUT" "$XOUT"
 WAIT="${WAIT:-6}"; TAP_WAIT="${TAP_WAIT:-2}"; TAP_TIMEOUT="${TAP_TIMEOUT:-150}"

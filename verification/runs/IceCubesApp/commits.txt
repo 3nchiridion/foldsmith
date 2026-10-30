@@ -1,4 +1,0 @@
-5213b0e Duo: report (5 screens verified in every pose; account-only screens in todo)
-725ff38 Duo: add-account → Fold-aligned split (sheet rule)
-761fc95 Duo: status, settings, settings-display → Fold-aligned split (state kept on fold)
-447ad11 Duo: audit (5 screens × 7 poses before the migration)

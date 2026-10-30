@@ -14,7 +14,8 @@ set -euo pipefail
 
 BUNDLE=dev.enchiridion.duopatterns.probe
 UDID="${DUO_UDID:?set DUO_UDID to the iPhone Duo simulator UDID (xcrun simctl list devices | grep -i duo)}"
-OUT="$(cd "$(dirname "$0")/.." && pwd)/raw"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+OUT="${FOLDSMITH_EVIDENCE:-$ROOT/../foldsmith-evidence}/raw"   # the evidence repository
 SHOTS="$OUT/apple-apps/_probe"
 mkdir -p "$SHOTS"
 SETTLE="${SETTLE:-4}"   # seconds; the crease activates ~1 s after the hinge stops (community measurement)

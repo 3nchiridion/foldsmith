@@ -1,8 +1,8 @@
 # Apple's rules for iPhone Duo, condensed
 
-Every line paraphrases a source in `raw/apple-docs/` and carries its citation: `tt-<id> m:ss` is a tech talk chapter's
+Every line paraphrases a source in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/) and carries its citation: `tt-<id> m:ss` is a tech talk chapter's
 start time, `hig <section>` the HIG article "Designing for iPhone Duo", `overview` the Technology Overview "Preparing
-your app for iPhone Duo". API names are the ones the iOS 27.1 SDK declares (`raw/sdk/DIFF.md`), which differ from the
+your app for iPhone Duo". API names are the ones the iOS 27.1 SDK declares ([`raw/sdk/DIFF.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/sdk/DIFF.md)), which differ from the
 doc pages in places. No transcript text is quoted.
 
 ## Layout in general
@@ -21,10 +21,10 @@ doc pages in places. No transcript text is quoted.
   that is active only while the phone is part folded [hig reserved regions; tt-111463 7:50].
 - `GeometryProxy.reservedRegions(kind:options:layoutDirectionBehavior:)` with `kind: .division | .occlusion`;
   `options` defaults to active regions only, `.includeInactive` adds the rest; frames already include the margins
-  [tt-111463 6:39; api-swiftui; raw/sdk/DIFF.md]. UIKit: `UIView.reservedRegions(kind:options:)`.
+  [tt-111463 6:39; api-swiftui; [raw/sdk/DIFF.md](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/sdk/DIFF.md)]. UIKit: `UIView.reservedRegions(kind:options:)`.
 - An inactive division still matters: use it for an even column count, and to reserve space so layout does not jump
   when the fold activates [tt-111463 7:50; api-swiftui].
-- Regions are empty on the first evaluation and arrive within 0.1–0.3 s [raw/METRICS-NOTES.md].
+- Regions are empty on the first evaluation and arrive within 0.1–0.3 s [[raw/METRICS-NOTES.md](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/METRICS-NOTES.md)].
 - Most apps need no query: split views, tab bars, alerts, menus and sheets adapt on their own; scroll containers do not
   split content at a division [api-swiftui; tt-111463 8:39].
 
@@ -67,8 +67,8 @@ doc pages in places. No transcript text is quoted.
 - Order: primary navigation (Back, Close) at the top, prominent actions (`topBarPinnedTrailing`) next, then the
   original groups [tt-111462 4:29].
 - Every item needs a title and a symbol; text-only and custom-view items never go vertical; prefer symbols
-  [tt-111462 5:56, 9:00; overview]. `ToolbarItemAxisBehavior` (`.horizontalOnly`, `.verticalPreferred`) [raw/sdk/DIFF.md].
-- Custom views read `toolbarVerticalEdge` (`HorizontalEdge?`, nil when no vertical bar) [tt-111462 10:07; raw/sdk/DIFF.md].
+  [tt-111462 5:56, 9:00; overview]. `ToolbarItemAxisBehavior` (`.horizontalOnly`, `.verticalPreferred`) [[raw/sdk/DIFF.md](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/sdk/DIFF.md)].
+- Custom views read `toolbarVerticalEdge` (`HorizontalEdge?`, nil when no vertical bar) [tt-111462 10:07; [raw/sdk/DIFF.md](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/sdk/DIFF.md)].
 - Overflow from bottom to top by default; `visibilityPriority`; keep frequent and badge-bearing items visible longest;
   merge app menus into `ToolbarOverflowMenu` [tt-111462 11:40, 13:10].
 - Don't override bar placement in general; opt out (`toolbarVerticalBehavior(.disabled)`) only for single-page,

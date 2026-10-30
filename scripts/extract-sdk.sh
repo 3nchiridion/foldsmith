@@ -2,7 +2,8 @@
 # Phase 1: pull the public Swift interfaces for the Duo APIs out of the iOS 27.1 simulator SDK
 # into raw/sdk/, verbatim, with the SDK build recorded. Run on the Mac with Xcode 27.1 selected.
 set -euo pipefail
-OUT="$(cd "$(dirname "$0")/.." && pwd)/raw/sdk"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+OUT="${FOLDSMITH_EVIDENCE:-$ROOT/../foldsmith-evidence}/raw/sdk"   # the evidence repository
 SDK="$(xcrun --sdk iphonesimulator --show-sdk-path)"
 
 # Guards run before anything is written, so a refused run leaves earlier output in raw/sdk/ intact.

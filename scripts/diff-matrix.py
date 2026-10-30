@@ -2,7 +2,10 @@
 """G2: compare a fresh catalog capture against the committed pose matrices (the goldens).
 
     OUT=/tmp/fresh scripts/capture-catalog.sh          # capture somewhere else
-    python3 scripts/diff-matrix.py /tmp/fresh [verification/matrices] [--partial]
+    python3 scripts/diff-matrix.py /tmp/fresh [<goldens>] [--partial]
+
+The goldens default to verification/matrices in the evidence repository (3nchiridion/foldsmith-evidence), checked out
+beside this one or at $FOLDSMITH_EVIDENCE. No goldens found is a failure, never a pass.
 
 For each <pattern>/<config>-<pose>.png in the golden folder, the share of pixels that differ by more than a small
 tolerance, with the system's own status areas masked: every occlusion region the app reported (the clock and status
@@ -10,6 +13,7 @@ cluster, the cameras), since the clock changes between runs. Fails (exit 1) when
 of its pixels (EVAL.md G2) or is missing from the fresh capture (--partial skips missing ones, for a spot check).
 """
 import json
+import os
 import pathlib
 import sys
 
@@ -41,7 +45,10 @@ def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     partial = "--partial" in sys.argv
     fresh = pathlib.Path(args[0])
-    golden = pathlib.Path(args[1] if len(args) > 1 else "verification/matrices")
+    evidence = pathlib.Path(os.environ.get("FOLDSMITH_EVIDENCE", pathlib.Path(__file__).resolve().parents[2] / "foldsmith-evidence"))
+    golden = pathlib.Path(args[1]) if len(args) > 1 else evidence / "verification" / "matrices"
+    if not list(golden.glob("*/*.png")):
+        sys.exit(f"no goldens under {golden}: check out 3nchiridion/foldsmith-evidence or pass the folder")
     checked = 0
     worst, failed = 0.0, []
     for g in sorted(golden.glob("*/*.png")):

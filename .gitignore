@@ -3,17 +3,9 @@ build/
 !Probe/project.yml
 .build/
 DerivedData/
-raw/corpus/*/
-!raw/corpus/README.md
-!raw/corpus/evidence/
 *.png.tmp
 .DS_Store
 
-# Apple's agent skills, verbatim: regenerate with `xcrun agent skills export --output-dir "$PWD/raw/sdk/apple-skill"`
-raw/sdk/apple-skill/
-# Verbatim SDK excerpts from scripts/extract-sdk.sh (Apple SDK license): regenerate locally
-raw/sdk/*.txt
-!raw/sdk/SDK.txt
 __pycache__/
 
 # Xcode and SwiftPM per-user state, and local tool settings
@@ -21,3 +13,10 @@ __pycache__/
 xcuserdata/
 *.xcresult
 .claude/settings.local.json
+
+# The evidence lives in 3nchiridion/foldsmith-evidence (beside this checkout); never commit it here
+/raw/
+/verification/
+/evidence/
+# A migration's progress and captures, when the skill runs in this folder
+.duo/

@@ -11,6 +11,7 @@ for that condition (PROTOCOL.md); a screen neither condition produced is left ou
 reported, not scored. The raw sheets are copied to verification/ab/sheets/.
 """
 import csv
+import os
 import pathlib
 import re
 import shutil
@@ -19,7 +20,7 @@ import sys
 import json
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-AB = ROOT / "verification" / "ab"
+AB = pathlib.Path(os.environ.get("FOLDSMITH_EVIDENCE", ROOT.parent / "foldsmith-evidence")) / "verification" / "ab"
 POSES = ["closed", "closed-sideways", "book", "laptop", "tent", "flat-sideways", "flat-upright"]
 CRITERIA = [f"R{i}" for i in range(1, 8)]
 

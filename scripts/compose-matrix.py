@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-"""Compose the pose matrix for each pattern: verification/matrices/<pattern>.png.
+"""Compose the pose matrix for each pattern: verification/matrices/<pattern>.png, in the evidence repository
+(3nchiridion/foldsmith-evidence, beside this one or at $FOLDSMITH_EVIDENCE). The small copies the README, the pattern
+pages and the skill show are docs/images/matrices/<pattern>.png here (1100 px wide, 128 colours) and the README's
+docs/images/split-aligned-book.png: run without an argument, it refreshes them too; then rerun
+scripts/sync-skill-references.py.
 
 Rows are the catalog configs captured for the pattern (the reference variant first), columns the seven poses. Every
 cell is the shot scripts/capture-catalog.sh saved, scaled to fit, with the division the app reported drawn over it:
 a red band while active, a dashed outline while inactive. Nothing is hand-placed; rerun after every capture.
 
-    python3 scripts/compose-matrix.py [verification/matrices]
+    python3 scripts/compose-matrix.py [<matrices folder>]
 """
 import json
+import os
 import pathlib
 import sys
 
@@ -91,9 +96,26 @@ def compose(folder):
     return target
 
 
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+def small(src, dst, width=1100, colours=128):
+    """A small palette copy of src at dst (width px wide, or src's own width), for this repository's pages."""
+    im = Image.open(src).convert("RGB")
+    if width:
+        im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
+    im.quantize(colors=colours, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).save(dst, optimize=True)
+    print(f"  → {dst}")
+
+
 if __name__ == "__main__":
-    root = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "verification/matrices")
+    evidence = pathlib.Path(os.environ.get("FOLDSMITH_EVIDENCE", pathlib.Path(__file__).resolve().parents[2] / "foldsmith-evidence"))
+    root = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else evidence / "verification" / "matrices"
     for folder in sorted(p for p in root.iterdir() if p.is_dir()):
         target = compose(folder)
         if target:
             print(target)
+            if len(sys.argv) == 1:   # the evidence goldens: refresh the small copy the README, the pages and the skill show
+                small(target, ROOT / "docs/images/matrices" / target.name, colours=128)
+    if len(sys.argv) == 1 and (root / "split/aligned-book.png").exists():
+        small(root / "split/aligned-book.png", ROOT / "docs/images/split-aligned-book.png", width=None, colours=256)

@@ -10,15 +10,15 @@ the active division; a dashed outline is the inactive one.
 
 ![Reflowing columns pose matrix](matrices/columns.png)
 
-Citations: `[tt-<id> m:ss]` is an Apple tech talk at that chapter (notes in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith/tree/main/raw/apple-docs)), `[hig …]` the HIG
-article, `[apple-apps/<app>/<pose>]` a screenshot in [`raw/apple-apps/`](https://github.com/3nchiridion/foldsmith/tree/main/raw/apple-apps), `[metrics:<pose>]` [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith/blob/main/raw/metrics.json);
+Citations: `[tt-<id> m:ss]` is an Apple tech talk at that chapter (notes in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/)), `[hig …]` the HIG
+article, `[apple-apps/<app>/<pose>]` a screenshot in [`raw/apple-apps/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-apps/), `[metrics:<pose>]` [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.json);
 T-codes are the defect classes in [`patterns/TAXONOMY.md`](https://github.com/3nchiridion/foldsmith/blob/main/patterns/TAXONOMY.md), P-numbers the patterns in [`patterns/DECISION-TABLE.md`](https://github.com/3nchiridion/foldsmith/blob/main/patterns/DECISION-TABLE.md),
 and G1–G6 the gates in [`EVAL.md`](https://github.com/3nchiridion/foldsmith/blob/main/EVAL.md).
 
 ## Context
 Continuous content read in order: articles, documents, long notes. Decision table row `continuous / viewing`.
 Corpus: Wikipedia's article in book, one column whose every line crosses the fold (measure 686–743 pt)
-[raw/corpus/defects.csv, T5]. Apple: two-column layouts that reflow from one are how the inner display uses its
+[[raw/corpus/defects.csv](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/defects.csv), T5]. Apple: two-column layouts that reflow from one are how the inner display uses its
 width [tt-111466 7:34]; Safari scrolls one column straight across the laptop fold [apple-apps/safari/laptop].
 
 ## Forces
@@ -60,11 +60,11 @@ scrolls. The inactive division counts so the layout does not change when a flat 
 ## Known uses
 - Apple: the tech talk describes the shape [tt-111466 7:34] and shows it with Music's album page, two blocks side by
   side, not a text. Books and Notes are not on the 27.1 simulator; no frame of Books was found, and the sources
-  collected in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith/tree/main/raw/apple-docs) describe Notes as a split view (the HIG) and as an app whose toolbar moves into the
+  collected in [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/) describe Notes as a split view (the HIG) and as an app whose toolbar moves into the
   vertical bar (111462), never as a text in columns. No Apple frame looked at shows a text in columns, so G4 stays
-  open ([`verification/oracle/reflowing-columns.md`](https://github.com/3nchiridion/foldsmith/blob/main/verification/oracle/reflowing-columns.md)). Safari's one column across the laptop fold
+  open ([`verification/oracle/reflowing-columns.md`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/verification/oracle/reflowing-columns.md)). Safari's one column across the laptop fold
   [apple-apps/safari/laptop] is the upright half of this pattern, as context, not as the oracle.
-- Corpus before: Wikipedia's article, book ([`raw/corpus/evidence/Wikipedia/article-book-inner.png`](https://github.com/3nchiridion/foldsmith/blob/main/raw/corpus/evidence/Wikipedia/article-book-inner.png)). The catalog's
+- Corpus before: Wikipedia's article, book ([`raw/corpus/evidence/Wikipedia/article-book-inner.png`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/corpus/evidence/Wikipedia/article-book-inner.png)). The catalog's
   `single` variant reproduces it: one column 0–867 pt across the fold.
 
 ## When not to use it
@@ -78,7 +78,7 @@ scrolls. The inactive division counts so the layout does not change when a flat 
 
 ## When the text is a web page
 The reference lays out paragraphs with TextKit. Most apps that read articles draw them in a `WKWebView` (Wikipedia
-[verification/runs/Wikipedia]), and the app's own features usually address the page by its vertical offset: Wikipedia's
+[[verification/runs/Wikipedia](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/Wikipedia)]), and the app's own features usually address the page by its vertical offset: Wikipedia's
 contents jumps, find in page, scroll restoration and its native lead image all do. Paged CSS columns would give this
 pattern's shape but break those, so the run did not build them (not measured here). What it did, and what holds:
 - Where the article is opened from a list, open it in the detail pane of a **Fold-aligned split**: the pane ends at
@@ -101,7 +101,7 @@ dependency on this repository. `ReflowingColumns(paragraphs: article.paragraphs)
 T5 (stretched-single-column), T14 (columns-off-fold), T1 (crease-straddle) for any fixed control over the text. Run
 on every capture by `swift test`; the `single` variant must show T5 in book and flat-sideways and nothing else.
 
-Result on the committed captures (`swift run duo-detect verification/matrices`; · = no finding):
+Result on the committed captures (`swift run duo-detect Tests/Fixtures/matrices`; · = no finding):
 
 | config | closed | closed-sideways | book | laptop | tent | flat-sideways | flat-upright |
 |---|---|---|---|---|---|---|---|

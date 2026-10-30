@@ -13,7 +13,7 @@ import unittest
 
 HERE = pathlib.Path(__file__).resolve().parent
 PROGRESS = HERE / "progress.py"
-RUNS = HERE.parent / "verification" / "runs"
+RUNS = HERE.parent / "Tests" / "Fixtures" / "runs"   # the three runs' progress files and detector tables
 HEAD = "| config | closed | closed-sideways | book | laptop | tent | flat-sideways | flat-upright |\n|---|---|---|---|---|---|---|---|\n"
 
 
@@ -191,9 +191,9 @@ class RegressionCheck(unittest.TestCase):
 
 
 class FinishedRuns(unittest.TestCase):
-    """Every run in verification/runs, its progress file and detector tables laid out as its capture left them, has no
-    regression the check would refuse: the screens it finished pass, and Wikipedia's regressions were ones no detector
-    sees."""
+    """Every run in Tests/Fixtures/runs (copied from foldsmith-evidence's verification/runs), its progress file and
+    detector tables laid out as its capture left them, has no regression the check would refuse: the screens it
+    finished pass, and Wikipedia's regressions were ones no detector sees."""
 
     def test_no_finished_run_is_refused(self):
         runs = sorted(p for p in RUNS.iterdir() if (p / "migration.json").exists())

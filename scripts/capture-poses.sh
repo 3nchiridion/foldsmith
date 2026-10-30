@@ -17,7 +17,7 @@ set -euo pipefail
 
 APP="${1:?app (a flow in verification/ab/flows)}"; DEST="${2:?output directory}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-FLOW="$ROOT/verification/ab/flows/$APP.flow"
+FLOW="${FOLDSMITH_EVIDENCE:-$ROOT/../foldsmith-evidence}/verification/ab/flows/$APP.flow"   # the evidence repository
 [ -f "$FLOW" ] || { echo "no flow file $FLOW" >&2; exit 2; }
 BUNDLE=; LAUNCH_ARGS=; APP_PATH=; SCREENS=(); REDACT=()
 # shellcheck source=/dev/null
