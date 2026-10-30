@@ -82,7 +82,7 @@ From liquid_glass_widgets #348 (Flutter `MediaQuery.padding`, simulator) and the
 | Fold (division) width | 40 pt (inner, 951 × 669) | | |
 | Half of inner width | 455.5 pt (sven-ericmolzahn/iphone-duo-probe) | | |
 
-Other community observations: vertical tab bar with 4 tabs ≈ 48 × 212 pt capsule; bottom-bar items end 24 pt above the screen edge; `reservedRegions` empty on first geometry evaluation, populated later (iphone-duo-probe); fold reaches Flutter display features ~1 s after the device rests half open (duo_kit).
+Other community observations: vertical tab bar with 4 tabs ≈ 48 × 212 pt capsule; bottom-bar items end 24 pt above the screen edge; `reservedRegions` empty on first geometry evaluation, populated later (iphone-duo-probe); fold reaches Flutter display features ~1 s after the device rests half open (LeanCode's Flutter package duo_kit).
 
 ## C. What real apps are actually hitting (GitHub, Sept 21 – Oct 23)
 

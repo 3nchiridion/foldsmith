@@ -1,0 +1,12 @@
+{
+  "name": "foldsmith",
+  "version": "0.4.0",
+  "description": "Adapt a whole iOS app to iPhone Duo hands-free (/duo-start), with a pane showing the live simulator, before/after shots, the screen × pose matrix, and what is done and left",
+  "author": {
+    "name": "3nchiridion"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/3nchiridion/foldsmith",
+  "repository": "https://github.com/3nchiridion/foldsmith",
+  "types": "./types/index.d.ts"
+}

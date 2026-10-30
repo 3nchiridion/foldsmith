@@ -1,5 +1,5 @@
 {
-  "name": "duo-kit",
+  "name": "foldsmith",
   "owner": {
     "name": "3nchiridion"
   },
@@ -8,9 +8,9 @@
   },
   "plugins": [
     {
-      "name": "duo-migration",
-      "source": "./plugins/duo-migration",
-      "description": "Hands-free iPhone Duo migration: the iphone-duo-patterns skill, /duo-start, and a pane with the live simulator, before/after shots and what is done and left"
+      "name": "foldsmith",
+      "source": "./plugins/foldsmith",
+      "description": "Hands-free iPhone Duo migration: the foldsmith skill, /duo-start, and a pane with the live simulator, before/after shots and what is done and left"
     }
   ]
 }

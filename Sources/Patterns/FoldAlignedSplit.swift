@@ -1,6 +1,6 @@
-// FoldAlignedSplit.swift — duo-kit P1 "Fold-aligned split" (patterns/fold-aligned-split.md)
+// FoldAlignedSplit.swift — Foldsmith P1 "Fold-aligned split" (patterns/fold-aligned-split.md)
 //
-// Copy this one file into an app; it depends on nothing in duo-kit.
+// Copy this one file into an app; it depends on nothing in Foldsmith.
 //
 // One pane on the outer display and in Split View; two panes on the inner display held sideways. While the iPhone Duo
 // is folded like a book, the sidebar ends where the fold begins and the detail starts where it ends, so neither pane

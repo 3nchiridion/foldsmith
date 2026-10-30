@@ -1,6 +1,6 @@
 # NetNewsWire, migrated hands-free (2026-10-27)
 
-The first run of the hands-free skill (`skills/iphone-duo-patterns/SKILL.md`) on a corpus app: one prompt, no
+The first run of the hands-free skill (`skills/foldsmith/SKILL.md`) on a corpus app: one prompt, no
 questions, run by a Claude Code agent with the skill and the `iphone-duo-simulator` driver, on the project's iPhone Duo
 simulator (iOS 27.1, Xcode 27.1). The app was NetNewsWire at d9ec7df (`raw/corpus/NetNewsWire`, a clone made by `raw/corpus/clone.sh`, not committed), copied outside this
 repository, with a `duo-baseline` commit; the skill committed its work on `duo-migration` there.
@@ -9,7 +9,7 @@ repository, with a `duo-baseline` commit; the skill committed its work on `duo-m
 |---|---|
 | `REPORT.md` | the skill's report: per screen the pattern, what changed, what is left and why |
 | `audit.md` | the audit of the unmodified app and the classification of each screen |
-| `migration.json` | the progress file at the end of the run (what the `duo-migration` pane reads) |
+| `migration.json` | the progress file at the end of the run (what the Foldsmith pane reads) |
 | `NetNewsWire.flow` | the screens the skill found and the taps that reach them |
 | `detectors-before.md`, `detectors-after.md` | `duo-detect` on the 35 snapshots before and after |
 | `NetNewsWire.patch` | the code change, `duo-baseline..duo-migration` without `.duo/` (NetNewsWire is MIT) |

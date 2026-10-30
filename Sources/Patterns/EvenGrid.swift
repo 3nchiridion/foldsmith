@@ -1,6 +1,6 @@
-// EvenGrid.swift — duo-kit P3 "Even grid" (patterns/even-grid.md)
+// EvenGrid.swift — Foldsmith P3 "Even grid" (patterns/even-grid.md)
 //
-// Copy this one file into an app; it depends on nothing in duo-kit.
+// Copy this one file into an app; it depends on nothing in Foldsmith.
 //
 // A scrolling grid for peer content (feeds, galleries, dashboard tiles). Wherever the window has a vertical division,
 // active (book) or not (flat, sideways), the grid uses an even column count, half on each side, with equal column

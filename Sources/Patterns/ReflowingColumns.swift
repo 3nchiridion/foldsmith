@@ -1,6 +1,6 @@
-// ReflowingColumns.swift — duo-kit P2 "Reflowing columns" (patterns/reflowing-columns.md)
+// ReflowingColumns.swift — Foldsmith P2 "Reflowing columns" (patterns/reflowing-columns.md)
 //
-// Copy this one file into an app; it depends on nothing in duo-kit. It lays text out with TextKit, so it needs
+// Copy this one file into an app; it depends on nothing in Foldsmith. It lays text out with TextKit, so it needs
 // UIKit (iOS, iPadOS, Mac Catalyst, visionOS); it reads the fold only on iOS 27.1 and later.
 //
 // Continuous reading content (an article, a document). Wherever the window is wider than tall and has a vertical

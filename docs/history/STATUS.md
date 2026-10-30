@@ -1,7 +1,8 @@
 # STATUS — 2026-10-29 (the working log; Xcode 27.1 on the owner's Mac)
 
 > The working log of the private repository this one was cut from (step 14, 2026-10-29). PR numbers, run ids and
-> branch names refer to that repository and do not resolve here.
+> branch names refer to that repository and do not resolve here. The project was then named duo-kit and is now
+> Foldsmith (`DEVIATIONS.md`, step 15); paths and names below are as they were.
 
 Phase 1 is complete: all eight corpus apps are built and recorded. Phase 2 is merged (2026-10-26): taxonomy settled,
 decision table filled, five patterns named. Phase 3 is merged (2026-10-27, PR 12): three pattern pages, their reference

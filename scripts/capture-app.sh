@@ -13,7 +13,7 @@
 # together they probe one screen behind taps in the poses a change touches (into a scratch <out-dir>, so no cell
 # changes). TAP_TIMEOUT (default 150 s) is how long a screen's taps may take before it is skipped. When <out-dir> is a
 # `before` or `after` folder and the progress file exists (PROGRESS, default .duo/migration.json), each shot's path is
-# written to its cell as it lands, so the duo-migration pane shows the capture as it goes.
+# written to its cell as it lands, so the Foldsmith pane shows the capture as it goes.
 # Exit 0 when every screen was captured in every pose asked for; 3 when any was skipped (the lines are repeated at the
 # end and in findings.txt), so a missing screen is never read as a clean one. A SCREEN= recapture into a folder that
 # has a capture adds to its capture.txt under a "recaptured" line instead of replacing it, so the first pass's lines (a

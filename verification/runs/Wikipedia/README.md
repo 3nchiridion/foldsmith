@@ -1,6 +1,6 @@
 # Wikipedia, migrated hands-free and then reviewed (2026-10-28)
 
-The third run of the hands-free skill (`skills/iphone-duo-patterns/SKILL.md`), and the first on a UIKit and
+The third run of the hands-free skill (`skills/foldsmith/SKILL.md`), and the first on a UIKit and
 Objective-C app whose articles are a web view. The agent got the `/duo-start` prompt and nothing else about the work:
 a fresh Claude Code subagent with the skill, on the project's iPhone Duo simulator (iOS 27.1, Xcode 27.1), since
 headless `claude -p` was still signed out. The prompt added this machine's facts (Xcode, `duo.py`, the tap runner), the
@@ -18,7 +18,7 @@ round found.
 |---|---|
 | `REPORT.md` | the skill's report: per screen the pattern, what changed, the bars per pose, costs, existing behaviour, what is left and why, each review round item by item, and "Skill problems" |
 | `audit.md` | the audit of the unmodified app and the classification of each screen |
-| `migration.json` | the progress file at the end (what the `duo-migration` pane reads) |
+| `migration.json` | the progress file at the end (what the Foldsmith pane reads) |
 | `Wikipedia.flow` | the eleven screens the skill found and the taps that reach them, logged out |
 | `detectors-before.md`, `detectors-after.md` | `duo-detect` as of Phase 4 step 9 on the 77 snapshots before and after |
 | `Wikipedia.patch` | the code change, `main..duo-migration` without `.duo/`; MIT, as wikipedia-ios is |

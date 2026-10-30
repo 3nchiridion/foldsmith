@@ -1,6 +1,6 @@
 # IceCubesApp, migrated hands-free (2026-10-28)
 
-The second run of the hands-free skill (`skills/iphone-duo-patterns/SKILL.md`), and the first on a SwiftUI app: the
+The second run of the hands-free skill (`skills/foldsmith/SKILL.md`), and the first on a SwiftUI app: the
 `/duo-start` prompt and nothing else about the work, run by a fresh Claude Code agent with the skill, on the project's
 iPhone Duo simulator (iOS 27.1, Xcode 27.1). The prompt added only this machine's facts (where Xcode, `duo.py` and the
 tap runner are; that no Mastodon account may be created) and the project's limits (no simulator changes, no push, no
@@ -12,7 +12,7 @@ work on `duo-migration` there. Headless `claude -p`, used for NetNewsWire, was s
 |---|---|
 | `REPORT.md` | the skill's report: per screen the pattern, what changed, what is left and why, and "Skill problems" |
 | `audit.md` | the audit of the unmodified app and the classification of each screen |
-| `migration.json` | the progress file at the end of the run (what the `duo-migration` pane reads) |
+| `migration.json` | the progress file at the end of the run (what the Foldsmith pane reads) |
 | `IceCubesApp.flow` | the screens the skill found and the taps that reach them, logged out |
 | `detectors-before.md`, `detectors-after.md` | `duo-detect` on the snapshots before (33) and after (35) |
 | `IceCubesApp.patch` | the code change, `main..duo-migration` without `.duo/`; **AGPL-3.0**, as IceCubesApp is |

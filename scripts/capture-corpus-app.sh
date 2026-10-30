@@ -15,7 +15,7 @@ NAME="${1:?app name}"; BUNDLE="${2:?bundle id}"; shift 2
 UDID="${DUO_UDID:?set DUO_UDID}"
 DUO_PY="${DUO_PY:?set DUO_PY to duo.py}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-# In this repository shots go to raw/corpus/evidence; the skill's copy (skills/iphone-duo-patterns/tools) has no raw/
+# In this repository shots go to raw/corpus/evidence; the skill's copy (skills/foldsmith/tools) has no raw/
 # and writes under the app being migrated instead. OUT=<dir> puts them elsewhere.
 if [ -d "$ROOT/raw/corpus" ]; then OUT="${OUT:-$ROOT/raw/corpus/evidence/$NAME}"; else OUT="${OUT:-$PWD/.duo/captures/$NAME}"; fi
 mkdir -p "$OUT"

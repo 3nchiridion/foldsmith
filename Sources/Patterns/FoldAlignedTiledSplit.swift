@@ -1,4 +1,4 @@
-// FoldAlignedTiledSplit.swift — duo-kit P1 "Fold-aligned split", two panes held upright too
+// FoldAlignedTiledSplit.swift — Foldsmith P1 "Fold-aligned split", two panes held upright too
 // (patterns/fold-aligned-split.md, "Upright")
 //
 // Copy this file with FoldAlignedSplit.swift: it uses that file's split and its `duoBookFoldIsActive` for sheets.

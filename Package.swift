@@ -1,10 +1,11 @@
 // swift-tools-version: 6.0
-// DuoPoseTesting — pose geometry and taxonomy detectors for iPhone Duo; duo-detect runs them on catalog captures.
+// Foldsmith's Swift package: DuoPoseTesting (pose geometry and snapshot helpers) and DuoDetectors (taxonomy detectors)
+// for iPhone Duo; duo-detect runs them on catalog captures.
 // Pose geometry comes from raw/metrics.jsonl (Resources/poses.json) or from the capture itself, never hand-typed.
 import PackageDescription
 
 let package = Package(
-    name: "DuoPoseTesting",
+    name: "Foldsmith",
     platforms: [.iOS(.v18), .macOS(.v14)],   // the package itself targets 18 so host apps with older deployment targets can depend on it; Duo APIs are gated inside
     products: [
         .library(name: "DuoPoseTesting", targets: ["DuoPoseTesting"]),

@@ -1,7 +1,7 @@
 # Mac phase — run this in Claude Code on the Mac, from the repo root
 
 > Historical: the Phase 1 plan as it was run on the owner's Mac. It stays because `DEVIATIONS.md` records departures
-> from it. To use the catalog or the skill, see `README.md` and `plugins/duo-migration/README.md`.
+> from it. To use the catalog or the skill, see `README.md` and `plugins/foldsmith/README.md`.
 
 Everything that needs Xcode 27.1 or the Duo simulator. Each step writes into `raw/` and nothing else
 is allowed to start until the step's output exists. Copy the prompt block into Claude Code.

@@ -1,4 +1,4 @@
-# duo-kit
+# Foldsmith
 
 <p align="center">
   <img src="verification/matrices/split/aligned-book.png" alt="The catalog's Fold-aligned split on the iPhone Duo simulator, folded like a book: a list in the leading half and the article in the trailing half, the boundary on the fold" width="600">
@@ -10,13 +10,13 @@ Layout patterns for apps on iPhone Duo, Apple's foldable, measured on the simula
 the layouts that break on the fold; and a Claude Code plugin that adapts a whole app hands-free and proves every pose
 with screenshots.
 
-iPhone is a trademark of Apple Inc., registered in the U.S. and other countries. This project is independent and is
-not affiliated with, sponsored by, or endorsed by Apple Inc.
+iPhone is a trademark of Apple Inc., registered in the U.S. and other countries, and iPhone Duo is a trademark of Apple
+Inc. Foldsmith is independent and is not affiliated with, sponsored by, or endorsed by Apple Inc.
 
 ## Start here
 | You want to | Go to |
 |---|---|
-| adapt your app with Claude Code | [Hands-free migration](#hands-free-migration-with-claude-code) below, and `plugins/duo-migration/README.md` |
+| adapt your app with Claude Code | [Hands-free migration](#hands-free-migration-with-claude-code) below, and `plugins/foldsmith/README.md` |
 | copy a layout into your app | `Sources/Patterns/`: one copy-in Swift file per pattern (to keep Fold-aligned split's two panes upright too, copy `FoldAlignedTiledSplit.swift` with `FoldAlignedSplit.swift`) |
 | read a pattern: when to use it, what it does in each pose, and why | `patterns/fold-aligned-split.md`, `even-grid.md`, `arrangement.md`, `reflowing-columns.md` |
 | find which pattern a screen needs | `patterns/DECISION-TABLE.md` (and the defect classes in `patterns/TAXONOMY.md`) |
@@ -36,8 +36,8 @@ button in 8 cells, not fixed); Wikipedia's run finished 2 of its 11 screens and 
 unfixed. The detectors read any app through its accessibility tree.
 
 ## Hands-free migration with Claude Code
-Install the `duo-migration` plugin, open your app's folder in Claude Code, and run `/duo-start`. The bundled
-`iphone-duo-patterns` skill takes the whole app from audit to verified without stopping to ask: it finds the screens,
+Install the `foldsmith` plugin, open your app's folder in Claude Code, and run `/duo-start`. The bundled
+`foldsmith` skill takes the whole app from audit to verified without stopping to ask: it finds the screens,
 captures each in all seven Duo poses, applies the catalog's patterns, and proves every pose with before/after shots.
 It commits one screen at a time on a `duo-migration` branch, never pushes, and keeps `.duo/migration.json` current,
 so a later session resumes where it stopped.
@@ -46,7 +46,7 @@ A pane beside the chat follows it: the live simulator, the screen × pose matrix
 pose, and what is done and what is left.
 
 <p align="center">
-  <img src="docs/images/duo-migration-pane.svg" alt="The duo-migration pane's matrix: four screens (Inbox, Message, Compose, Settings) against the seven iPhone Duo poses and Split View's half, each column headed by a pose icon, with cells colored for defect found, pattern proposed, migrated, verified, fine as is, or not captured" width="668">
+  <img src="docs/images/foldsmith-pane.svg" alt="The Foldsmith pane's matrix: four screens (Inbox, Message, Compose, Settings) against the seven iPhone Duo poses and Split View's half, each column headed by a pose icon, with cells colored for defect found, pattern proposed, migrated, verified, fine as is, or not captured" width="668">
   <br>
   <sub>The pane's matrix, from <code>/duo demo</code> sample data. It follows the system's light or dark mode.</sub>
 </p>
@@ -66,22 +66,22 @@ pose, and what is done and what is left.
 At the prompt of a Claude Code terminal session:
 
 ```
-/plugin install duo-migration --marketplace 3nchiridion/duo-kit
+/plugin install foldsmith --marketplace 3nchiridion/foldsmith
 ```
 
 Answer `y` to add the marketplace, then pick a scope. From a shell:
 
 ```
-claude plugin install duo-migration --marketplace 3nchiridion/duo-kit
+claude plugin install foldsmith --marketplace 3nchiridion/foldsmith
 ```
 
 If `--marketplace` is not offered, Claude Code is older than 2.1.308: run `claude update` first. To fetch only the
 plugin and not the evidence (about 79 MB in all), add the marketplace with a sparse checkout, then install:
-`claude plugin marketplace add 3nchiridion/duo-kit --sparse .claude-plugin plugins`, then
-`claude plugin install duo-migration@duo-kit`.
+`claude plugin marketplace add 3nchiridion/foldsmith --sparse .claude-plugin plugins`, then
+`claude plugin install foldsmith@foldsmith`.
 
 In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with
-`3nchiridion/duo-kit`, then Add plugin. Run `/duo demo` to preview the pane with sample data.
+`3nchiridion/foldsmith`, then Add plugin. Run `/duo demo` to preview the pane with sample data.
 
 ## Build and test
 With Xcode 27.1 and xcodegen:
@@ -101,14 +101,14 @@ With Xcode 27.1 and xcodegen:
 | `Sources/DuoDetectors/`, `Sources/duo-detect/` | the pose model and the detectors (T1, T2, T4, T5, T7, T10, T14, T15: the defect classes in `patterns/TAXONOMY.md`), for the catalog's records or any app's accessibility tree: `swift run duo-detect <dir>`; `Package.swift` at the root builds them |
 | `Sources/DuoPoseTesting/`, `Tests/` | a harness for app tests, and the tests that hold the patterns to their captures |
 | `Examples/Catalog/` | the catalog app: each reference beside the defect it fixes; the pose matrices are captured from it |
-| `plugins/duo-migration/` | the plugin: the skill, `/duo-start`, and the pane |
-| `skills/iphone-duo-patterns/` | the skill on its own: `SKILL.md`, its references (generated from `patterns/`) and tools |
+| `plugins/foldsmith/` | the plugin: the skill, `/duo-start`, and the pane |
+| `skills/foldsmith/` | the skill on its own: `SKILL.md`, its references (generated from `patterns/`) and tools |
 | `verification/` | `matrices/` (the goldens), `oracle/` (against Apple's apps), `accessibility/` (the catalog read through XCTest), `runs/` (the three migrations), `ab/` (a blind A/B, set aside) |
 | `raw/` | primary material: notes on Apple's talks and docs, SDK notes, measured metrics, screenshots of Apple's and the corpus apps, developer questions, the corpus manifest and defects |
 | `scripts/` | capture (catalog, corpus apps, Apple apps), matrix compose and diff, the progress file, skill sync, redaction |
 | `Probe/`, `Tap/` | DuoProbe, which logged each pose's geometry; DuoTapUITests, which taps an app on the shut Duo and holds it while the host folds and shoots |
 | `docs/` | `history/` (the working log `STATUS.md`, `DEVIATIONS.md`, the first plan `MAC-PHASE.md`) and images |
-| `.claude-plugin/` | `marketplace.json`: this repository as the Claude Code marketplace `duo-kit`, listing its one plugin `duo-migration` |
+| `.claude-plugin/` | `marketplace.json`: this repository as the Claude Code marketplace `foldsmith`, listing its one plugin `foldsmith` |
 | `.github/workflows/` | `ci.yml`: the detector tests and builds (G1, G3) on pushes to main and on pull requests; G2 on manual dispatch |
 
 `EVAL.md` at the root is the pre-registered contract: the gates, the rubric, and in §7 where each gate stands.

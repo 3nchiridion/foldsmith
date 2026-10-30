@@ -1,6 +1,6 @@
-// Arrangement.swift — duo-kit P4 "Arrangement" (patterns/arrangement.md)
+// Arrangement.swift — Foldsmith P4 "Arrangement" (patterns/arrangement.md)
 //
-// Copy this one file into an app; it depends on nothing in duo-kit.
+// Copy this one file into an app; it depends on nothing in Foldsmith.
 //
 // Two views where one supports the other (a player and its transcript, an article and its contents, a document and
 // its inspector), laid out by the system's ArrangementView: as a split, side by side when the window is wider than

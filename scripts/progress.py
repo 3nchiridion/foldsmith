@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep .duo/migration.json, the hands-free skill's progress file, which the duo-migration pane reads.
+"""Keep .duo/migration.json, the hands-free skill's progress file, which the Foldsmith pane reads.
 
 Every command takes the file's lock, reads it, changes one thing and writes it whole (a temporary file, then a rename),
 so the pane never reads half a file and a capture running beside the agent loses none of its writes.
