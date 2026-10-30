@@ -107,8 +107,12 @@ jobs:
           xcrun simctl install "$DUO_UDID" Examples/Catalog/build/Build/Products/Debug-iphonesimulator/Catalog.app
       - name: Capture the catalog in every pose (G2)
         run: OUT="$RUNNER_TEMP/goldens" scripts/capture-catalog.sh
+      - name: Pillow for the comparison, pinned, outside the system Python
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install -q --only-binary=:all: "pillow==13.0.0"
       - name: Compare with the committed matrices (G2)
-        run: python3 scripts/diff-matrix.py "$RUNNER_TEMP/goldens" verification/matrices
+        run: '"$RUNNER_TEMP/venv/bin/python" scripts/diff-matrix.py "$RUNNER_TEMP/goldens" verification/matrices'
       - name: Keep the capture when it differs
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

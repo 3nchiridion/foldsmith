@@ -38,4 +38,4 @@ one the run and its review missed, before and after alike: the article's Reader 
 detail pane (8 cells after: article, timeline and feeds in book and flat-sideways, the article closed and
 closed-sideways). Not fixed here; `detectors-before.md` and `detectors-after.md` are left as they were run.
 
-The shots and their snapshots stay outside the repository; they show the feeds' article titles.
+The run's own shots and snapshots stay outside the repository, as for every run.

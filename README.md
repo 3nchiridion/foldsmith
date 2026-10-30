@@ -16,12 +16,12 @@ Inc. Foldsmith is independent and is not affiliated with, sponsored by, or endor
 ## Start here
 | You want to | Go to |
 |---|---|
-| adapt your app with Claude Code | [Hands-free migration](#hands-free-migration-with-claude-code) below, and `plugins/foldsmith/README.md` |
-| copy a layout into your app | `Sources/Patterns/`: one copy-in Swift file per pattern (to keep Fold-aligned split's two panes upright too, copy `FoldAlignedTiledSplit.swift` with `FoldAlignedSplit.swift`) |
-| read a pattern: when to use it, what it does in each pose, and why | `patterns/fold-aligned-split.md`, `even-grid.md`, `arrangement.md`, `reflowing-columns.md` |
-| find which pattern a screen needs | `patterns/DECISION-TABLE.md` (and the defect classes in `patterns/TAXONOMY.md`) |
-| check a claim | `EVAL.md` (the gates and where each stands), `verification/` (the captures, the comparisons with Apple's apps, the three migrations) |
-| see how it was built | `docs/history/` (the working log, every departure from the plan, the first plan) |
+| adapt your app with Claude Code | [Hands-free migration](#hands-free-migration-with-claude-code) below, and [the plugin's README](plugins/foldsmith/README.md) |
+| copy a layout into your app | [`Sources/Patterns/`](Sources/Patterns/): one copy-in Swift file per pattern (to keep Fold-aligned split's two panes upright too, copy `FoldAlignedTiledSplit.swift` with `FoldAlignedSplit.swift`) |
+| read a pattern: when to use it, what it does in each pose, and why | [Fold-aligned split](patterns/fold-aligned-split.md), [Even grid](patterns/even-grid.md), [Arrangement](patterns/arrangement.md), [Reflowing columns](patterns/reflowing-columns.md) |
+| find which pattern a screen needs | [the decision table](patterns/DECISION-TABLE.md) (and the defect classes in [the taxonomy](patterns/TAXONOMY.md)) |
+| check a claim | [`EVAL.md`](EVAL.md) (the gates and where each stands), [`verification/`](verification/) (the captures, the comparisons with Apple's apps, the three migrations) |
+| see how it was built | [`docs/history/`](docs/history/) (the working log, every departure from the plan, the first plan) |
 
 ## Status
 On 2026-10-29: four patterns, each with a reference implementation, a pose matrix captured in all seven poses and
@@ -127,7 +127,7 @@ keep their MIT license. Three patches change other projects and keep their licen
 `verification/runs/Wikipedia/Wikipedia.patch` (MIT, Wikimedia Foundation) and
 `verification/runs/NetNewsWire/NetNewsWire.patch` (MIT, Brent Simmons).
 
-Screenshots under `raw/corpus/evidence/`, `raw/apple-apps/` (all but the project's own `_probe/`) and
+Screenshots under `raw/corpus/evidence/`, `raw/apple-apps/` (Apple's Safari and Settings; all but the project's own `_probe/`) and
 `verification/ab/baseline/` show other apps and the content those apps display. They are not covered by `LICENSE`: the
 apps, their logos and trademarks and the content belong to their owners. Wikipedia's text is by Wikipedia's
 contributors under CC BY-SA 4.0, and its images are under the terms on their file pages. The shots are here only as
