@@ -1,23 +1,66 @@
 # Foldsmith
 
+Measured layout patterns and hands-free migration for iPhone Duo, proven in every pose.
+
+<!-- DEMO: 45–60s screen recording of /foldsmith-start on NetNewsWire → matrix fills → before/after on the fold. docs/assets/demo.gif linked to demo.mp4 -->
+
 <p align="center">
   <img src="https://developer.apple.com/iphone-duo/images/main_2x.png" alt="iPhone Duo partially folded in book pose, showing the Home Screen across both halves" width="600">
   <br>
   <sub>Image © Apple Inc. All rights reserved. Reproduced from Apple's <a href="https://developer.apple.com/iphone-duo/">iPhone Duo developer page</a> solely for the purpose of identification.</sub>
 </p>
 
-Layout patterns for apps on iPhone Duo, Apple's foldable, measured on the simulator in every pose; detectors that find
-the layouts that break on the fold; and a Claude Code plugin that adapts a whole app hands-free and proves every pose
-with screenshots.
-
 iPhone is a trademark of Apple Inc., registered in the U.S. and other countries, and iPhone Duo is a trademark of Apple
 Inc. Foldsmith is independent and is not affiliated with, sponsored by, or endorsed by Apple Inc.
+
+## Why now
+- **The App Store marks apps that are ready.** Submit iPhone Duo screenshots and the product page shows a badge telling
+  people the app is optimized for iPhone Duo ([Apple Developer: Prepare](https://developer.apple.com/iphone-duo/prepare/));
+  Apple calls it the Made for iPhone Duo badge
+  ([Newsroom, Oct 22, 2026](https://www.apple.com/newsroom/2026/10/developers-bring-incredible-new-app-experiences-to-iphone-duo/)).
+- **The screenshots become required.** Starting April 2027, apps submitted to the App Store must include iPhone Duo
+  screenshots ([Apple Developer News, Oct 5, 2026](https://developer.apple.com/news/?id=kkphp5qo); App Store Connect
+  Help scopes it to apps built with the iOS 27.1 SDK or later:
+  [screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/)).
+
+## What makes it different
+- **Detectors that read any app.** Eight defect classes (a pane boundary off the fold, text across it, a bar item
+  stranded beside the vertical bar, state lost on the fold, …) found from an app's accessibility tree on the simulator,
+  in every pose: [`Sources/DuoDetectors/`](Sources/DuoDetectors/), the classes in [the taxonomy](patterns/TAXONOMY.md),
+  and the catalog read through XCTest, where they agree with its own records in all 119 captures
+  ([`verification/accessibility/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/accessibility)).
+- **Seven-pose matrices, set against Apple's own apps.** Each pattern is captured in all seven poses
+  ([the matrices](docs/images/matrices/)), and three of the four are compared with the Apple app that does the same
+  thing, in the poses Apple shows it in: Settings on the simulator (six poses); Fitness (two), Podcasts and Accessibility
+  Reader (three) in Apple's tech-talk frames. Where they differ is written down ([`verification/oracle/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/oracle)).
+- **Three real migrations.** The skill adapted NetNewsWire and IceCubesApp (five screens each, logged out for
+  IceCubesApp, verified in every pose; a detector added after NetNewsWire's run finds its Reader View button beside the
+  vertical bar in 8 cells, not fixed) and ran on Wikipedia, which did not pass review (2 of 11 screens; 15 confirmed
+  items left unfixed, two of them medium regressions, all listed). Each has the detectors' findings before and after,
+  the report and the patch ([`verification/runs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs)).
 
 <p align="center">
   <img src="docs/images/split-aligned-book.png" alt="The catalog's Fold-aligned split on the iPhone Duo simulator, folded like a book: a list in the leading half and the article in the trailing half, the boundary on the fold" width="600">
   <br>
   <sub>The catalog's Fold-aligned split in book pose, captured on the iPhone Duo simulator: the boundary on the fold.</sub>
 </p>
+
+## Install
+In a Claude Code terminal session, for the pane and `/foldsmith-start` (in the desktop app: + next to the prompt box,
+then Plugins, Add marketplace `3nchiridion/foldsmith`):
+
+```
+/plugin install foldsmith --marketplace 3nchiridion/foldsmith
+```
+
+In Codex, Cursor, GitHub Copilot, Gemini CLI or any agent that reads Agent Skills, for the skill alone:
+
+```
+npx skills add 3nchiridion/foldsmith
+```
+
+Either needs macOS with Xcode 27.1 and an iPhone Duo simulator ([Requirements](#requirements)). More ways in:
+[the plugin, step by step](#installing-the-plugin) and [other agents](#other-agents).
 
 ## Start here
 | You want to | Go to |
@@ -38,8 +81,8 @@ app). The fourth, Reflowing columns, has no Apple app to compare with yet.
 
 The plugin's skill was run on three open-source apps ([`verification/runs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/)): IceCubesApp's five logged-out screens
 and NetNewsWire's five are verified in every pose (a detector added after NetNewsWire's run finds its Reader View
-button in 8 cells, not fixed); Wikipedia's run finished 2 of its 11 screens and left 15 confirmed review items
-unfixed. The detectors read any app through its accessibility tree.
+button in 8 cells, not fixed); Wikipedia's run finished 2 of its 11 screens and did not pass review: 15 confirmed
+items are left unfixed, two of them medium regressions. The detectors read any app through its accessibility tree.
 
 ## Hands-free migration with Claude Code
 Install the `foldsmith` plugin, open your app's folder in Claude Code, and run `/foldsmith-start`. The bundled
@@ -68,7 +111,7 @@ pose, and what is done and what is left.
 - the [iphone-duo-simulator-skill](https://github.com/WhitenWhiten/iphone-duo-simulator-skill) driver (`duo.py`),
   which the skill fetches at a fixed commit into `~/Library/Caches/duo-driver` when it is missing.
 
-### Install
+### Installing the plugin
 At the prompt of a Claude Code terminal session:
 
 ```
