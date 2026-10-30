@@ -3,7 +3,7 @@
 Versions of the repository, as tagged. The Claude Code plugin carries its own version in
 `plugins/foldsmith/.claude-plugin/plugin.json`.
 
-## v0.1.0 — not yet tagged
+## v0.1.0 — 2026-10-30
 The first public release.
 
 Status, as the README gives it: on 2026-10-29, four patterns, each with a reference implementation, a pose matrix
