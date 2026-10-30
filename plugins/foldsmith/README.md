@@ -2,11 +2,11 @@
 
 Adapt a whole iOS app to iPhone Duo hands-free, and watch it happen. One install brings:
 
-- **The `foldsmith` skill** (`skills/`): finds the app's screens, captures each one in all seven Duo poses,
+- **The `foldsmith-duo` skill** (`skills/`): finds the app's screens, captures each one in all seven Duo poses,
   classifies it against the decision table, applies the pattern's reference implementation, and proves every pose
   with before/after screenshots and the detectors. It never stops to ask; what it cannot do goes to its "left" list
   with the reason. It commits one screen at a time on a `duo-migration` branch and never pushes.
-- **`/duo-start`**: the one command to run in your app's folder. Run it again in a later session and it resumes from
+- **`/foldsmith-start`**: the one command to run in your app's folder. Run it again in a later session and it resumes from
   where the last one stopped.
 - **The pane** beside the chat, following `.duo/migration.json` (the skill rewrites it after every step). It finds the
   newest progress file under the session's folder by itself, and offers an App picker when there are several:
@@ -19,9 +19,9 @@ Adapt a whole iOS app to iPhone Duo hands-free, and watch it happen. One install
   - the activity, newest first;
   - Resume migration, Open report and Show captures.
 
-Commands: `/duo-start [app folder]` runs or resumes the migration; `/duo` opens the pane; `/duo watch <folder>` follows
-an app in another folder (remembered per folder; `/duo watch` alone goes back to the newest); `/duo demo` shows sample
-data; `/duo off` returns to the progress file.
+Commands: `/foldsmith-start [app folder]` runs or resumes the migration; `/foldsmith` opens the pane; `/foldsmith watch <folder>` follows
+an app in another folder (remembered per folder; `/foldsmith watch` alone goes back to the newest); `/foldsmith demo` shows sample
+data; `/foldsmith off` returns to the progress file.
 
 Needs Xcode 27.1 with the iOS 27.1 simulator runtime, one iPhone Duo simulator (`xcrun simctl create "iPhone Duo"
 com.apple.CoreSimulator.SimDeviceType.iPhone-Duo com.apple.CoreSimulator.SimRuntime.iOS-27-1`), xcodegen (`brew install
@@ -46,7 +46,7 @@ with `3nchiridion/foldsmith`, then Add plugin.
 
 ## Development
 The pane's hooks have tests in `hooks/register.test.tsx`; run them with `claude plugin test plugins/foldsmith`
-(Claude Code 2.1.308 or later) and check the manifest with `claude plugin validate plugins/foldsmith`. `skills/foldsmith/` here is a copy of the repository's `skills/foldsmith/`, made by
+(Claude Code 2.1.308 or later) and check the manifest with `claude plugin validate plugins/foldsmith`. `skills/foldsmith-duo/` here is a copy of the repository's `skills/foldsmith-duo/`, made by
 `python3 scripts/sync-skill-references.py` from the repository root. Edit `SKILL.md` and `references/apple.md`,
 `simulator.md` and `detectors-static.md` in that folder, and everything else at its source (`patterns/`, `Sources/`,
 `scripts/`, `Tap/`), then rerun the script.

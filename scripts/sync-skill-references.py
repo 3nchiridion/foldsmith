@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fill skills/foldsmith/ from the repository, so the skill carries no rule of its own and runs on its own.
+"""Fill skills/foldsmith-duo/ from the repository, so the skill carries no rule of its own and runs on its own.
 
 references/ — copied (with repo-relative links rewritten to the GitHub repository, and matrix images copied alongside):
   patterns/DECISION-TABLE.md      → decision-table.md
@@ -21,7 +21,7 @@ this repository captures and checks poses the same way (references/simulator.md 
   Tap/project.yml, Tap/DuoTapUITests/                          → tools/tap/
   Sources/DuoDetectors/, Sources/duo-detect/                   → tools/detect/Sources/ (with a Package.swift of its own)
 
-Then the whole skill is mirrored into the Foldsmith plugin (plugins/foldsmith/skills/foldsmith/), so
+Then the whole skill is mirrored into the Foldsmith plugin (plugins/foldsmith/skills/foldsmith-duo/), so
 installing the plugin installs the skill with its pane.
 
     python3 scripts/sync-skill-references.py          # write
@@ -35,8 +35,8 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SKILL = ROOT / "skills" / "foldsmith"
-PLUGIN_SKILL = ROOT / "plugins" / "foldsmith" / "skills" / "foldsmith"
+SKILL = ROOT / "skills" / "foldsmith-duo"
+PLUGIN_SKILL = ROOT / "plugins" / "foldsmith" / "skills" / "foldsmith-duo"
 LOCAL = (".build", ".swiftpm", "build")   # a local build of the tools, git-ignored
 REPO = "https://github.com/3nchiridion/foldsmith/blob/main/"
 PAGES = ["fold-aligned-split", "even-grid", "reflowing-columns", "arrangement"]
@@ -90,9 +90,9 @@ def code_paths(text, src):
     def fix(m):
         before, path = m.group(1), m.group(2)
         clean = path.rstrip("/.,;:")
-        if clean.startswith("skills/foldsmith/") and (ROOT / clean).exists():
+        if clean.startswith("skills/foldsmith-duo/") and (ROOT / clean).exists():
             here = "references/patterns" if beside_pages(src) else "references"
-            return f"{before}[`{path}`]({os.path.relpath(clean[len('skills/foldsmith/'):], here)})"
+            return f"{before}[`{path}`]({os.path.relpath(clean[len('skills/foldsmith-duo/'):], here)})"
         if not (clean.startswith(ROOTS) or clean in ROOT_FILES) or not (ROOT / clean).exists() or ignored(clean):
             return m.group(0)
         if clean.startswith("patterns/") and pathlib.Path(clean).stem in PAGES:

@@ -78,7 +78,7 @@ or pose command**, and no display selection. That confirms docs/history/STATUS.m
 Hub or the community `duo.py`. It is still useful for screenshots and accessibility hierarchy in each pose once
 something else has set the pose.
 
-## What this means for our skill (`skills/foldsmith`)
+## What this means for our skill (`skills/foldsmith-duo`)
 
 - **Defer to Apple's skill for migration.** Don't re-teach `UIScreen.main`, orientation, idiom, scene lifecycle or
   symmetric insets. Route to `app-resizability` first ("run Apple's App Resizability skill, then come back").

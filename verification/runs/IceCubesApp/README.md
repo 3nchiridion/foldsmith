@@ -1,7 +1,7 @@
 # IceCubesApp, migrated hands-free (2026-10-28)
 
-The second run of the hands-free skill (`skills/foldsmith/SKILL.md`), and the first on a SwiftUI app: the
-`/duo-start` prompt and nothing else about the work, run by a fresh Claude Code agent with the skill, on the project's
+The second run of the hands-free skill (`skills/foldsmith-duo/SKILL.md`), and the first on a SwiftUI app: the
+`/duo-start` (now `/foldsmith-start`) prompt and nothing else about the work, run by a fresh Claude Code agent with the skill, on the project's
 iPhone Duo simulator (iOS 27.1, Xcode 27.1). The prompt added only this machine's facts (where Xcode, `duo.py` and the
 tap runner are; that no Mastodon account may be created) and the project's limits (no simulator changes, no push, no
 edits to this repository, strangers' posts never committed). The app was IceCubesApp at 98098b9

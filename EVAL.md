@@ -55,7 +55,7 @@ Every cell in `patterns/DECISION-TABLE.md` cites either a system-app screenshot 
 ## 6. Scope lock
 v0 = three patterns + harness + skill + one corpus migration + the A/B run. Anything else is v0.1+.
 
-*Amended 2026-10-27 (owner): v0 = three patterns + harness + the hands-free skill and its Claude Code plugin (pane, `/duo-start`) + one corpus migration done by them. The A/B run is set aside (§4).*
+*Amended 2026-10-27 (owner): v0 = three patterns + harness + the hands-free skill and its Claude Code plugin (pane, `/duo-start` (now `/foldsmith-start`)) + one corpus migration done by them. The A/B run is set aside (§4).*
 
 *Amended 2026-10-29 (owner): Arrangement (P4) is built in v0, as the third pattern to pass G1–G4, because no Apple frame looked at shows a text in columns, so Reflowing columns' G4 has no oracle (`verification/oracle/reflowing-columns.md`). Reflowing columns stays in the catalog and the skill with G4 open. See `docs/history/DEVIATIONS.md`.*
 

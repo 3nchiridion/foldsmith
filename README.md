@@ -42,8 +42,8 @@ button in 8 cells, not fixed); Wikipedia's run finished 2 of its 11 screens and 
 unfixed. The detectors read any app through its accessibility tree.
 
 ## Hands-free migration with Claude Code
-Install the `foldsmith` plugin, open your app's folder in Claude Code, and run `/duo-start`. The bundled
-`foldsmith` skill takes the whole app from audit to verified without stopping to ask: it finds the screens,
+Install the `foldsmith` plugin, open your app's folder in Claude Code, and run `/foldsmith-start`. The bundled
+`foldsmith-duo` skill takes the whole app from audit to verified without stopping to ask: it finds the screens,
 captures each in all seven Duo poses, applies the catalog's patterns, and proves every pose with before/after shots.
 It commits one screen at a time on a `duo-migration` branch, never pushes, and keeps `.duo/migration.json` current,
 so a later session resumes where it stopped.
@@ -54,7 +54,7 @@ pose, and what is done and what is left.
 <p align="center">
   <img src="docs/images/foldsmith-pane.svg" alt="The Foldsmith pane's matrix: four screens (Inbox, Message, Compose, Settings) against the seven iPhone Duo poses and Split View's half, each column headed by a pose icon, with cells colored for defect found, pattern proposed, migrated, verified, fine as is, or not captured" width="668">
   <br>
-  <sub>The pane's matrix, from <code>/duo demo</code> sample data. It follows the system's light or dark mode.</sub>
+  <sub>The pane's matrix, from <code>/foldsmith demo</code> sample data. It follows the system's light or dark mode.</sub>
 </p>
 
 ### Requirements
@@ -87,7 +87,7 @@ plugin and not the evidence (about 79 MB in all), add the marketplace with a spa
 `claude plugin install foldsmith@foldsmith`.
 
 In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with
-`3nchiridion/foldsmith`, then Add plugin. Run `/duo demo` to preview the pane with sample data.
+`3nchiridion/foldsmith`, then Add plugin. Run `/foldsmith demo` to preview the pane with sample data.
 
 ## Build and test
 With Xcode 27.1 and xcodegen:
@@ -107,8 +107,8 @@ With Xcode 27.1 and xcodegen:
 | `Sources/DuoDetectors/`, `Sources/duo-detect/` | the pose model and the detectors (T1, T2, T4, T5, T7, T10, T14, T15: the defect classes in `patterns/TAXONOMY.md`), for the catalog's records or any app's accessibility tree: `swift run duo-detect <dir>`; `Package.swift` at the root builds them |
 | `Sources/DuoPoseTesting/`, `Tests/` | a harness for app tests, and the tests that hold the patterns to their captures |
 | `Examples/Catalog/` | the catalog app: each reference beside the defect it fixes; the pose matrices are captured from it |
-| `plugins/foldsmith/` | the plugin: the skill, `/duo-start`, and the pane |
-| `skills/foldsmith/` | the skill on its own: `SKILL.md`, its references (generated from `patterns/`) and tools |
+| `plugins/foldsmith/` | the plugin: the skill, `/foldsmith-start`, and the pane |
+| `skills/foldsmith-duo/` | the skill on its own: `SKILL.md`, its references (generated from `patterns/`) and tools |
 | `verification/` | `matrices/` (the goldens), `oracle/` (against Apple's apps), `accessibility/` (the catalog read through XCTest), `runs/` (the three migrations), `ab/` (a blind A/B, set aside) |
 | `raw/` | primary material: notes on Apple's talks and docs, SDK notes, measured metrics, screenshots of Apple's and the corpus apps, developer questions, the corpus manifest and defects |
 | `scripts/` | capture (catalog, corpus apps, Apple apps), matrix compose and diff, the progress file, skill sync, redaction |

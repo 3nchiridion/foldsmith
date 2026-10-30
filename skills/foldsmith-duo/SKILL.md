@@ -1,5 +1,5 @@
 ---
-name: foldsmith
+name: foldsmith-duo
 description: Adapt a whole existing iOS app to iPhone Duo (Apple's foldable, iOS 27.1), hands-free, from one prompt to every screen verified in every pose. Classifies each screen against a measured decision table, applies a named layout pattern, proves every pose with screenshots, and keeps .duo/migration.json current so the Foldsmith pane shows progress and a later session resumes. Use when the user mentions iPhone Duo, foldable iPhone, the fold or crease or hinge, book or laptop pose, vertical toolbars or tab bars, ArrangementView, ReservedRegion, "squeezed when half open", or asks to make an app work on the Duo's inner and outer displays.
 license: MIT
 ---

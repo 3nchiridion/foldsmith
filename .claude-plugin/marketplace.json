@@ -10,7 +10,7 @@
     {
       "name": "foldsmith",
       "source": "./plugins/foldsmith",
-      "description": "Hands-free iPhone Duo migration: the foldsmith skill, /duo-start, and a pane with the live simulator, before/after shots and what is done and left"
+      "description": "Hands-free iPhone Duo migration: the foldsmith-duo skill, /foldsmith-start, and a pane with the live simulator, before/after shots and what is done and left"
     }
   ]
 }

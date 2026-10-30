@@ -46,7 +46,7 @@ type Files = { [path: string]: string }
 // Stands for the engine and the Mac beneath the plugin: the files, find, git, sips, the store and the clock.
 function machine(on: On, files: Files, mtime: (path: string) => number = () => 1) {
   const store: { [key: string]: unknown } = {}
-  on('command.register', () => ({ value: { command: 'duo' } }))
+  on('command.register', () => ({ value: { command: 'foldsmith' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
   on('clock.every', () => ({ value: undefined }))
   on('ui.panes', () => ({ value: [] }))
@@ -222,11 +222,11 @@ test('a finished migration starts with the simulator paused and offers what is l
   await ui.unmount()
 })
 
-test('/duo demo shows sample data with all eight poses', async ($, on) => {
+test('/foldsmith demo shows sample data with all eight poses', async ($, on) => {
   machine(on, {})
   on('command.run', () => ({ text: '' }))
   await $.session.start({ cwd: '/app', surface: 'desktop', isInteractive: true })
-  await $.command.run({ command: 'duo', args: 'demo', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 100 } })
+  await $.command.run({ command: 'foldsmith', args: 'demo', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 100 } })
 
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /Mail \(demo\)/ })).toBeDefined()

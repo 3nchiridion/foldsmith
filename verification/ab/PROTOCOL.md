@@ -7,7 +7,7 @@ something §4 leaves open, the choice is marked **owner decision** until the own
 everything else here when the recruitment request goes out (§4.4). A change after that is a deviation.
 
 ## Order (EVAL.md §4)
-1. Freeze `INSTRUCTIONS.md`, this file, the flows in `flows/` and the skill as installed (`skills/foldsmith`
+1. Freeze `INSTRUCTIONS.md`, this file, the flows in `flows/` and the skill as installed (`skills/foldsmith-duo`
    at a named commit). Done when the recruitment request is posted.
 2. Post the recruitment request (`RECRUITMENT.md`). **The runs start only after it is up.**
 3. Six runs: three apps × two conditions, one run each, same model, same day where the machine allows (below).
@@ -30,7 +30,7 @@ Same for both, except the one line marked B.
 | Working directory | a fresh clone of the subject at its `baseline` commit, in its own folder |
 | Configuration | a fresh `CLAUDE_CONFIG_DIR` per run: no user CLAUDE.md, memory, plugins, MCP servers or user skills. **Owner decision:** it needs one sign-in per config folder, or an API key (`--bare` with `ANTHROPIC_API_KEY`), which only the owner can supply. |
 | Simulator driver | both conditions get the community `iphone-duo-simulator-skill` as a project skill (`.claude/skills/`), the only scriptable way to fold the simulator; without it "verify every pose" cannot be done at all, and the comparison would measure the driver rather than the catalog. **Owner decision.** |
-| **B only** | `skills/foldsmith/` copied to `.claude/skills/foldsmith/` in the clone |
+| **B only** | `skills/foldsmith-duo/` copied to `.claude/skills/foldsmith-duo/` in the clone |
 | Permissions | **Owner decision:** `--dangerously-skip-permissions` (the run builds, installs and drives the simulator unattended; it can reach anything the owner's account can) or an allowlist of build and simulator commands, which both agents would hit equally. |
 | Limits | 3 hours wall clock and `--max-budget-usd` (**owner decision**, same cap for every run). A run that hits a limit stops there and is captured as it stands. |
 | Operator | the person running the session sends nothing but the prompt. If the agent stops to ask for approval (the skill's step 3 does), the operator answers, at most twice per run: `Proceed with what you propose.` Nothing else, in either condition. Every resume is logged. |

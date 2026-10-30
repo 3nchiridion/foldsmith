@@ -111,7 +111,7 @@ const ASPECT: Record<PoseId, number> = {
   'split-half': 475 / 669,
 }
 
-// The defect classes (skills/foldsmith/references/taxonomy.md).
+// The defect classes (skills/foldsmith-duo/references/taxonomy.md).
 const CLASS_NAME: Record<string, string> = {
   T1: 'crease-straddle',
   T2: 'content-under-occlusion',
@@ -760,10 +760,10 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     cwd = e.cwd
     await $.command.register({
-      name: 'duo',
+      name: 'foldsmith',
       description:
-        'The Foldsmith pane: `/duo` shows it, `/duo watch <folder>` follows another app (`/duo watch` alone ' +
-        'follows the newest), `/duo demo` shows sample data, `/duo off` leaves it. `/duo-start` runs the migration.',
+        'The Foldsmith pane: `/foldsmith` shows it, `/foldsmith watch <folder>` follows another app (`/foldsmith watch` alone ' +
+        'follows the newest), `/foldsmith demo` shows sample data, `/foldsmith off` leaves it. `/foldsmith-start` runs the migration.',
     })
     await $.process.run(['mkdir', '-p', TMP])
     home = (await $.process.run(['/usr/bin/printenv', 'HOME'])).stdout.trim()
@@ -776,7 +776,7 @@ export const register: Register = on => {
     return next(e)
   })
 
-  on('command.run', { command: 'duo' }, async ($, e) => {
+  on('command.run', { command: 'foldsmith' }, async ($, e) => {
     const [word = '', ...rest] = e.args.trim().split(/\s+/)
     const arg = word.toLowerCase()
     let text = 'Foldsmith pane opened.'
@@ -811,7 +811,7 @@ export const register: Register = on => {
     const Select = 'Select' in elements ? elements.Select : null
     const graphical = e.surface === 'desktop' || e.surface === 'mobile' || e.surface === 'vscode'
     const fill = (text: string) => () => void $.prompt.fill({ text })
-    const start = base === cwd ? '/duo-start' : `/duo-start ${base}`
+    const start = base === cwd ? '/foldsmith-start' : `/foldsmith-start ${base}`
     const errorLine = problem && <Text color="error">{problem}</Text>
 
     if (!m) {
@@ -819,7 +819,7 @@ export const register: Register = on => {
         <Box flexDirection="column" gap={1}>
           <Text weight="semibold">No migration in {shown(base)}</Text>
           <Text dimColor>
-            /duo-start adapts every screen of the app hands-free and writes {STATUS_FILE} as it goes; this pane follows
+            /foldsmith-start adapts every screen of the app hands-free and writes {STATUS_FILE} as it goes; this pane follows
             that file: the simulator, every screen in every pose, before and after, and what is done and left.
           </Text>
           <Box flexDirection="row" gap={1} flexWrap="wrap">

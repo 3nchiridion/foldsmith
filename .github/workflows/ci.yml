@@ -44,7 +44,7 @@ jobs:
       - name: The progress file's regression check
         run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: The skill's bundled detectors build on their own
-        run: swift build --package-path skills/foldsmith/tools/detect 2>&1 | tail -5
+        run: swift build --package-path skills/foldsmith-duo/tools/detect 2>&1 | tail -5
       - name: Find Duo simulator
         id: duo
         run: |

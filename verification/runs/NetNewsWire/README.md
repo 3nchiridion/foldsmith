@@ -1,6 +1,6 @@
 # NetNewsWire, migrated hands-free (2026-10-27)
 
-The first run of the hands-free skill (`skills/foldsmith/SKILL.md`) on a corpus app: one prompt, no
+The first run of the hands-free skill (`skills/foldsmith-duo/SKILL.md`) on a corpus app: one prompt, no
 questions, run by a Claude Code agent with the skill and the `iphone-duo-simulator` driver, on the project's iPhone Duo
 simulator (iOS 27.1, Xcode 27.1). The app was NetNewsWire at d9ec7df (`raw/corpus/NetNewsWire`, a clone made by `raw/corpus/clone.sh`, not committed), copied outside this
 repository, with a `duo-baseline` commit; the skill committed its work on `duo-migration` there.

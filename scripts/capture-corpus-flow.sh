@@ -35,7 +35,7 @@ DUO_PY="${DUO_PY:?set DUO_PY to duo.py}"
 XCTESTRUN="${DUO_TAP_XCTESTRUN:?set DUO_TAP_XCTESTRUN to the DuoTapUITests .xctestrun}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
-# In this repository shots go to raw/corpus/evidence; the skill's copy (skills/foldsmith/tools) has no raw/
+# In this repository shots go to raw/corpus/evidence; the skill's copy (skills/foldsmith-duo/tools) has no raw/
 # and writes under the app being migrated instead.
 if [ -d "$ROOT/raw/corpus" ]; then OUT="${OUT:-$ROOT/raw/corpus/evidence/$NAME}"; else OUT="${OUT:-$PWD/.duo/captures/$NAME}"; fi
 XOUT="${XCODE_OUT:-$(mktemp -d -t duo-tap)}"

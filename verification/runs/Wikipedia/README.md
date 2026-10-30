@@ -1,7 +1,7 @@
 # Wikipedia, migrated hands-free and then reviewed (2026-10-28)
 
-The third run of the hands-free skill (`skills/foldsmith/SKILL.md`), and the first on a UIKit and
-Objective-C app whose articles are a web view. The agent got the `/duo-start` prompt and nothing else about the work:
+The third run of the hands-free skill (`skills/foldsmith-duo/SKILL.md`), and the first on a UIKit and
+Objective-C app whose articles are a web view. The agent got the `/duo-start` (now `/foldsmith-start`) prompt and nothing else about the work:
 a fresh Claude Code subagent with the skill, on the project's iPhone Duo simulator (iOS 27.1, Xcode 27.1), since
 headless `claude -p` was still signed out. The prompt added this machine's facts (Xcode, `duo.py`, the tap runner), the
 app's own build facts (ad-hoc signing for its app-group container, the xcconfig its setup script writes), no sign-in to
