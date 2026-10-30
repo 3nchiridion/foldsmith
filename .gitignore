@@ -20,3 +20,6 @@ xcuserdata/
 /evidence/
 # A migration's progress and captures, when the skill runs in this folder
 .duo/
+
+# Launch drafts the owner reviews and posts himself; never committed
+/docs/launch/

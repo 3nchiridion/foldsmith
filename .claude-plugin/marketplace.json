@@ -4,13 +4,13 @@
     "name": "3nchiridion"
   },
   "metadata": {
-    "description": "Claude Code plugins for adapting iOS apps to iPhone Duo"
+    "description": "Measured layout patterns and hands-free migration for iPhone Duo, proven in every pose."
   },
   "plugins": [
     {
       "name": "foldsmith",
       "source": "./plugins/foldsmith",
-      "description": "Hands-free iPhone Duo migration: the foldsmith-duo skill, /foldsmith-start, and a pane with the live simulator, before/after shots and what is done and left"
+      "description": "Measured layout patterns and hands-free migration for iPhone Duo, proven in every pose."
     }
   ]
 }
