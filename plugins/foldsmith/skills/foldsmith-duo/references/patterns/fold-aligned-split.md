@@ -143,13 +143,19 @@ Measured on NetNewsWire, a three-column UIKit split, in the hands-free run, not 
   fold. In book the system then puts the boundary on the fold: timeline 0–455, article from 495 pt.
 - **Two panes upright.** With `preferredSplitBehavior = .tile` and `minimumSecondaryColumnWidth = 320` (iOS 26), the
   split tiles the list beside the detail in the 669 pt window (laptop, tent, flat-upright), as Settings does. With the
-  system's own detail minimum it shows the detail alone.
+  system's own detail minimum it shows the detail alone, or the sidebar over a dimmed detail. Set the minimum before
+  the split resolves its display mode: when it is created, if the split exists only where there is a fold; if it exists
+  in every pose, in `viewWillLayoutSubviews` before calling `super`. Set after that pass (in `viewDidLayoutSubviews`),
+  a first launch can keep the overlay, since later passes do not leave it (measured on fresh installs of the catalog:
+  `tiled` in laptop came up as an overlay on 5 of 5 with the minimum set in `viewDidLayoutSubviews`, and tiled on 5 of
+  5 with it set before the first layout).
 - **Sheets.** `sheetPresentationController.preferredPlacement = .trailing` while a vertical division is active,
   `.automatic` otherwise: set it before `present`, and change sheets already up inside `animateChanges` when the fold
   changes. Gate it with `#available(iOS 27.1, *)` like the region query.
-- **When to look again.** UIKit has no callback when the reserved regions change. Re-read them in
-  `viewDidLayoutSubviews`, and add a `UIHingeInteraction` whose handler calls `setNeedsLayout()`: a sheet presented on
-  the cover moved to the trailing half when the phone was unfolded.
+- **When to look again.** UIKit has no callback when the reserved regions change. Re-read them on every layout
+  (`viewWillLayoutSubviews` for what the split's own layout depends on, such as the detail minimum above), and add a
+  `UIHingeInteraction` whose handler calls `setNeedsLayout()`: a sheet presented on the cover moved to the trailing
+  half when the phone was unfolded.
 - **Placeholders.** Move an empty detail's placeholder into the upper part of its pane (NetNewsWire: 25 % of its
   height).
 - **Three levels** (sidebar, list, detail). The two panes are the list pane and the detail; the list pane navigates

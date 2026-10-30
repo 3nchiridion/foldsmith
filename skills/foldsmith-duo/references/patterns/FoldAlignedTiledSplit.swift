@@ -10,7 +10,9 @@
 //
 // Upright on the inner display there is no vertical bar, and there it shows a UIKit two-column UISplitViewController
 // that tiles and lets the detail be as narrow as 320 pt (`minimumSecondaryColumnWidth`, iOS 26), with no column width
-// set. Everywhere else it is FoldAlignedSplit: on the outer display and folded like a book or lying flat sideways the
+// set. The 320 pt minimum is in place before the split's first layout: set after it, UIKit has already resolved the
+// display mode with its own minimum, which cannot tile at 669 pt, and a first launch can stay an overlay over a dimmed
+// detail (measured on a fresh install). Everywhere else it is FoldAlignedSplit: on the outer display and folded like a book or lying flat sideways the
 // system draws a vertical bar, and it does so only for bars that SwiftUI's own navigation containers provide. A UIKit
 // split embedded in a SwiftUI view keeps horizontal bars there (measured in the catalog: the back button stayed in a
 // top bar on the outer display), because the system finds the vertical bar from the window's root view controller
@@ -177,18 +179,21 @@ private struct TiledSplit<Selection: Hashable, Sidebar: View, Detail: View>: UIV
     }
 }
 
-/// The split view controller under the tiled split: reads the reserved regions after every layout, and the hinge says
-/// when to look again (UIKit has no callback when the regions change).
+/// The split view controller under the tiled split: reads the book fold after every layout, and the hinge says when to
+/// look again (UIKit has no callback when the regions change). It exists only where the window has a fold and no
+/// vertical bar (FoldAwareTiling swaps it out everywhere else), so the detail minimum is set once, before any layout.
 private final class TiledSplitViewController: UISplitViewController {
     /// Narrowest the detail may be on a display with a fold: two panes fit the 669 pt upright window.
     private static let minimumDetailWidthOnFoldingDisplay: CGFloat = 320
 
     var foldDidChange: (() -> Void)?
     private(set) var isBookFoldActive = false
-    private var hasFold: Bool?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if #available(iOS 26.0, *) {
+            minimumSecondaryColumnWidth = Self.minimumDetailWidthOnFoldingDisplay
+        }
         if #available(iOS 27.1, *) {
             view.addInteraction(UIHingeInteraction { [weak self] _, _ in self?.view.setNeedsLayout() })
         }
@@ -197,13 +202,6 @@ private final class TiledSplitViewController: UISplitViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         guard #available(iOS 27.1, *) else { return }
-        let fold = !view.reservedRegions(kind: .division, options: .includeInactive).isEmpty
-        if fold != hasFold {
-            hasFold = fold
-            if #available(iOS 26.0, *) {
-                minimumSecondaryColumnWidth = fold ? Self.minimumDetailWidthOnFoldingDisplay : UISplitViewController.automaticDimension
-            }
-        }
         let book = view.reservedRegions(kind: .division).contains { $0.isActive && $0.frame.height > $0.frame.width }
         if book != isBookFoldActive {
             isBookFoldActive = book
