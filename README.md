@@ -1,9 +1,9 @@
 # Foldsmith
 
 <p align="center">
-  <img src="verification/matrices/split/aligned-book.png" alt="The catalog's Fold-aligned split on the iPhone Duo simulator, folded like a book: a list in the leading half and the article in the trailing half, the boundary on the fold" width="600">
+  <img src="https://developer.apple.com/iphone-duo/images/main_2x.png" alt="iPhone Duo partially folded in book pose, showing the Home Screen across both halves" width="600">
   <br>
-  <sub>The catalog's Fold-aligned split in book pose, captured on the iPhone Duo simulator: the boundary on the fold.</sub>
+  <sub>Image © Apple Inc. All rights reserved. Reproduced from Apple's <a href="https://developer.apple.com/iphone-duo/">iPhone Duo developer page</a> solely for the purpose of identification.</sub>
 </p>
 
 Layout patterns for apps on iPhone Duo, Apple's foldable, measured on the simulator in every pose; detectors that find
@@ -12,6 +12,12 @@ with screenshots.
 
 iPhone is a trademark of Apple Inc., registered in the U.S. and other countries, and iPhone Duo is a trademark of Apple
 Inc. Foldsmith is independent and is not affiliated with, sponsored by, or endorsed by Apple Inc.
+
+<p align="center">
+  <img src="verification/matrices/split/aligned-book.png" alt="The catalog's Fold-aligned split on the iPhone Duo simulator, folded like a book: a list in the leading half and the article in the trailing half, the boundary on the fold" width="600">
+  <br>
+  <sub>The catalog's Fold-aligned split in book pose, captured on the iPhone Duo simulator: the boundary on the fold.</sub>
+</p>
 
 ## Start here
 | You want to | Go to |
@@ -127,7 +133,7 @@ keep their MIT license. Three patches change other projects and keep their licen
 `verification/runs/Wikipedia/Wikipedia.patch` (MIT, Wikimedia Foundation) and
 `verification/runs/NetNewsWire/NetNewsWire.patch` (MIT, Brent Simmons).
 
-Screenshots under `raw/corpus/evidence/`, `raw/apple-apps/` (Apple's Safari and Settings; all but the project's own `_probe/`) and
+The iPhone Duo photo at the top is Apple's, shown from Apple's developer page and not stored here. Screenshots under `raw/corpus/evidence/`, `raw/apple-apps/` (Apple's Safari and Settings; all but the project's own `_probe/`) and
 `verification/ab/baseline/` show other apps and the content those apps display. They are not covered by `LICENSE`: the
 apps, their logos and trademarks and the content belong to their owners. Wikipedia's text is by Wikipedia's
 contributors under CC BY-SA 4.0, and its images are under the terms on their file pages. The shots are here only as
