@@ -11,8 +11,18 @@ const TITLE = 'Foldsmith'
 const TMP = '/tmp/foldsmith'
 const LIVE_EVERY_MS = 4000
 const LOOK_EVERY_MS = 60000
-// The width the pane's drawings are laid out at, in CSS pixels; a narrower pane scales them down.
+// The width, in CSS pixels, the drawings' type is sized for: wider, the matrix's type grows. NARROW is the least the
+// pane lays them out at; a narrower body scales them down.
 const WIDE = 440
+const NARROW = 320
+// A cell of the pane's code font, in CSS pixels, taken a little small so a drawing sized from `bodyColumns` never
+// overflows the body. Past TWO_UP the lists and the picked cell sit side by side under the matrix.
+const PX_PER_CELL = 7
+const MAX_MATRIX = 1000
+const TWO_UP = 720
+// The tallest a portrait shot is drawn, and the height of the box that stands for a shot not captured yet.
+const SHOT_H = 360
+const EMPTY_H = 96
 // An Svg's markup is capped at 131072 characters; a shot's JPEG stays under this, made smaller if it must.
 const MAX_JPEG = 120000
 
@@ -266,14 +276,21 @@ function counts(m: Migration) {
   return tally
 }
 
-// The screen × pose matrix, the picked cell outlined; each cell's tooltip says what it holds.
-function matrixSvg(m: Migration, chosen: Pick | null): { source: string; width: number } {
+// The screen × pose matrix at `width` CSS pixels, the picked cell outlined; each cell's tooltip says what it holds.
+// Its type grows with the width past WIDE, up to 1.35 times, and shrinks in proportion below it, as a drawing scaled
+// down would; its columns follow the type. Rows never grow, so an app with many screens still leaves room below.
+function matrixSvg(m: Migration, chosen: Pick | null, width = WIDE): { source: string; width: number; height: number } {
   const poses = posesOf(m)
-  const inner = WIDE - PAD * 2
-  const col = Math.min(52, Math.floor((inner - 84) / poses.length))
+  const inner = width - PAD * 2
+  const fs = width < WIDE ? width / WIDE : Math.min(1.35, 1 + (width - WIDE) / 1000)
+  const px = (n: number) => Math.round(n * fs * 10) / 10
+  const col = Math.min(96, Math.floor((inner - Math.round(84 * fs)) / poses.length))
   const nameW = inner - col * poses.length
-  const scale = Math.min(1, (col - 6) / 36)
-  const headH = Math.round(36 * scale) + 30
+  const rowH = Math.round(ROW_H * Math.min(fs, 1))
+  const scale = Math.min(1.15, fs, (col - 6) / 36)
+  const lineH = Math.round(11 * fs)
+  const labelY = Math.round(36 * scale) + Math.round(14 * fs)
+  const headH = labelY + lineH + Math.round(5 * fs)
   const tally = counts(m)
 
   const head = poses
@@ -285,7 +302,7 @@ function matrixSvg(m: Migration, chosen: Pick | null): { source: string; width: 
         lines
           .map(
             (line, l) =>
-              `<text class="pose" x="${x + col / 2}" y="${Math.round(36 * scale) + 14 + l * 11}" text-anchor="middle">${escapeXml(line)}</text>`,
+              `<text class="pose" x="${x + col / 2}" y="${labelY + l * lineH}" text-anchor="middle">${escapeXml(line)}</text>`,
           )
           .join('')
       )
@@ -295,25 +312,26 @@ function matrixSvg(m: Migration, chosen: Pick | null): { source: string; width: 
   let picked = ''
   const rows = m.screens
     .map((screen, r) => {
-      const y = headH + r * ROW_H
-      const name = `<text class="name" x="0" y="${y + ROW_H / 2 + 4}">${escapeXml(clip(screen.name, Math.floor(nameW / 6.6)))}</text>`
+      const y = headH + r * rowH
+      const baseline = y + rowH / 2 + px(4)
+      const name = `<text class="name" x="0" y="${baseline}">${escapeXml(clip(screen.name, Math.floor(nameW / (6.6 * fs))))}</text>`
       const cells = poses
         .map((pose, i) => {
           const cell = cellOf(screen.cells, pose)
           const x = nameW + i * col
-          const text = clip(cellText(cell), Math.max(3, Math.floor((col - 8) / 6)))
+          const text = clip(cellText(cell), Math.max(3, Math.floor((col - 8) / (6 * fs))))
           const codes = codesOf(cell)
           const tip =
             `${screen.name} · ${poseLabel(pose)}: ${STATE_WORD[cell.state]}` +
             (codes.length ? ` (${codes.map(describe).join(', ')})` : cell.label ? ` (${cell.label})` : '')
           if (chosen?.screen === screen.name && chosen.pose === pose) {
-            picked = `<rect class="pick" x="${x + 1.5}" y="${y + 2.5}" width="${col - 3}" height="${ROW_H - 5}" rx="7"/>`
+            picked = `<rect class="pick" x="${x + 1.5}" y="${y + 2.5}" width="${col - 3}" height="${rowH - 5}" rx="7"/>`
           }
           return (
             `<g><title>${escapeXml(tip)}</title>` +
-            `<rect class="cell ${cell.state}" x="${x + 3}" y="${y + 4}" width="${col - 6}" height="${ROW_H - 8}" rx="5"/>` +
+            `<rect class="cell ${cell.state}" x="${x + 3}" y="${y + 4}" width="${col - 6}" height="${rowH - 8}" rx="5"/>` +
             (text
-              ? `<text class="label ${cell.state}" x="${x + col / 2}" y="${y + ROW_H / 2 + 4}" text-anchor="middle">${escapeXml(text)}</text>`
+              ? `<text class="label ${cell.state}" x="${x + col / 2}" y="${baseline}" text-anchor="middle">${escapeXml(text)}</text>`
               : '') +
             '</g>'
           )
@@ -325,30 +343,30 @@ function matrixSvg(m: Migration, chosen: Pick | null): { source: string; width: 
 
   // Only the states the matrix holds, with their counts, wrapped to the width.
   let lx = 0
-  let ly = headH + m.screens.length * ROW_H + 18
+  let ly = headH + m.screens.length * rowH + px(18)
   const legend = LEGEND.filter(item => tally[item.state] > 0)
     .map(item => {
       const text = `${item.label} ${tally[item.state]}`
-      const w = 17 + text.length * 5.8 + 14
+      const w = px(17) + text.length * px(5.8) + 14
       if (lx > 0 && lx + w - 14 > inner) {
         lx = 0
-        ly += 17
+        ly += px(17)
       }
       const part =
-        `<rect class="cell ${item.state}" x="${lx}" y="${ly - 9}" width="12" height="12" rx="3"/>` +
-        `<text class="legend" x="${lx + 17}" y="${ly + 1}">${escapeXml(text)}</text>`
+        `<rect class="cell ${item.state}" x="${lx}" y="${ly - px(9)}" width="${px(12)}" height="${px(12)}" rx="3"/>` +
+        `<text class="legend" x="${lx + px(17)}" y="${ly + 1}">${escapeXml(text)}</text>`
       lx += w
       return part
     })
     .join('')
 
-  const height = ly + 6 + PAD * 2
+  const height = Math.ceil(ly + 6 + PAD * 2)
   const style = `${STYLE_FONT}
     .icon *{fill:#dde7fb;stroke:#151a2d;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
     .icon .dot{fill:#151a2d;stroke:none}.icon .crease{fill:none}.icon .half{fill:#9fbaf0;stroke:none}
-    .pose{font-size:9.5px;fill:#5f5e5a}.name{font-size:11.5px;font-weight:500;fill:#1f1e1d}
-    .legend{font-size:10px;fill:#5f5e5a}.rule{stroke:#e4e2da;stroke-width:0.5}
-    .label{font-size:10px;font-weight:500}
+    .pose{font-size:${px(9.5)}px;fill:#5f5e5a}.name{font-size:${px(11.5)}px;font-weight:500;fill:#1f1e1d}
+    .legend{font-size:${px(10)}px;fill:#5f5e5a}.rule{stroke:#e4e2da;stroke-width:0.5}
+    .label{font-size:${px(10)}px;font-weight:500}
     .card{fill:#ffffff;stroke:#e4e2da;stroke-width:1}
     .pick{fill:none;stroke:#2f6fde;stroke-width:2}
     .cell.pending{fill:none;stroke:#c9c7bd;stroke-dasharray:3 3}
@@ -369,20 +387,21 @@ function matrixSvg(m: Migration, chosen: Pick | null): { source: string; width: 
     }`
 
   return {
-    width: WIDE,
+    width,
+    height,
     source:
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDE} ${height}" width="${WIDE}" height="${height}">` +
-      `<style>${style}</style><rect class="card" x="0.5" y="0.5" width="${WIDE - 1}" height="${height - 1}" rx="14"/>` +
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">` +
+      `<style>${style}</style><rect class="card" x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="14"/>` +
       `<g transform="translate(${PAD} ${PAD})">${head}${rows}${picked}${legend}</g></svg>`,
   }
 }
 
 // One shot at `width`, captioned, with the fold drawn where the inner display bends: a red band while the division
-// is active, a dashed outline while the phone lies flat. With no shot, a dashed box of the size it will take.
+// is active, a dashed outline while the phone lies flat. With no shot, a short dashed box saying why.
 function shotSvg(title: string, pic: Picture | null, note: string, fold: 'active' | 'inactive' | undefined, width: number, aspect: number) {
   const top = 18
   const ratio = pic ? pic.width / pic.height : aspect
-  const h = Math.round(width / ratio)
+  const h = pic ? Math.round(width / ratio) : Math.min(EMPTY_H, Math.round(width / ratio))
   const parts = [`<text class="t" x="0" y="12">${escapeXml(title)}</text>`]
   if (pic) {
     parts.push(
@@ -412,6 +431,7 @@ function shotSvg(title: string, pic: Picture | null, note: string, fold: 'active
     @media (prefers-color-scheme:dark){.t{fill:#b4b2a9}.n{fill:#888780}.f{fill:#f09595}.frame{stroke:#3a3936}.empty{stroke:#5f5e5a}}`
   return {
     width,
+    height: full,
     source:
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${full}" width="${width}" height="${full}">` +
       `<style>${style}</style>${parts.join('')}</svg>`,
@@ -846,6 +866,15 @@ export const register: Register = on => {
     const missing = (path: string | undefined) => (path ? 'loading…' : 'not captured yet')
     const toggle = (key: keyof Expanded) => () => void update($, expanded, value => ({ ...value, [key]: !value[key] }))
     const where = [from === 'demo' ? 'sample data' : shown(base), info.branch && `branch ${info.branch}`].filter(Boolean).join(' · ')
+    // The body's width in CSS pixels, from its cells. The matrix spans it; past TWO_UP what is left and done sits
+    // beside the picked cell, so both show under the matrix without scrolling.
+    const cells = e.props.bodyColumns
+    const span = Math.max(NARROW, Math.floor((cells - 2) * PX_PER_CELL))
+    const twoUp = graphical && span >= TWO_UP
+    const side = twoUp ? Math.floor((span - 2 * PX_PER_CELL) / 2) : span
+    // The characters a list line shows before it is cut (a footnote character is about 6 px), so a cut line offers
+    // its full text.
+    const lineChars = graphical ? Math.floor(side / 6.2) : cells - 2
 
     const header = (
       <Box flexDirection="column">
@@ -960,7 +989,7 @@ export const register: Register = on => {
       <Box flexDirection="column" gap={1}>
         {list(m.phase === 'done' ? 'Left for you' : 'Left', left, '○', 'Nothing', false)}
         {list('Done', done, '✓', 'Nothing yet', true)}
-        {[...left, ...done].some(line => line.length > 90) && (
+        {[...left, ...done].some(line => line.length + 2 > Math.min(90, lineChars)) && (
           <Box flexDirection="row">
             <Button key="notes" plain dimColor label={open.notes ? 'Show less' : 'Show full notes'} onPress={toggle('notes')} />
           </Box>
@@ -979,9 +1008,15 @@ export const register: Register = on => {
             {line}
           </Text>
         ))}
-        {log.length > 5 && (
+        {(log.length > 5 || recent.some(line => line.length > lineChars)) && (
           <Box flexDirection="row">
-            <Button key="log" plain dimColor label={open.log ? 'Show less' : `Show all (${log.length})`} onPress={toggle('log')} />
+            <Button
+              key="log"
+              plain
+              dimColor
+              label={open.log ? 'Show less' : log.length > 5 ? `Show all (${log.length})` : 'Show full lines'}
+              onPress={toggle('log')}
+            />
           </Box>
         )}
       </Box>
@@ -1009,40 +1044,47 @@ export const register: Register = on => {
 
     if (graphical) {
       const { Svg } = $.ui.resolve(e)
-      const matrix = matrixSvg(m, chosen)
+      // Drawn interactive (for its tooltips), it needs its height: without one the desktop sizes the frame like a bare
+      // iframe, 150 px tall, and the matrix shrinks to fit.
+      const matrix = matrixSvg(m, chosen, Math.min(span, MAX_MATRIX))
       const pose = (chosen?.pose ?? 'book') as PoseId
       const fold = FOLD[pose]
       const aspect = (before ?? after) ? (before ?? after)!.width / (before ?? after)!.height : ASPECT[pose] ?? 1
-      const sideways = aspect >= 1
-      const w = sideways ? WIDE : Math.floor((WIDE - 12) / 2)
+      // Before and after side by side beside the lists, and in one column while each keeps a useful size; a portrait
+      // shot no taller than SHOT_H.
+      const half = Math.floor((side - 12) / 2)
+      const sideBySide = twoUp || half >= 180
+      const room = sideBySide ? half : side
+      const w = aspect >= 1 ? room : Math.min(room, Math.round(SHOT_H * aspect))
       const pair = [
         shotSvg('Before', before, missing(cell?.before), fold, w, aspect),
         shotSvg('After', after, missing(cell?.after), fold, w, aspect),
       ]
       const frameAspect = frame ? frame.width / frame.height : 1
-      const frameSvg = frame && shotSvg('', frame, '', undefined, frameAspect >= 1 ? WIDE : Math.round(300 * frameAspect), frameAspect)
-      return (
+      const frameSvg = frame && shotSvg('', frame, '', undefined, frameAspect >= 1 ? side : Math.min(side, Math.round(300 * frameAspect)), frameAspect)
+      const standing = (
         <Box flexDirection="column" gap={1}>
-          {header}
-          {errorLine}
-          {stepper}
-          {summary}
+          {lists}
+          {activity}
+          {actions}
+          {switcher}
+        </Box>
+      )
+      const inspector = (
+        <Box flexDirection="column" gap={1}>
           {simulatorRow}
-          {!isPaused && frameSvg && <Svg source={frameSvg.source} width={frameSvg.width} alt="The iPhone Duo simulator, as it is now" />}
-          <Svg
-            source={matrix.source}
-            width={matrix.width}
-            isInteractive
-            alt={`Screen by pose matrix for ${m.screens.length} screens across ${posesOf(m).length} iPhone Duo poses`}
-          />
+          {!isPaused && frameSvg && (
+            <Svg source={frameSvg.source} width={frameSvg.width} height={frameSvg.height} alt="The iPhone Duo simulator, as it is now" />
+          )}
           {navigation}
           {detail}
           {chosen && (
-            <Box key="pair" flexDirection={sideways ? 'column' : 'row'} gap={1}>
+            <Box key="pair" flexDirection={sideBySide ? 'row' : 'column'} gap={1}>
               {pair.map((svg, i) => (
                 <Svg
                   source={svg.source}
                   width={svg.width}
+                  height={svg.height}
                   alt={`${chosen.screen} in ${poseLabel(chosen.pose)}, ${i === 0 ? 'before' : 'after'}`}
                 />
               ))}
@@ -1058,10 +1100,37 @@ export const register: Register = on => {
               )}
             </Box>
           )}
-          {lists}
-          {activity}
-          {actions}
-          {switcher}
+        </Box>
+      )
+      const columnCells = Math.floor((cells - 4) / 2)
+      return (
+        <Box flexDirection="column" gap={1}>
+          {header}
+          {errorLine}
+          {stepper}
+          {summary}
+          <Svg
+            source={matrix.source}
+            width={matrix.width}
+            height={matrix.height}
+            isInteractive
+            alt={`Screen by pose matrix for ${m.screens.length} screens across ${posesOf(m).length} iPhone Duo poses`}
+          />
+          {twoUp ? (
+            <Box key="columns" flexDirection="row" gap={2} alignItems="flex-start">
+              <Box flexDirection="column" flexGrow={1} flexShrink={1} width={columnCells}>
+                {standing}
+              </Box>
+              <Box flexDirection="column" flexGrow={1} flexShrink={1} width={columnCells}>
+                {inspector}
+              </Box>
+            </Box>
+          ) : (
+            <Box key="columns" flexDirection="column" gap={1}>
+              {standing}
+              {inspector}
+            </Box>
+          )}
         </Box>
       )
     }

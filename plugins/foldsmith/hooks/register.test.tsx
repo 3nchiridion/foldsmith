@@ -165,6 +165,32 @@ test('before and after are drawn with the fold where the phone bends', async ($,
   await ui.unmount()
 })
 
+test('a wide pane draws the matrix across it, with what is left and done beside the picked cell', async ($, on) => {
+  machine(on, { '/app/.duo/migration.json': MIGRATED })
+  await $.session.start({ cwd: '/app', surface: 'desktop', isInteractive: true })
+
+  const wide = await $.ui.mount({ ...PANE, props: { ...PANE.props, bodyColumns: 130 }, surface: 'desktop' })
+  const matrix = (await wide.findAll({ type: 'Svg' })).find(svg => String(svg.props.alt).includes('matrix'))
+  expect(Number(matrix?.props.width)).toBeGreaterThan(440)
+  expect(String(matrix?.props.source)).toContain(`height="${matrix?.props.height}"`)
+  const columns = await wide.find({ key: 'columns' })
+  expect(columns?.props.flexDirection).toBe('row')
+  const [standing, inspector] = (columns?.children ?? []).map(child => JSON.stringify(child))
+  expect(standing).toContain('Folders: Fold-aligned split')
+  expect(inspector).toContain('Note in Book, before')
+  await wide.unmount()
+
+  // One column: what is left and done comes before the picked cell's shots.
+  const narrow = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  const stacked = await narrow.find({ key: 'columns' })
+  expect(stacked?.props.flexDirection).toBe('column')
+  const [first, second] = (stacked?.children ?? []).map(child => JSON.stringify(child))
+  expect(first).toContain('Folders: Fold-aligned split')
+  expect(first).not.toContain('Note in Book, before')
+  expect(second).toContain('Note in Book, before')
+  await narrow.unmount()
+})
+
 test('the pane follows the newest progress file under the folder, and switches on a pick', async ($, on) => {
   const older = JSON.stringify({ ...JSON.parse(STATUS), app: 'Old' })
   const newer = JSON.stringify({ ...JSON.parse(MIGRATED), app: 'New' })
