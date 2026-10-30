@@ -167,7 +167,7 @@ With Xcode 27.1 and xcodegen:
 | `patterns/` | the pattern pages, the decision table, the defect taxonomy, and how the patterns were chosen (`CLUSTERING.md`) |
 | `Sources/Patterns/` | the reference implementations, one copy-in file per pattern |
 | `Sources/DuoDetectors/`, `Sources/duo-detect/` | the pose model and the detectors (T1, T2, T4, T5, T7, T10, T14, T15: the defect classes in `patterns/TAXONOMY.md`), for the catalog's records or any app's accessibility tree: `swift run duo-detect <dir>`; `Package.swift` at the root builds them |
-| `Sources/DuoPoseTesting/`, `Tests/` | a harness for app tests, and the tests that hold the patterns to their captures (their frame records, accessibility snapshots and the three runs' progress files in `Tests/Fixtures/`) |
+| `Sources/DuoPoseTesting/`, `Tests/` | a harness for app tests, and the tests that hold the patterns to their captures (their frame records, accessibility snapshots and the three runs' progress files in `Tests/Fixtures/`, packed by `scripts/pack-fixtures.py`) |
 | `Examples/Catalog/` | the catalog app: each reference beside the defect it fixes; the pose matrices are captured from it |
 | `plugins/foldsmith/` | the plugin: the skill, `/foldsmith-start`, and the pane |
 | `skills/foldsmith-duo/` | the skill on its own: `SKILL.md`, its references (generated from `patterns/`) and tools |

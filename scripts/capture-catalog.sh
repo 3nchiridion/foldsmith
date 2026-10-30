@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Phase 3: capture the pattern catalog in every pose → verification/matrices/<pattern>/<config>-<pose>.{png,json} in the
 # evidence repository (3nchiridion/foldsmith-evidence, checked out beside this one or at $FOLDSMITH_EVIDENCE); the
-# frame records (.json) are copied to Tests/Fixtures/matrices/, where the tests read them.
+# frame records (.json) are then packed into Tests/Fixtures/matrices.json (scripts/pack-fixtures.py), where the tests
+# read them.
 #
 # Usage:
 #   DUO_UDID=<udid> DUO_PY=/path/to/duo.py scripts/capture-catalog.sh [<config> ...]
@@ -111,7 +112,6 @@ for entry in "${POSES[@]}"; do
 done
 xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
 if [ "$OUT" = "$DEFAULT_OUT" ]; then
-  (cd "$OUT" && find . -mindepth 2 -name '*.json' -exec rsync -R {} "$ROOT/Tests/Fixtures/matrices/" \;)
-  echo "frame records → Tests/Fixtures/matrices"
+  FOLDSMITH_EVIDENCE="$EVIDENCE" python3 "$ROOT/scripts/pack-fixtures.py"
 fi
 echo "done → $OUT"

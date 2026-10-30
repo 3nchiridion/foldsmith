@@ -4,20 +4,17 @@ import CoreGraphics
 @testable import DuoDetectors
 
 // The accessibility adapter against ground truth. The pattern catalog was captured twice: with its own frame records
-// (Tests/Fixtures/matrices/<pattern>/<config>-<pose>.json, scripts/capture-catalog.sh) and through XCTest's accessibility
-// tree in the same poses (Tests/Fixtures/accessibility/catalog/<pattern>-<config>-<pose>.json, capture-corpus-flow.sh
+// (<pattern>/<config>-<pose>.json, scripts/capture-catalog.sh) and through XCTest's accessibility
+// tree in the same poses (<pattern>-<config>-<pose>.json, capture-corpus-flow.sh
 // with SNAPSHOT=1). Read through AccessibilitySnapshot, the second must give the detectors the same classes as the
 // first, in every pose: that is what lets the detectors judge an app that carries no tracking of its own.
-private let repo = URL(fileURLWithPath: #filePath)
-    .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-
 private func classes(_ elements: [Element], _ pose: Pose) -> Set<String> {
     Set(Detectors.runAll(elements: elements, pose: pose).map(\.classId))
 }
 
 @Test func adapterFindsWhatTheCatalogRecordsFind() throws {
     let measured = Dictionary(uniqueKeysWithValues: try Pose.load().map { ($0.name, $0) })
-    let dir = repo.appendingPathComponent("Tests/Fixtures/accessibility/catalog")
+    let dir = Fixtures.accessibilityCatalog
     let files = try FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
         .filter { $0.pathExtension == "json" }
     #expect(files.count == 119)
@@ -25,7 +22,7 @@ private func classes(_ elements: [Element], _ pose: Pose) -> Set<String> {
         let pose = try #require(CatalogSnapshot.poseName(of: file))
         let config = file.deletingPathExtension().lastPathComponent.dropLast(pose.count + 1)
         let pattern = config.prefix { $0 != "-" }
-        let truthFile = repo.appendingPathComponent("Tests/Fixtures/matrices/\(pattern)/\(config.dropFirst(pattern.count + 1))-\(pose).json")
+        let truthFile = Fixtures.matrices.appendingPathComponent("\(pattern)/\(config.dropFirst(pattern.count + 1))-\(pose).json")
         let truth = try CatalogSnapshot.load(truthFile)
         let snapshot = try AccessibilitySnapshot.load(file)
         let p = try #require(measured[pose])
@@ -41,7 +38,7 @@ private func classes(_ elements: [Element], _ pose: Pose) -> Set<String> {
     // T7 compares poses, which the catalog's records cannot. SwiftUI shows the detail alone upright, so the top-level
     // three-level config loses the shut phone's collections there (P1, "Three levels"); every other config keeps it,
     // the same three levels on FoldAlignedTiledSplit included.
-    let dir = repo.appendingPathComponent("Tests/Fixtures/accessibility/catalog")
+    let dir = Fixtures.accessibilityCatalog
     var names: [String: [String: Set<String>]] = [:]
     for file in try FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
     where file.pathExtension == "json" {

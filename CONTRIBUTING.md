@@ -42,11 +42,12 @@ same thing, in the poses Apple shows it in (G4).
 - With foldsmith-evidence checked out beside this repository (or `FOLDSMITH_EVIDENCE` set), build and install the
   catalog on the iPhone Duo simulator, then
   `DUO_UDID=<udid> DUO_PY=<duo.py> scripts/capture-catalog.sh <pattern>:aligned <pattern>:<before>`: shots and frame
-  records go to the evidence repository, and the frame records are copied to `Tests/Fixtures/matrices/`.
+  records go to the evidence repository, and the frame records are packed into `Tests/Fixtures/matrices.json`.
 - `python3 scripts/compose-matrix.py` composes the matrix in the evidence repository and refreshes the small copy in
   `docs/images/matrices/`, which the page shows.
 - Capture the catalog's accessibility snapshots too (`scripts/capture-corpus-flow.sh` with `SNAPSHOT=1`, into the
-  evidence repository's `verification/accessibility/catalog/`), and copy them to `Tests/Fixtures/accessibility/catalog/`.
+  evidence repository's `verification/accessibility/catalog/`), then run `python3 scripts/pack-fixtures.py`, which packs
+  them into `Tests/Fixtures/accessibility-catalog.json`.
 
 ### 4. Hold it with the tests and the detectors
 - `Tests/DuoPoseTestingTests/MatrixTests.swift`: add the reference to `referenceIsCleanInEveryPose`, the before variant
