@@ -43,9 +43,11 @@ const MIGRATED = JSON.stringify({
 // Paths to the files the plugin may read; a progress file is any key ending in .duo/migration.json.
 type Files = { [path: string]: string }
 
-// Stands for the engine and the Mac beneath the plugin: the files, find, git, sips, the store and the clock.
-function machine(on: On, files: Files, mtime: (path: string) => number = () => 1) {
+// Stands for the engine and the Mac beneath the plugin: the files, find, git, sips, the store and the clock. `links` maps
+// each symbolic link to where it leads; it returns every program the plugin ran, as its argv.
+function machine(on: On, files: Files, mtime: (path: string) => number = () => 1, links: { [path: string]: string } = {}) {
   const store: { [key: string]: unknown } = {}
+  const runs: string[][] = []
   on('command.register', () => ({ value: { command: 'foldsmith' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
   on('clock.every', () => ({ value: undefined }))
@@ -57,13 +59,24 @@ function machine(on: On, files: Files, mtime: (path: string) => number = () => 1
   })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('fs.exists', (_, e) => ({ value: e.path in files || e.path.endsWith('.png') }))
-  on('fs.stat', (_, e) => ({ value: { kind: 'file', size: 10, mtimeMs: mtime(e.path), isLink: false } }))
+  const real = (path: string) =>
+    links[path] ?? `/${path.split('/').reduce((parts: string[], part) => (part === '..' ? parts.slice(0, -1) : part && part !== '.' ? [...parts, part] : parts), []).join('/')}`
+  on('fs.stat', (_, e) => ({
+    value: {
+      kind: /\/(\.duo|captures)$/.test(e.path) ? 'dir' : 'file',
+      size: 10,
+      mtimeMs: mtime(e.path),
+      isLink: e.path in links,
+      ...(e.resolve ? { realPath: real(e.path) } : {}),
+    },
+  }))
   on('fs.read', (_, e) => ({ value: e.as === 'bytes' ? { base64: 'SlBFRw==' } : files[e.path] ?? '' }))
   on('process.run', (_, e) => {
-    const [command] = e.argv
+    runs.push([...e.argv])
+    const command = e.argv[0].split('/').pop()
     const stdout = e.argv.includes('-g')
       ? 'x.jpg\n  pixelWidth: 720\n  pixelHeight: 506\n'
-      : command === '/usr/bin/printenv'
+      : command === 'printenv'
         ? '/Users/me\n'
         : command === 'find'
           ? Object.keys(files).filter(path => path.endsWith('/.duo/migration.json')).join('\n')
@@ -72,6 +85,7 @@ function machine(on: On, files: Files, mtime: (path: string) => number = () => 1
             : ''
     return { value: { exitCode: 0, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
   })
+  return runs
 }
 
 test('with no progress file the pane says so and offers to start, on every surface', async ($, on) => {
@@ -234,4 +248,28 @@ test('/foldsmith demo shows sample data with all eight poses', async ($, on) => 
   for (const pose of ['CLS', 'CLS↔', 'BOOK', 'LAP', 'TENT', 'FLAT', 'FLT↔', 'SPL½']) expect(header?.text).toContain(pose)
   expect(await ui.find({ type: 'Text', text: /○ Compose: no pattern yet/ })).toBeDefined()
   await ui.unmount()
+})
+
+test('a progress file from a shared repository cannot make the pane open a link or read outside the app', async ($, on) => {
+  const status = JSON.stringify({
+    ...JSON.parse(MIGRATED),
+    driver: '/app/evil.py',
+    screens: [
+      { name: 'Folders', cells: { book: { state: 'verified', before: '../../etc/secret.png', after: '/Users/me/elsewhere.png' } } },
+      { name: 'Note', cells: { book: { state: 'verified', before: '.duo/captures/Notes/before/linked.png' } } },
+    ],
+  })
+  const links = { '/app/.duo/REPORT.md': '/app/notes.command', '/app/.duo/captures/Notes/before/linked.png': '/etc/secret.png' }
+  const runs = machine(on, { '/app/.duo/migration.json': status, '/app/.duo/REPORT.md': '# Report' }, () => 1, links)
+  await $.session.start({ cwd: '/app', surface: 'desktop', isInteractive: true })
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  await ui.press({ key: 'report' })
+  await ui.press({ key: 'captures' })
+  await ui.select({ key: 'screen', value: 'Note' })
+  await ui.unmount()
+  const ran = runs.map(argv => argv.join(' '))
+  expect(ran.filter(line => line.startsWith('/usr/bin/open'))).toEqual(['/usr/bin/open -R /app/.duo/captures'])
+  expect(ran.some(line => /evil\.py|\.\.|elsewhere|secret|linked/.test(line))).toBe(false)
+  expect(ran.every(line => line.startsWith('/'))).toBe(true)
 })

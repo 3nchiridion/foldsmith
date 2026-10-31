@@ -30,7 +30,7 @@ Measurements: `metrics.md`.
 - Apps with an app-group container need ad-hoc signing for the simulator:
   `CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=`.
 - Apps without scene lifecycle fail to launch on the 27.1 SDK (taxonomy T13; Apple's App Resizability skill owns it).
-- Reset privacy prompts on reinstall (`xcrun simctl privacy <udid> reset all`) or a permission sheet blanks the flow.
+- Reset privacy prompts on reinstall (`xcrun simctl privacy <udid> reset all <bundle id>`) or a permission sheet blanks the flow.
 - `duo.py orient` logs the simulator's own names: `sideways` prints "portrait" and `upright` prints "landscape-left".
   The table above is what each pose looks like.
 

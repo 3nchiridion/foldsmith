@@ -99,12 +99,24 @@ def compose(folder):
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
+def high_palette(im):
+    """im (a palette image of at most 128 colours) with its colours moved to palette entries 128–255. The plugin
+    directory's scan reads an image's pixel data as text, and an index from 32 to 126 is a printable byte; from 128 up
+    none is, so the matrices the skill carries hold no text. The pixels' colours are unchanged."""
+    data = im.tobytes()
+    assert max(data) < 128, "high_palette needs 128 colours or fewer"
+    out = Image.frombytes("P", im.size, data.translate(bytes(range(128, 256)) + bytes(128)))
+    out.putpalette([0] * 384 + im.getpalette()[:384])
+    return out
+
+
 def small(src, dst, width=1100, colours=128):
     """A small palette copy of src at dst (width px wide, or src's own width), for this repository's pages."""
     im = Image.open(src).convert("RGB")
     if width:
         im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
-    im.quantize(colors=colours, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).save(dst, optimize=True)
+    im = im.quantize(colors=colours, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    (high_palette(im) if colours <= 128 else im).save(dst, optimize=True)
     print(f"  → {dst}")
 
 

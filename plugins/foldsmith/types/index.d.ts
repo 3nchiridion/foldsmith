@@ -31,7 +31,6 @@ export type Migration = {
   app?: string
   phase: Phase
   simulator?: string
-  driver?: string
   poses?: PoseId[]
   screens: Screen[]
   done?: string[]

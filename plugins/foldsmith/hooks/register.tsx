@@ -7,8 +7,8 @@ import type { Cell, CellState, Expanded, Folder, Known, Migration, Phase, Pick, 
 const STATUS_FILE = '.duo/migration.json'
 const PANE = 'foldsmith'
 const TITLE = 'Foldsmith'
-// Where the pane keeps the simulator's frames and the small copies of shots it draws.
-const TMP = '/tmp/foldsmith'
+// The SVG namespace, the only URL in this file: a name, not an address the pane contacts.
+const SVG_NS = 'http://www.w3.org/2000/svg'
 const LIVE_EVERY_MS = 4000
 const LOOK_EVERY_MS = 60000
 // The width, in CSS pixels, the drawings' type is sized for: wider, the matrix's type grows. NARROW is the least the
@@ -390,7 +390,7 @@ function matrixSvg(m: Migration, chosen: Pick | null, width = WIDE): { source: s
     width,
     height,
     source:
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">` +
+      `<svg xmlns="${SVG_NS}" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">` +
       `<style>${style}</style><rect class="card" x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="14"/>` +
       `<g transform="translate(${PAD} ${PAD})">${head}${rows}${picked}${legend}</g></svg>`,
   }
@@ -401,29 +401,29 @@ function matrixSvg(m: Migration, chosen: Pick | null, width = WIDE): { source: s
 function shotSvg(title: string, pic: Picture | null, note: string, fold: 'active' | 'inactive' | undefined, width: number, aspect: number) {
   const top = 18
   const ratio = pic ? pic.width / pic.height : aspect
-  const h = pic ? Math.round(width / ratio) : Math.min(EMPTY_H, Math.round(width / ratio))
+  const shotH = pic ? Math.round(width / ratio) : Math.min(EMPTY_H, Math.round(width / ratio))
   const parts = [`<text class="t" x="0" y="12">${escapeXml(title)}</text>`]
   if (pic) {
     parts.push(
-      `<image x="0" y="${top}" width="${width}" height="${h}" preserveAspectRatio="xMidYMid meet" href="data:image/jpeg;base64,${pic.jpeg}"/>`,
+      `<image x="0" y="${top}" width="${width}" height="${shotH}" preserveAspectRatio="xMidYMid meet" href="data:image/jpeg;base64,${pic.jpeg}"/>`,
     )
     if (fold) {
-      const band = (ratio >= 1 ? width : h) * FOLD_SHARE
+      const band = (ratio >= 1 ? width : shotH) * FOLD_SHARE
       const rect =
         ratio >= 1
-          ? `x="${(width - band) / 2}" y="${top}" width="${band}" height="${h}"`
-          : `x="0" y="${top + (h - band) / 2}" width="${width}" height="${band}"`
+          ? `x="${(width - band) / 2}" y="${top}" width="${band}" height="${shotH}"`
+          : `x="0" y="${top + (shotH - band) / 2}" width="${width}" height="${band}"`
       parts.push(`<rect class="fold ${fold}" ${rect}/>`)
       parts.push(`<text class="f" x="${width}" y="12" text-anchor="end">${fold === 'active' ? 'fold' : 'fold, flat'}</text>`)
     }
-    parts.push(`<rect class="frame" x="0.5" y="${top + 0.5}" width="${width - 1}" height="${h - 1}" rx="6"/>`)
+    parts.push(`<rect class="frame" x="0.5" y="${top + 0.5}" width="${width - 1}" height="${shotH - 1}" rx="6"/>`)
   } else {
     parts.push(
-      `<rect class="empty" x="0.5" y="${top + 0.5}" width="${width - 1}" height="${h - 1}" rx="6"/>` +
-        `<text class="n" x="${width / 2}" y="${top + h / 2}" text-anchor="middle">${escapeXml(note)}</text>`,
+      `<rect class="empty" x="0.5" y="${top + 0.5}" width="${width - 1}" height="${shotH - 1}" rx="6"/>` +
+        `<text class="n" x="${width / 2}" y="${top + shotH / 2}" text-anchor="middle">${escapeXml(note)}</text>`,
     )
   }
-  const full = top + h
+  const full = top + shotH
   const style = `${STYLE_FONT}
     .t{font-size:11px;font-weight:500;fill:#5f5e5a}.n{font-size:11px;fill:#888780}.f{font-size:10px;fill:#a32d2d}
     .frame{fill:none;stroke:#e4e2da}.empty{fill:none;stroke:#c9c7bd;stroke-dasharray:3 3}
@@ -433,7 +433,7 @@ function shotSvg(title: string, pic: Picture | null, note: string, fold: 'active
     width,
     height: full,
     source:
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${full}" width="${width}" height="${full}">` +
+      `<svg xmlns="${SVG_NS}" viewBox="0 0 ${width} ${full}" width="${width}" height="${full}">` +
       `<style>${style}</style>${parts.join('')}</svg>`,
   }
 }
@@ -502,6 +502,9 @@ function defaultPick(m: Migration): Pick | null {
 
 let cwd = '.'
 let home = ''
+// Where the pane keeps the simulator's frames and the small copies of shots it draws: ~/Library/Caches/foldsmith,
+// set when the session starts (a folder of the user's own, not a shared one in /tmp).
+let scratch = ''
 // The status file's last seen mtime; module state, so a reload re-reads the file.
 let lastMtime = -1
 let liveBusy = false
@@ -524,21 +527,40 @@ async function folder($: EngineInterface) {
   return (await read($, root)) ?? cwd
 }
 
+// `dir` with one slash after it, to test whether a path is inside it ('/' stays '/').
+function under(dir: string) {
+  return dir.endsWith('/') ? dir : `${dir}/`
+}
+
+// A shot's path from the progress file, as the real path of a file inside the followed folder. The progress file comes
+// with the repository, so a path that leads out of the folder, by '..' or through a link, gives ''.
 async function absolute($: EngineInterface, path: string) {
-  return path.startsWith('/') ? path : `${await folder($)}/${path}`
+  if (path.split('/').includes('..')) return ''
+  const base = await folder($)
+  try {
+    const [inside, shot] = await Promise.all([
+      $.fs.stat(base, { resolve: true }),
+      $.fs.stat(path.startsWith('/') ? path : `${base}/${path}`, { resolve: true }),
+    ])
+    const ok = shot.kind === 'file' && inside.realPath && shot.realPath?.startsWith(under(inside.realPath))
+    return ok ? shot.realPath! : ''
+  } catch {
+    return ''
+  }
 }
 
 // A PNG made into a JPEG at most `max` pixels on its long side, small enough to draw on any surface.
 async function shrink($: EngineInterface, png: string, max: number, cache = true): Promise<Picture | null> {
+  if (!scratch) return null
   try {
     const { mtimeMs } = await $.fs.stat(png)
     const id = `${png}@${mtimeMs}@${max}`
     const known = cache ? shrunk.get(id) : undefined
     if (known) return known
-    const out = `${TMP}/${png.replace(/[^A-Za-z0-9]/g, '_').slice(-100)}-${max}.jpg`
-    const made = await $.process.run(['sips', '-Z', String(max), '-s', 'format', 'jpeg', '-s', 'formatOptions', '55', png, '--out', out])
+    const out = `${scratch}/${png.replace(/[^A-Za-z0-9]/g, '_').slice(-100)}-${max}.jpg`
+    const made = await $.process.run(['/usr/bin/sips', '-Z', String(max), '-s', 'format', 'jpeg', '-s', 'formatOptions', '55', png, '--out', out])
     if (made.exitCode !== 0) return null
-    const size = await $.process.run(['sips', '-g', 'pixelWidth', '-g', 'pixelHeight', out])
+    const size = await $.process.run(['/usr/bin/sips', '-g', 'pixelWidth', '-g', 'pixelHeight', out])
     const width = Number(/pixelWidth: (\d+)/.exec(size.stdout)?.[1] ?? 0)
     const height = Number(/pixelHeight: (\d+)/.exec(size.stdout)?.[1] ?? 0)
     if (!width || !height) return null
@@ -567,6 +589,7 @@ async function refreshPictures($: EngineInterface) {
   for (const path of [cell?.before, cell?.after]) {
     if (!path) continue
     const file = await absolute($, path)
+    if (!file) continue
     const pic = await shrink($, file, 720)
     if (pic) next[file] = pic
   }
@@ -581,7 +604,7 @@ async function choosePick($: EngineInterface, next: Pick | null) {
 
 // The followed folder's branch and whether the skill has written its report there.
 async function describeFolder($: EngineInterface, base: string) {
-  const git = await $.process.run(['git', '-C', base, 'branch', '--show-current'], { timeoutMs: 3000 })
+  const git = await $.process.run(['/usr/bin/git', '-C', base, 'branch', '--show-current'], { timeoutMs: 3000 })
   const report = await $.fs.exists(`${base}/.duo/REPORT.md`)
   await update($, folderInfo, () => ({ branch: git.exitCode === 0 ? git.stdout.trim() || null : null, report }))
 }
@@ -624,7 +647,7 @@ async function discover($: EngineInterface): Promise<Known[]> {
     i === 0 ? ['-name', name] : ['-o', '-name', name],
   )
   const found = await $.process.run(
-    ['find', cwd, '-maxdepth', '5', '(', ...prune, ')', '-prune', '-o', '-path', '*/.duo/migration.json', '-print'],
+    ['/usr/bin/find', cwd, '-maxdepth', '5', '(', ...prune, ')', '-prune', '-o', '-path', '*/.duo/migration.json', '-print'],
     { timeoutMs: 8000 },
   )
   const recent = await $.store.get('recent')
@@ -672,7 +695,8 @@ async function switchTo($: EngineInterface, path: string | null) {
 async function choose($: EngineInterface) {
   const list = await discover($)
   const picked = await $.store.get(`watch:${cwd}`)
-  const next = typeof picked === 'string' ? picked : list[0]?.root ?? null
+  const here = list.find(k => k.root === cwd || k.root.startsWith(under(cwd)))
+  const next = typeof picked === 'string' ? picked : here?.root ?? null
   if (next !== (await read($, root))) await switchTo($, next)
 }
 
@@ -692,52 +716,72 @@ async function showDemo($: EngineInterface) {
   await update($, pictures, () => ({}))
 }
 
-async function findDuo($: EngineInterface): Promise<string | null> {
-  const listed = await $.process.run(['xcrun', 'simctl', 'list', 'devices', 'booted', '-j'], { timeoutMs: 15000 })
+// The booted iPhone Duo simulator: the one the progress file names when that one is booted, else the first booted.
+// Only a booted one, as duo.py boots a simulator it is given that is shut down.
+async function findDuo($: EngineInterface, named?: string): Promise<string | null> {
+  const listed = await $.process.run(['/usr/bin/xcrun', 'simctl', 'list', 'devices', 'booted', '-j'], { timeoutMs: 15000 })
   try {
     const devices = JSON.parse(listed.stdout).devices as { [runtime: string]: { udid: string; name: string }[] }
-    return Object.values(devices).flat().find(d => /duo/i.test(d.name))?.udid ?? null
+    const duos = Object.values(devices).flat().filter(d => /duo/i.test(d.name)).map(d => d.udid)
+    return (named && duos.includes(named) ? named : duos[0]) ?? null
   } catch {
     return null
   }
 }
 
-async function findDriver($: EngineInterface, m: Migration): Promise<string | null> {
-  const candidates = [
-    m.driver,
-    `${await folder($)}/.claude/skills/iphone-duo-simulator/scripts/duo.py`,
-    home && `${home}/Library/Caches/duo-driver/scripts/duo.py`,
-    home && `${home}/.claude/skills/iphone-duo-simulator/scripts/duo.py`,
-  ]
-  for (const path of candidates) if (path && (await $.fs.exists(await absolute($, path)))) return absolute($, path)
+// The duo.py the pane runs for the live view: only one in the user's own folders, where the skill fetches it, never a
+// path from a progress file or the project, which anyone who shares a repository can write.
+async function findDriver($: EngineInterface): Promise<string | null> {
+  if (!home) return null
+  for (const path of [`${home}/Library/Caches/duo-driver/scripts/duo.py`, `${home}/.claude/skills/iphone-duo-simulator/scripts/duo.py`])
+    if (await $.fs.exists(path)) return path
   return null
+}
+
+// A before or after shot, opened in Preview. Its path comes from the progress file, so only an image is opened.
+async function openShot($: EngineInterface, path: string) {
+  const file = await absolute($, path)
+  if (!file || !/\.(png|jpe?g)$/i.test(file)) return
+  await $.process.run(['/usr/bin/open', '-a', '/System/Applications/Preview.app', file])
+}
+
+// Open report and Show captures. Both are in the app's folder, which its repository fills, so each must be a real
+// folder or file there, not a link (a link could lead to a script that open would run). The report opens as text, and
+// the captures folder is shown in Finder, never opened, so a folder made to look like an app cannot launch.
+async function openDuo($: EngineInterface, base: string, name: 'REPORT.md' | 'captures') {
+  const checks: [string, 'file' | 'dir'][] = [[`${base}/.duo`, 'dir'], [`${base}/.duo/${name}`, name === 'captures' ? 'dir' : 'file']]
+  for (const [path, kind] of checks) {
+    const stat = await $.fs.stat(path).catch(() => null)
+    if (!stat || stat.isLink || stat.kind !== kind) return
+  }
+  await $.process.run(name === 'captures' ? ['/usr/bin/open', '-R', `${base}/.duo/captures`] : ['/usr/bin/open', '-t', `${base}/.duo/REPORT.md`])
 }
 
 // One frame of the simulator: the panel that is drawing (through duo.py when it is there), made small. Only while the
 // pane is on screen and not paused.
 async function liveTick($: EngineInterface) {
-  if (liveBusy || (await read($, source)) !== 'file' || (await read($, paused))) return
+  if (liveBusy || !scratch || (await read($, source)) !== 'file' || (await read($, paused))) return
   const m = await read($, migration)
   if (!m) return
   const pane = (await $.ui.panes()).find(p => p.id === PANE)
-  if (!pane || (pane.isPlaced && !pane.isShown)) return
+  if (!pane || !pane.isPlaced || !pane.isShown) return
   liveBusy = true
   try {
-    const udid = m.simulator ?? (await findDuo($))
+    const udid = await findDuo($, m.simulator)
     if (!udid) {
       await update($, liveNote, () => 'no booted iPhone Duo simulator')
       return
     }
-    const driver = await findDriver($, m)
+    const driver = await findDriver($)
     let png: string | null = null
     if (driver) {
-      const shot = await $.process.run(['python3', driver, '--udid', udid, 'shot', '--out', TMP, '--name', 'live'], {
+      const shot = await $.process.run(['/usr/bin/python3', driver, '--udid', udid, 'shot', '--out', scratch, '--name', 'live'], {
         timeoutMs: 25000,
       })
       png = /(\/\S+live-(?:cover|inner)\.png)/.exec(shot.stdout)?.[1] ?? null
     } else {
-      const shot = await $.process.run(['xcrun', 'simctl', 'io', udid, 'screenshot', `${TMP}/live.png`], { timeoutMs: 15000 })
-      png = shot.exitCode === 0 ? `${TMP}/live.png` : null
+      const shot = await $.process.run(['/usr/bin/xcrun', 'simctl', 'io', udid, 'screenshot', `${scratch}/live.png`], { timeoutMs: 15000 })
+      png = shot.exitCode === 0 ? `${scratch}/live.png` : null
     }
     const pic = png ? await shrink($, png, 720, false) : null
     if (!pic) {
@@ -765,8 +809,9 @@ export const register: Register = on => {
         'The Foldsmith pane: `/foldsmith` shows it, `/foldsmith watch <folder>` follows another app (`/foldsmith watch` alone ' +
         'follows the newest), `/foldsmith demo` shows sample data, `/foldsmith off` leaves it. `/foldsmith-start` runs the migration.',
     })
-    await $.process.run(['mkdir', '-p', TMP])
     home = (await $.process.run(['/usr/bin/printenv', 'HOME'])).stdout.trim()
+    scratch = home ? `${home}/Library/Caches/foldsmith` : ''
+    if (scratch) await $.process.run(['/bin/mkdir', '-p', scratch])
     await choose($)
     await poll($)
     $.clock.every(1500, () => poll($))
@@ -1027,9 +1072,9 @@ export const register: Register = on => {
           <Button key="resume" variant="primary" label={m.phase === 'done' ? 'Resume migration' : 'Restart if stopped'} onPress={fill(start)} />
         )}
         {info.report && (
-          <Button key="report" label="Open report" onPress={() => void $.process.run(['open', `${base}/.duo/REPORT.md`])} />
+          <Button key="report" label="Open report" onPress={() => void openDuo($, base, 'REPORT.md')} />
         )}
-        <Button key="captures" label="Show captures" onPress={() => void $.process.run(['open', `${base}/.duo/captures`])} />
+        <Button key="captures" label="Show captures" onPress={() => void openDuo($, base, 'captures')} />
       </Box>
     )
     const switcher = Select && found.length > 1 && from === 'file' && found.some(k => k.root === base) && (
@@ -1093,10 +1138,10 @@ export const register: Register = on => {
           {from === 'file' && (cell?.before || cell?.after) && (
             <Box flexDirection="row" gap={1}>
               {cell?.before && (
-                <Button key="open-before" plain dimColor label="Open before" onPress={() => void absolute($, cell.before!).then(file => $.process.run(['open', file]))} />
+                <Button key="open-before" plain dimColor label="Open before" onPress={() => void openShot($, cell.before!)} />
               )}
               {cell?.after && (
-                <Button key="open-after" plain dimColor label="Open after" onPress={() => void absolute($, cell.after!).then(file => $.process.run(['open', file]))} />
+                <Button key="open-after" plain dimColor label="Open after" onPress={() => void openShot($, cell.after!)} />
               )}
             </Box>
           )}
