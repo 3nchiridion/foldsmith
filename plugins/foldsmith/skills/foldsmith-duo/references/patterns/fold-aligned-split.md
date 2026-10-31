@@ -111,9 +111,11 @@ empty detail (no T7). UIKit apps: see UIKit below.
 - Corpus after: NetNewsWire, a UIKit split ([`verification/runs/NetNewsWire/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/NetNewsWire/)); IceCubesApp, a `TabView` sidebar with
   the sheet rule ([`verification/runs/IceCubesApp/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/IceCubesApp/)); Wikipedia, UIKit tabs with no split view, through a container of
   its own (Saved, Activity, Search) and the sheet rule ([`verification/runs/Wikipedia/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/Wikipedia/)). NetNewsWire's and
-  IceCubesApp's verified in all seven poses by the skill alone. Wikipedia's was reviewed four times and fixed in four
-  rounds, and is not verified: the top bars of both its panes still stop short of their edges (the list's search field
-  at 371 of 455 pt), and the last review found routes that still miss the container (its README lists them).
+  IceCubesApp's ended with no finding in any pose, by the skill alone and with no independent review (a later detector
+  finds NetNewsWire's Reader View button beside the vertical bar in 8 cells). Wikipedia's was reviewed four times and
+  fixed in four rounds, and did not pass review: the top bars of both its panes still stop short of their edges (the
+  list's search field at 371 of 455 pt), and the last review found routes that still miss the container (its README
+  lists them).
 
 ## When not to use it
 - Two views of equal standing that both need the full height (player and up-next, document and inspector):

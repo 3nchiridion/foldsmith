@@ -40,10 +40,11 @@ Inc. Foldsmith is independent and is not affiliated with, sponsored by, or endor
   thing, in the poses Apple shows it in: Settings on the simulator (six poses); Fitness (two), Podcasts and Accessibility
   Reader (three) in Apple's tech-talk frames. Where they differ is written down ([`verification/oracle/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/oracle)).
 - **Three real migrations.** The skill adapted NetNewsWire and IceCubesApp (five screens each, logged out for
-  IceCubesApp, verified in every pose; a detector added after NetNewsWire's run finds its Reader View button beside the
-  vertical bar in 8 cells, not fixed) and ran on Wikipedia, which did not pass review (2 of 11 screens; 15 confirmed
-  items left unfixed, two of them medium regressions, all listed). Each has the detectors' findings before and after,
-  the report and the patch ([`verification/runs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs)).
+  IceCubesApp), ending with no finding in any pose: 19 and 8 cells fixed and verified, the rest fine as they were. A
+  detector added after NetNewsWire's run finds its Reader View button beside the vertical bar in 8 cells, not fixed;
+  IceCubesApp's logged-in app was not run. It also ran on Wikipedia, which did not pass review (2 of 11 screens; its
+  last check found 2 medium and 6 low regressions and 2 incomplete fixes, all listed, none fixed). Each has the
+  detectors' findings before and after, the report and the patch ([`verification/runs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs)).
 
 <p align="center">
   <img src="docs/images/split-aligned-book.png" alt="The catalog's Fold-aligned split on the iPhone Duo simulator, folded like a book: a list in the leading half and the article in the trailing half, the boundary on the fold" width="600">
@@ -86,9 +87,10 @@ Settings captured on the simulator, and Fitness, Podcasts and Accessibility Read
 app). The fourth, Reflowing columns, has no Apple app to compare with yet.
 
 The plugin's skill was run on three open-source apps ([`verification/runs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/)): IceCubesApp's five logged-out screens
-and NetNewsWire's five are verified in every pose (a detector added after NetNewsWire's run finds its Reader View
-button in 8 cells, not fixed); Wikipedia's run finished 2 of its 11 screens and did not pass review: 15 confirmed
-items are left unfixed, two of them medium regressions. The detectors read any app through its accessibility tree.
+and NetNewsWire's five ended with no finding in any pose: 8 and 19 cells fixed and verified, the rest fine as they were
+(a detector added after NetNewsWire's run finds its Reader View button in 8 cells, not fixed; IceCubesApp's logged-in
+app was not run). Wikipedia's run finished 2 of its 11 screens and did not pass review: its last check found 2 medium
+and 6 low regressions and 2 incomplete fixes, none fixed. The detectors read any app through its accessibility tree.
 
 ## Hands-free migration with Claude Code
 Install the `foldsmith` plugin, open your app's folder in Claude Code, and run `/foldsmith-start`. The bundled

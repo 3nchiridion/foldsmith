@@ -10,8 +10,9 @@ Status, as the README gives it: on 2026-10-29, four patterns, each with a refere
 captured in all seven poses and detector results. Three of them, Fold-aligned split, Even grid and Arrangement, are
 compared with Apple's apps (Settings on the simulator; Fitness, Podcasts and Accessibility Reader in Apple's tech-talk
 frames). The fourth, Reflowing columns, has no Apple app to compare with yet. The skill was run on three open-source
-apps: IceCubesApp's five logged-out screens and NetNewsWire's five are verified in every pose; Wikipedia's run finished
-2 of its 11 screens and did not pass review.
+apps: IceCubesApp's five logged-out screens and NetNewsWire's five ended with no finding in any pose (8 and 19 cells
+fixed and verified, the rest fine as they were; NetNewsWire's Reader View button, found later, is not fixed);
+Wikipedia's run finished 2 of its 11 screens and did not pass review.
 
 - **Patterns**: Fold-aligned split (with a tiled form that keeps both panes upright), Even grid, Arrangement and
   Reflowing columns, each a page in `patterns/` and a copy-in file in `Sources/Patterns/`; the decision table and the
