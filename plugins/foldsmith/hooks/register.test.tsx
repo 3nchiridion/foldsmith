@@ -44,15 +44,26 @@ const MIGRATED = JSON.stringify({
 type Files = { [path: string]: string }
 
 // Stands for the engine and the Mac beneath the plugin: the files, find, git, sips, the store and the clock. `links` maps
-// each symbolic link to where it leads; it returns every program the plugin ran, as its argv.
-function machine(on: On, files: Files, mtime: (path: string) => number = () => 1, links: { [path: string]: string } = {}) {
-  const store: { [key: string]: unknown } = {}
+// each symbolic link to where it leads. `faults.find` makes find fail as a timed-out one does, `faults.store` makes reading
+// the store fail, `faults.stored` fills the store first, and `faults.timers` collects each timer's interval. It returns
+// every program the plugin ran, as its argv.
+function machine(
+  on: On,
+  files: Files,
+  mtime: (path: string) => number = () => 1,
+  links: { [path: string]: string } = {},
+  faults: { find?: boolean; store?: boolean; stored?: { [key: string]: unknown }; timers?: number[] } = {},
+) {
+  const store: { [key: string]: unknown } = { ...faults.stored }
   const runs: string[][] = []
   on('command.register', () => ({ value: { command: 'foldsmith' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
-  on('clock.every', () => ({ value: undefined }))
+  on('clock.every', (_, e) => {
+    faults.timers?.push(e.ms)
+    return { value: undefined }
+  })
   on('ui.panes', () => ({ value: [] }))
-  on('store.get', (_, e) => ({ value: store[e.key] }))
+  on('store.get', (_, e) => (faults.store ? { deny: 'store unavailable' } : { value: store[e.key] }))
   on('store.set', (_, e) => {
     store[e.key] = e.value
     return { value: undefined }
@@ -74,6 +85,7 @@ function machine(on: On, files: Files, mtime: (path: string) => number = () => 1
   on('process.run', (_, e) => {
     runs.push([...e.argv])
     const command = e.argv[0].split('/').pop()
+    if (command === 'find' && faults.find) return { deny: 'timed out after 8000 ms' }
     const stdout = e.argv.includes('-g')
       ? 'x.jpg\n  pixelWidth: 720\n  pixelHeight: 506\n'
       : command === 'printenv'
@@ -272,4 +284,105 @@ test('a progress file from a shared repository cannot make the pane open a link 
   expect(ran.filter(line => line.startsWith('/usr/bin/open'))).toEqual(['/usr/bin/open -R /app/.duo/captures'])
   expect(ran.some(line => /evil\.py|\.\.|elsewhere|outside|linked/.test(line))).toBe(false)
   expect(ran.every(line => line.startsWith('/'))).toBe(true)
+})
+
+test('a session in the home folder searches nothing and follows no app by itself', async ($, on) => {
+  const runs = machine(on, { '/Users/me/apps/notes/.duo/migration.json': STATUS }, () => 1, {}, { stored: { recent: ['/Users/me/apps/notes'] } })
+  on('command.run', () => ({ text: '' }))
+  await $.session.start({ cwd: '/Users/me', surface: 'desktop', isInteractive: true })
+
+  expect(runs.some(argv => argv[0] === '/usr/bin/find')).toBe(false)
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await ui.find({ type: 'Text', text: /No migration in this folder/ })).toBeDefined()
+  expect(await ui.find({ key: 'follow:/Users/me/apps/notes' })).toBeDefined()
+  await ui.unmount()
+
+  const reply = await $.command.run({ command: 'foldsmith', args: 'watch ~/apps/notes', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 100 } })
+  expect(reply.text).toBe('Foldsmith pane: following apps/notes.')
+  expect(runs.some(argv => argv.join(' ') === '/usr/bin/git -C /Users/me/apps/notes branch --show-current')).toBe(true)
+  const followed = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await followed.find({ type: 'Text', text: /^Notes$/ })).toBeDefined()
+  await followed.unmount()
+})
+
+test('a search that fails still shows the progress file in the folder', async ($, on) => {
+  const runs = machine(on, { '/app/.duo/migration.json': STATUS }, () => 1, {}, { find: true })
+  await $.session.start({ cwd: '/app', surface: 'desktop', isInteractive: true })
+
+  // Read at the start itself, before any timer runs: the failed search did not end the start.
+  expect(runs.some(argv => argv[0] === '/usr/bin/find')).toBe(true)
+  expect(runs.some(argv => argv.join(' ') === '/usr/bin/git -C /app branch --show-current')).toBe(true)
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await ui.find({ type: 'Text', text: /^Notes$/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('when looking for progress files fails, the timers still run and /foldsmith still opens the pane', async ($, on) => {
+  const timers: number[] = []
+  machine(on, {}, () => 1, {}, { store: true, timers })
+  on('command.run', () => ({ text: '' }))
+  await $.session.start({ cwd: '/app', surface: 'desktop', isInteractive: true }).catch(() => undefined)
+
+  expect(timers.length).toBe(3)
+  const reply = await $.command.run({ command: 'foldsmith', args: '', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 100 } })
+  expect(reply.text).toBe('Foldsmith pane opened.')
+})
+
+test('a project under the home folder is searched and followed', async ($, on) => {
+  const runs = machine(on, { '/Users/me/work/a/.duo/migration.json': STATUS })
+  await $.session.start({ cwd: '/Users/me/work', surface: 'desktop', isInteractive: true })
+
+  expect(runs.some(argv => argv[0] === '/usr/bin/find' && argv[1] === '/Users/me/work')).toBe(true)
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await ui.find({ type: 'Text', text: /^Notes$/ })).toBeDefined()
+  await ui.unmount()
+})
+
+for (const cwd of ['/Users/me/', '/users/ME']) {
+  test(`the home folder spelled ${cwd} is still not searched`, async ($, on) => {
+    const runs = machine(on, {})
+    await $.session.start({ cwd, surface: 'desktop', isInteractive: true })
+    expect(runs.some(argv => argv[0] === '/usr/bin/find')).toBe(false)
+  })
+}
+
+test('a .duo folder that is a link is not read', async ($, on) => {
+  machine(on, { '/app/.duo/migration.json': STATUS }, () => 1, { '/app/.duo': '/elsewhere/.duo' })
+  await $.session.start({ cwd: '/app', surface: 'desktop', isInteractive: true })
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await ui.find({ type: 'Text', text: /a link, not a file in the app folder/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Notes$/ })).toBeUndefined()
+  await ui.unmount()
+})
+
+test('a linked progress file is left out of what the search finds', async ($, on) => {
+  const older = JSON.stringify({ ...JSON.parse(STATUS), app: 'Real' })
+  const newer = JSON.stringify({ ...JSON.parse(STATUS), app: 'Linked' })
+  machine(on, { '/work/a/.duo/migration.json': older, '/work/b/.duo/migration.json': newer }, path => (path.startsWith('/work/b') ? 5 : 1), {
+    '/work/b/.duo/migration.json': '/elsewhere/migration.json',
+  })
+  await $.session.start({ cwd: '/work', surface: 'desktop', isInteractive: true })
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await ui.find({ type: 'Text', text: /^Real$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /a link/ })).toBeUndefined()
+  await ui.unmount()
+})
+
+test('a progress file that is a link is not read, and its error goes with it', async ($, on) => {
+  const files: Files = { '/app/.duo/migration.json': STATUS }
+  machine(on, files, () => 1, { '/app/.duo/migration.json': '/elsewhere/migration.json' })
+  on('command.run', () => ({ text: '' }))
+  await $.session.start({ cwd: '/app', surface: 'desktop', isInteractive: true })
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await ui.find({ type: 'Text', text: /a link, not a file in the app folder/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Notes$/ })).toBeUndefined()
+  await ui.unmount()
+
+  await $.command.run({ command: 'foldsmith', args: 'watch /other', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 100 } })
+  const other = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await other.find({ type: 'Text', text: /a link, not a file/ })).toBeUndefined()
+  await other.unmount()
 })

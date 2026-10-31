@@ -31,13 +31,13 @@ runs, reads and sends", gives every program and when it runs.
   (`.duo/flows/<app>.flow`, which it writes) with `bash`: in a repository someone else wrote, read that file before you
   resume a migration there, as you would a build script.
 
-**The plugin's pane** (Claude Code): it finds `.duo/migration.json` files under the session's folder (`find`) and
-follows by itself only those or the app you picked for that folder, shows the app's branch (`git branch --show-current`) and lists the booted simulator
+**The plugin's pane** (Claude Code): it finds `.duo/migration.json` files under the session's folder (`find`, never in
+your home folder or a folder above it) and follows by itself only those or the app you picked for that folder, shows the app's branch (`git branch --show-current`) and lists the booted simulator
 (`xcrun simctl list`); every 4 seconds while it is drawn it takes a frame of a booted Duo simulator into
 `~/Library/Caches/foldsmith` (`duo.py shot`, with only the `duo.py` in `~/Library/Caches/duo-driver` or
 `~/.claude/skills`, never a path from a progress file or the project; or `xcrun simctl io … screenshot`) and scales it
-with `sips`. It runs each program by its full path, reads shots only inside the app's folder (not through a link out of
-it), and its buttons open the report as text, show the captures folder in Finder, or open a shot in Preview, never a
+with `sips`. It runs each program by its full path, reads progress files and shots only inside the app's folder (not through a
+link out of it), and its buttons open the report as text, show the captures folder in Finder, or open a shot in Preview, never a
 link. It writes nothing in your repository and makes
 no network request.
 

@@ -532,6 +532,38 @@ function under(dir: string) {
   return dir.endsWith('/') ? dir : `${dir}/`
 }
 
+// Whether the session's folder is one the pane searches: not the home folder or a folder above it, where `find` would walk
+// Desktop, Documents and Library every minute (and macOS would ask to let it). A session there, or one where the home
+// folder is unknown, follows only a picked app. Compared without trailing slashes or case, as the Mac's disk ignores case.
+function searchable() {
+  const plain = (path: string) => path.replace(/\/+$/, '').toLowerCase() || '/'
+  const [here, mine] = [plain(cwd), plain(home)]
+  return home !== '' && mine !== here && !mine.startsWith(under(here))
+}
+
+// A folder named after `/foldsmith watch`: from the root, from the home folder (`~/…`), or from the session's folder.
+function resolveFolder(path: string) {
+  if (home && (path === '~' || path.startsWith('~/'))) return `${home}${path.slice(1)}`
+  return path.startsWith('/') ? path : `${cwd}/${path}`
+}
+
+// Whether each path is a real folder or file of that kind, not a link. The app's repository can make anything in its
+// `.duo` folder a link to somewhere else, so the pane reads and opens only what is really there.
+async function isReal($: EngineInterface, checks: [string, 'file' | 'dir'][]) {
+  for (const [path, kind] of checks) {
+    const stat = await $.fs.stat(path).catch(() => null)
+    if (!stat || stat.isLink || stat.kind !== kind) return false
+  }
+  return true
+}
+
+const progressFile = (base: string): [string, 'file' | 'dir'][] => [[`${base}/.duo`, 'dir'], [`${base}/${STATUS_FILE}`, 'file']]
+
+// Writes the error line only when it changes, so a file that stays broken does not redraw the pane at every poll.
+async function setError($: EngineInterface, message: string | null) {
+  if ((await read($, error)) !== message) await update($, error, () => message)
+}
+
 // A shot's path from the progress file, as the real path of a file inside the followed folder. The progress file comes
 // with the repository, so a path that leads out of the folder, by '..' or through a link, gives ''.
 async function absolute($: EngineInterface, path: string) {
@@ -620,7 +652,13 @@ async function poll($: EngineInterface) {
         await update($, migration, () => null)
         await update($, source, () => 'none')
       }
+      await setError($, null)
       return
+    }
+    if (!(await isReal($, progressFile(base)))) {
+      // Read again in full once a real file is back, even one with the old file's mtime.
+      lastMtime = -1
+      throw new Error('a link, not a file in the app folder: not read')
     }
     const { mtimeMs } = await $.fs.stat(file)
     if (mtimeMs === lastMtime) return
@@ -630,26 +668,29 @@ async function poll($: EngineInterface) {
     if (!parsed || !Array.isArray(parsed.screens)) throw new Error('missing "screens" array')
     await update($, migration, () => parsed)
     await update($, source, () => 'file')
-    await update($, error, () => null)
+    await setError($, null)
     // A finished migration starts with the simulator paused: nothing moves there until someone resumes it.
     if (firstSeen) await update($, paused, () => parsed.phase === 'done')
     await describeFolder($, base)
     await refreshPictures($)
     if (firstSeen) void $.ui.open({ id: PANE, title: TITLE })
   } catch (err) {
-    await update($, error, () => `${file}: ${err instanceof Error ? err.message : String(err)}`)
+    await setError($, `${file}: ${err instanceof Error ? err.message : String(err)}`)
   }
 }
 
 // Progress files under the session's folder (past build output and captures) and those followed before, newest first.
+// A search that fails or runs out of time finds nothing this time; the pane goes on with the folders it remembers.
 async function discover($: EngineInterface): Promise<Known[]> {
   const prune = ['node_modules', '.git', '.build', 'build', 'DerivedData', 'captures'].flatMap((name, i) =>
     i === 0 ? ['-name', name] : ['-o', '-name', name],
   )
-  const found = await $.process.run(
-    ['/usr/bin/find', cwd, '-maxdepth', '5', '(', ...prune, ')', '-prune', '-o', '-path', '*/.duo/migration.json', '-print'],
-    { timeoutMs: 8000 },
-  )
+  const found = !searchable()
+    ? { stdout: '' }
+    : await $.process.run(
+        ['/usr/bin/find', cwd, '-maxdepth', '5', '(', ...prune, ')', '-prune', '-o', '-path', '*/.duo/migration.json', '-print'],
+        { timeoutMs: 8000 },
+      ).catch(() => ({ stdout: '' }))
   const recent = await $.store.get('recent')
   const roots = new Set<string>([
     ...found.stdout
@@ -662,7 +703,7 @@ async function discover($: EngineInterface): Promise<Known[]> {
   for (const r of roots) {
     const file = `${r}/${STATUS_FILE}`
     try {
-      if (!(await $.fs.exists(file))) continue
+      if (!(await isReal($, progressFile(r)))) continue
       const { mtimeMs } = await $.fs.stat(file)
       const app = (JSON.parse(await $.fs.read(file)) as Migration).app
       list.push({ root: r, app: app ?? r.split('/').pop() ?? r, mtime: mtimeMs })
@@ -688,6 +729,7 @@ async function switchTo($: EngineInterface, path: string | null) {
   await update($, pick, () => null)
   await update($, pictures, () => ({}))
   await update($, folderInfo, () => ({ branch: null, report: false }))
+  await setError($, null)
   await poll($)
 }
 
@@ -695,7 +737,7 @@ async function switchTo($: EngineInterface, path: string | null) {
 async function choose($: EngineInterface) {
   const list = await discover($)
   const picked = await $.store.get(`watch:${cwd}`)
-  const here = list.find(k => k.root === cwd || k.root.startsWith(under(cwd)))
+  const here = searchable() ? list.find(k => k.root === cwd || k.root.startsWith(under(cwd))) : undefined
   const next = typeof picked === 'string' ? picked : here?.root ?? null
   if (next !== (await read($, root))) await switchTo($, next)
 }
@@ -711,7 +753,7 @@ async function follow($: EngineInterface, path: string | null) {
 async function showDemo($: EngineInterface) {
   await update($, migration, () => DEMO)
   await update($, source, () => 'demo')
-  await update($, error, () => null)
+  await setError($, null)
   await update($, pick, () => defaultPick(DEMO))
   await update($, pictures, () => ({}))
 }
@@ -749,11 +791,7 @@ async function openShot($: EngineInterface, path: string) {
 // folder or file there, not a link (a link could lead to a script that open would run). The report opens as text, and
 // the captures folder is shown in Finder, never opened, so a folder made to look like an app cannot launch.
 async function openDuo($: EngineInterface, base: string, name: 'REPORT.md' | 'captures') {
-  const checks: [string, 'file' | 'dir'][] = [[`${base}/.duo`, 'dir'], [`${base}/.duo/${name}`, name === 'captures' ? 'dir' : 'file']]
-  for (const [path, kind] of checks) {
-    const stat = await $.fs.stat(path).catch(() => null)
-    if (!stat || stat.isLink || stat.kind !== kind) return
-  }
+  if (!(await isReal($, [[`${base}/.duo`, 'dir'], [`${base}/.duo/${name}`, name === 'captures' ? 'dir' : 'file']]))) return
   await $.process.run(name === 'captures' ? ['/usr/bin/open', '-R', `${base}/.duo/captures`] : ['/usr/bin/open', '-t', `${base}/.duo/REPORT.md`])
 }
 
@@ -812,11 +850,12 @@ export const register: Register = on => {
     home = (await $.process.run(['/usr/bin/printenv', 'HOME'])).stdout.trim()
     scratch = home ? `${home}/Library/Caches/foldsmith` : ''
     if (scratch) await $.process.run(['/bin/mkdir', '-p', scratch])
-    await choose($)
-    await poll($)
+    // The timers first, so nothing that fails below can leave the pane without them.
     $.clock.every(1500, () => poll($))
     $.clock.every(LIVE_EVERY_MS, () => liveTick($))
     $.clock.every(LOOK_EVERY_MS, () => choose($))
+    await choose($)
+    await poll($)
 
     return next(e)
   })
@@ -834,10 +873,12 @@ export const register: Register = on => {
       text = 'Foldsmith pane: back to the progress file.'
     } else if (arg === 'watch') {
       const path = rest.join(' ').replace(/\/+$/, '')
-      await follow($, path ? (path.startsWith('/') ? path : `${cwd}/${path}`) : null)
-      text = path ? `Foldsmith pane: following ${path}.` : 'Foldsmith pane: following the newest migration.'
+      const full = path ? resolveFolder(path) : null
+      await follow($, full)
+      text = full ? `Foldsmith pane: following ${shown(full)}.` : 'Foldsmith pane: following the newest migration.'
     } else {
-      await choose($)
+      // Opens the pane even when the look for progress files fails.
+      await choose($).catch(() => undefined)
     }
     await $.ui.open({ id: PANE, title: TITLE })
 

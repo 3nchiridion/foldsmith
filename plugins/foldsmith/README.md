@@ -1,15 +1,38 @@
 # Foldsmith plugin
 
-Adapt a whole iOS app to iPhone Duo hands-free, and watch it happen. One install brings:
+Foldsmith adapts an existing iOS app to iPhone Duo, Apple's foldable, hands-free on your Mac. It finds the app's
+screens, captures each one in all seven poses on the simulator, applies a measured layout pattern where a screen needs
+one, and checks every pose again with before and after shots. It commits each change on a `duo-migration` branch in
+your app's repository and never pushes; a pane beside the chat shows the run as it goes.
 
-- **The `foldsmith-duo` skill** (`skills/`): finds the app's screens, captures each one in all seven Duo poses,
-  classifies it against the decision table, applies the pattern's reference implementation, and proves every pose
-  with before/after screenshots and the detectors. It never stops to ask; what it cannot do goes to its "left" list
-  with the reason. It commits one screen at a time on a `duo-migration` branch and never pushes.
+## Requirements
+Foldsmith runs in Claude Code (the terminal, an IDE extension or the desktop app's Code tab) on a Mac, since it builds
+your app and drives the simulator:
+- Xcode 27.1 with the iOS 27.1 simulator runtime;
+- an iPhone Duo simulator whose name contains "Duo" (the tools find it by its name). Foldsmith never creates one; if
+  `xcrun simctl list devices` shows none, make one:
+  ```
+  xcrun simctl create "iPhone Duo" com.apple.CoreSimulator.SimDeviceType.iPhone-Duo com.apple.CoreSimulator.SimRuntime.iOS-27-1
+  ```
+- xcodegen (`brew install xcodegen`);
+- Claude Code 2.1.308 or later (`claude update`; 2.1.236 and older reject the plugin's hooks);
+- your app's source (SwiftUI or UIKit) in a git repository, building for the simulator with Xcode 27.1, with your own
+  work committed before you start.
+
+An app without the scene lifecycle cannot launch on the iOS 27.1 SDK: Foldsmith adopts it with Apple's
+`app-resizability` skill when that is installed, and otherwise stops and says so. A screen no taps reach (a members-only
+one, say) is left for you, with the reason; one that only needs some content gets it, added through the app.
+
+## What one install brings
+- **The `foldsmith-duo` skill**: finds the app's screens, captures each one in all seven Duo poses, classifies it
+  against Foldsmith's decision table, applies that pattern's reference implementation, and checks every pose with
+  before/after screenshots and the detectors. It never stops to ask; what it cannot do goes to its "left" list with
+  the reason. It commits one screen at a time on a `duo-migration` branch and never pushes.
 - **`/foldsmith-start`**: the one command to run in your app's folder. Run it again in a later session and it resumes from
   where the last one stopped.
 - **The pane** beside the chat, following `.duo/migration.json` (the skill rewrites it after every step). It finds the
-  newest progress file under the session's folder by itself, and offers an App picker when there are several:
+  newest progress file under the session's folder by itself, and in the desktop app or VS Code offers an App picker
+  when there are several (elsewhere, `/foldsmith watch <folder>` switches):
   - the app, its folder and branch, and where the run stands (the phase, or Finished and what is left for you);
   - the simulator, live: the panel that is drawing, every 4 seconds while the pane is on screen; Pause / Resume;
   - the screen × pose matrix: hover a cell for its state and defect classes;
@@ -19,20 +42,18 @@ Adapt a whole iOS app to iPhone Duo hands-free, and watch it happen. One install
   - the activity, newest first;
   - Resume migration, Open report and Show captures.
 
+  In a terminal, pictures draw where the terminal can show images (kitty, Ghostty, iTerm2 3.5+), and the matrix is text.
+
 Commands: `/foldsmith-start [app folder]` runs or resumes the migration; `/foldsmith` opens the pane; `/foldsmith watch <folder>` follows
 an app in another folder (remembered per folder; `/foldsmith watch` alone goes back to the newest); `/foldsmith demo` shows sample
 data; `/foldsmith off` returns to the progress file.
 
-Needs Xcode 27.1 with the iOS 27.1 simulator runtime, one iPhone Duo simulator (`xcrun simctl create "iPhone Duo"
-com.apple.CoreSimulator.SimDeviceType.iPhone-Duo com.apple.CoreSimulator.SimRuntime.iOS-27-1`), xcodegen (`brew install
-xcodegen`) and Claude Code 2.1.308 or later (2.1.236 and older reject the plugin's hooks). The skill fetches the
-community `duo.py` driver (`iphone-duo-simulator-skill`) at a fixed commit into `~/Library/Caches/duo-driver` if it is
-not on the machine. In a terminal, pictures draw where the
-terminal can show images (kitty, Ghostty, iTerm2 3.5+), and the matrix is text.
-
 ## Install
+From the Claude directory: add Foldsmith under Customize → Plugins → Discover on claude.ai, and it reaches Claude Code
+when a session next starts; or, in Claude Code 2.1.287 or later, add it with `/plugin directory`. Either way, the pane
+needs Claude Code 2.1.308 or later.
 
-At the prompt of a Claude Code terminal session:
+Or from this repository's marketplace, at the prompt of a Claude Code terminal session:
 
 ```
 /plugin install foldsmith --marketplace 3nchiridion/foldsmith
@@ -42,26 +63,39 @@ Answer `y` to add the marketplace, then pick a scope. From a shell: `claude plug
 If `--marketplace` is not offered, Claude Code is older than 2.1.308: run `claude update` first. In the desktop app: click +
 next to the prompt box, then Plugins, Add marketplace with `3nchiridion/foldsmith`, then Add plugin.
 
+Install it one way, not both: Claude Code loads only one copy of a plugin, and it may not be the one you update.
+
+## First run
+`/foldsmith demo` shows the pane with sample data. In your app's folder, `/foldsmith-start` starts the migration; in a
+later session, running it again resumes from where it stopped. A run takes hours, since every screen is captured in
+every pose before and after its change: IceCubesApp's five screens took about two. Results depend on the app.
+IceCubesApp's five public screens and NetNewsWire's five were verified in every pose (NetNewsWire's feeds screen after a
+follow-up on a design call its owner made; a detector added after that run finds its Reader View button beside the
+vertical bar in 8 cells, not fixed). Wikipedia's run finished 2 of its 11 screens and did not pass review: 15 confirmed
+defects are left unfixed, two of them medium regressions. When a run ends, read `.duo/REPORT.md` and review the commits
+on `duo-migration` before you merge them; Foldsmith never merges.
+
 ## What it runs, reads and sends
 Everything runs on your Mac, as you. The pane's and the skill's own code send nothing anywhere. What reaches the network
 is the one fetch of `duo.py` below, the app's own build and use, and your Claude conversation.
 
 **The pane** (`hooks/register.tsx`, a Claude Code mod) has three hooks:
 - `session.start` registers the `/foldsmith` command, reads your home folder (`/usr/bin/printenv HOME`), makes its
-  scratch folder (`mkdir -p ~/Library/Caches/foldsmith`), looks for progress files, and starts three timers that run
-  for the whole session: every 1.5 seconds it reads the followed app's `.duo/migration.json`, every minute it looks for
-  progress files again, and every 4 seconds, only while the pane is drawn on screen and not paused, it takes a frame of
-  the simulator;
+  scratch folder (`mkdir -p ~/Library/Caches/foldsmith`), starts three timers that run for the whole session, and looks
+  for progress files: every 1.5 seconds it checks the followed app's `.duo/migration.json` and reads it when it has
+  changed, every minute it looks for progress files again, and every 4 seconds, only while the pane is drawn on screen
+  and not paused, it takes a frame of the simulator;
 - `command.run`, for `/foldsmith` only, opens the pane: `demo` shows sample data, `off` goes back to the progress file,
   `watch <folder>` follows that folder and remembers the choice, and with nothing after it, it looks for progress files;
 - `ui.render` draws the pane.
 
 The pane follows, and opens by itself for, only a progress file under the session's folder, or the app you picked for
 that folder (until `/foldsmith watch` alone); app folders remembered from other sessions are offered in its list and
-followed only when you pick one. It runs these programs, each by its
+followed only when you pick one. A session started in your home folder, or a folder above it, searches nothing and
+follows only an app you pick there. It runs these programs, each by its
 full path in `/usr/bin` or `/bin`, with the paths and the simulator's ID filled in:
 - `find <session folder> -maxdepth 5 … -path '*/.duo/migration.json' -print`, to find progress files (it skips
-  `node_modules`, `.git`, build folders and captures);
+  `node_modules`, `.git`, build folders and captures, and never runs in your home folder or a folder above it);
 - `git -C <app folder> branch --show-current`, each time the progress file changes, to show the branch;
 - `xcrun simctl list devices booted -j`, to find the booted iPhone Duo simulator (the one the progress file names, if
   that one is booted); the live view passes `duo.py` only a simulator it has just found booted (`duo.py` boots one
@@ -74,8 +108,9 @@ full path in `/usr/bin` or `/bin`, with the paths and the simulator's ID filled 
   the `.duo/captures` folder in Finder, each only when it is a real file or folder in the app's folder and not a link;
   Open before and Open after open that shot in Preview (`/System/Applications/Preview.app`, PNG and JPEG files only).
 
-It reads every `.duo/migration.json` it finds or remembers and the before and after shots those files name, only
-inside that app's folder (a path that leads out of it, by `..` or through a link, is ignored), checks that
+It reads the `.duo/migration.json` of each app folder it finds or remembers, and the before and after shots those files
+name, only inside that app's folder (a `.duo` folder or progress file that is a link, or a shot path that leads out by
+`..` or through a link, is ignored), checks that
 `.duo/REPORT.md` exists before offering Open report, and reads its own pictures in `~/Library/Caches/foldsmith`, which
 it draws inside the pane as embedded images. It writes only those pictures, and in Claude Code's plugin storage the
 paths of up to eight app folders where it found a progress file and, for each session folder, the app you chose to
@@ -115,6 +150,9 @@ shots included, reach that device through Claude Code, as the rest of the sessio
   test logs and results and its accessibility dumps in a `duo-tap.*` folder in your temporary folder.
 
 ## Development
+Report a problem as an issue in the repository, with the app, the pose and what the pane or `.duo/REPORT.md` showed
+(for a private app, describe it rather than attaching its files).
+
 The pane's hooks have tests in `hooks/register.test.tsx`; run them with `claude plugin test plugins/foldsmith`
 (Claude Code 2.1.308 or later) and check the manifest with `claude plugin validate plugins/foldsmith`. `skills/foldsmith-duo/` here is a copy of the repository's `skills/foldsmith-duo/`, made by
 `python3 scripts/sync-skill-references.py` from the repository root. Edit `SKILL.md` and `references/apple.md`,
