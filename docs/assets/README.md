@@ -49,7 +49,7 @@ check the pane again: zoom scales it too, and if it drops to one column, widen i
 | 4–9 s | Type `/foldsmith-start`, press Return | real time |
 | 9–35 s | The run: screens found, the matrix filling cell by cell (red, then blue, amber, green) | sped up 8–16×, caption "sped up"; cut the waiting |
 | 35–52 s | Pick the timeline in book: before and after side by side with the fold drawn; Next › once (Next defect, if a cell is still a finding) | real time |
-| 52–60 s | End card: "Foldsmith — measured layout patterns and hands-free migration for iPhone Duo, proven in every pose", `github.com/3nchiridion/foldsmith`, and "iPhone and iPhone Duo are trademarks of Apple Inc. Foldsmith is not affiliated with Apple." | still |
+| 52–60 s | End card: "Foldsmith — Claude Code skill and plugin for iPhone Duo: hands-free migration with measured layout patterns, proven in every pose on the simulator", `github.com/3nchiridion/foldsmith`, and "iPhone and iPhone Duo are trademarks of Apple Inc. Foldsmith is not affiliated with Apple." | still |
 
 The GIF is cropped to the pane (about 960 px wide, so 1:1): two seconds of the matrix filling, then 6–8 seconds of the
 before/after from 35–52 s, looped.

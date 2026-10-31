@@ -1,6 +1,6 @@
 # Foldsmith
 
-Measured layout patterns and hands-free migration for iPhone Duo, proven in every pose.
+Claude Code skill and plugin for iPhone Duo: hands-free migration with measured layout patterns, proven in every pose on the simulator.
 
 <!-- DEMO: 45–60s screen recording of /foldsmith-start on NetNewsWire → matrix fills → before/after on the fold. docs/assets/demo.gif linked to demo.mp4 -->
 

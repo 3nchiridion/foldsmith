@@ -4,13 +4,13 @@
     "name": "3nchiridion"
   },
   "metadata": {
-    "description": "Measured layout patterns and hands-free migration for iPhone Duo, proven in every pose."
+    "description": "Claude Code skill and plugin for iPhone Duo: hands-free migration with measured layout patterns, proven in every pose on the simulator."
   },
   "plugins": [
     {
       "name": "foldsmith",
       "source": "./plugins/foldsmith",
-      "description": "Measured layout patterns and hands-free migration for iPhone Duo, proven in every pose."
+      "description": "Claude Code skill and plugin for iPhone Duo: hands-free migration with measured layout patterns, proven in every pose on the simulator."
     }
   ]
 }
