@@ -5,6 +5,12 @@ Claude Code skill and plugin for iPhone Duo: hands-free migration with measured 
 <!-- DEMO: 45–60s screen recording of /foldsmith-start on NetNewsWire → matrix fills → before/after on the fold. docs/assets/demo.gif linked to demo.mp4 -->
 
 <p align="center">
+  <img src="docs/images/pane-wikipedia.png" alt="The Foldsmith pane in Claude Code following a migration of Wikipedia's iOS app: figures for 2 of 11 screens finished, 60 of 77 poses good, 17 defects and 6 left for you; a bar of verified, fine and defect cells; the search screen in Closed pose with its before and after shots side by side; and the screen by pose matrix with a pose icon heading each column">
+  <br>
+  <sub>The pane beside the chat, following the skill's hands-free run on Wikipedia's iOS app. Screens from the Wikipedia app (MIT); its articles and images belong to their authors.</sub>
+</p>
+
+<p align="center">
   <img src="https://developer.apple.com/iphone-duo/images/main_2x.png" alt="iPhone Duo partially folded in book pose, showing the Home Screen across both halves" width="600">
   <br>
   <sub>Image © Apple Inc. All rights reserved. Reproduced from Apple's <a href="https://developer.apple.com/iphone-duo/">iPhone Duo developer page</a> solely for the purpose of identification.</sub>
@@ -91,14 +97,9 @@ captures each in all seven Duo poses, applies the catalog's patterns, and proves
 It commits one screen at a time on a `duo-migration` branch, never pushes, and keeps `.duo/migration.json` current,
 so a later session resumes where it stopped.
 
-A pane beside the chat follows it: the live simulator, the screen × pose matrix, before and after for any screen and
-pose, and what is done and what is left.
-
-<p align="center">
-  <img src="docs/images/foldsmith-pane.svg" alt="The Foldsmith pane's matrix: four screens (Inbox, Message, Compose, Settings) against the seven iPhone Duo poses and Split View's half, each column headed by a pose icon, with cells colored for defect found, pattern proposed, migrated, verified, fine as is, or not captured" width="668">
-  <br>
-  <sub>The pane's matrix, from <code>/foldsmith demo</code> sample data. It follows the system's light or dark mode.</sub>
-</p>
+A pane beside the chat follows it, as at the top of this page: the run's figures, the screen × pose matrix, before
+and after for any screen and pose (enlarged to the pane's width on a press), the live simulator, and what is done and
+what is left. `/foldsmith demo` shows it with sample data.
 
 ### Requirements
 - macOS with Xcode 27.1 and the iOS 27.1 simulator runtime;
