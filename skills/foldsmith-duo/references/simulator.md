@@ -82,13 +82,37 @@ can still need more than the 150 s a screen gets to launch and reach its screen:
   $T/DuoTap.xcodeproj -scheme DuoTapUITests -destination "platform=iOS Simulator,id=$DUO_UDID" -derivedDataPath
   $T/build`, then `DUO_TAP_XCTESTRUN=$(ls $T/build/Build/Products/*.xctestrun)`.
 - `tools/progress.py`: every change to `.duo/migration.json` (`init`, `phase`, `screen`, `cell`, `todo`, `done`,
-  `log`, `show`; `--help` lists them), locked and written whole. `capture-app.sh` calls it for each shot of a `before`
-  or `after` capture, so the cells get their pictures as the capture goes. A wrong line comes out the same way it went
-  in: `todo --remove <prefix>`, `done --remove <prefix>`. `done <screen>: …` and `phase done` compare the detectors.md
-  in the before and after folders and refuse, changing nothing, while a pose clean before has a finding after or no
-  after capture; `check [<screen>…]` lists those (exit 1 if any), and `waive <screen> <pose,…> <id> "<why>"` records a
-  line the shot does not bear out on its cell (a pose not captured, or `no-rotate`, cannot be waived: no detector ran
-  there). Each capture removes a screen's snapshots in the poses it takes first, so a pose it skips is not captured.
+  `waive`, `issue`, `log`, `check`, `show`; `--help` lists them), locked and written whole. `capture-app.sh` calls it
+  for each shot of a `before` or `after` capture, so the cells get their pictures as the capture goes. A wrong line
+  comes out the same way it went in: `todo --remove <prefix>`, `done --remove <prefix>`. A done line names its screens
+  as the pane reads them: the words before its first `: `, split at commas and "and", each a screen's name or its first
+  words (`article and contents from Home: …`); one with no `: `, or a part that names no screen, is refused. `done
+  <screen>: …` and `phase done` refuse, changing nothing, while any of these is left on that screen (on any screen,
+  for `phase done`); `check [<screen>…]` lists them, then the open issues, regressions first, and exits 1 if anything
+  blocks (2 for a name that is no screen):
+  - a pose clean in the before folder's detectors.md that has a finding in the after folder's, or no after capture;
+  - a pose with findings before whose after cell has a class the before one did not (`<screen> book: T1 T5 before, T14
+    after (T14 is new)`): a new problem, not the old one fixed;
+  - a cell marked `unchanged` whose before and after snapshots (`<screen>-<pose>.json` beside the shots) differ in
+    layout: every element with a label or an identifier outside scrolling content and not a system element (the ones
+    `same-screen.py` ignores are ignored), as type, label or identifier, and frame in whole points, and the rows with
+    an identifier and no label of a list outside scrolling content (a sidebar's). Other rows of lists are not
+    compared: look at both shots of a list before you leave its cell `unchanged`. What moves on its own is not
+    counted: text that changes only its numbers in place (a clock, a relative date), the keyboard, and on a map the
+    pins at its edge and the card a pin opens. Mark the cell `verified` if it changed and is right, or `waive <screen>
+    <pose> unchanged "<why>"` where only other live content moved (a toast, content still loading, a feed's rows). A
+    cell with no snapshot to compare, or one that cannot be read, is noted, not counted: it proves nothing either way;
+  - an open issue marked as a regression.
+
+  `waive <screen> <pose,…> <id> "<why>"` records on its cell a detector line, or a new class, the shot does not bear
+  out (a pose not captured, or `no-rotate`, cannot be waived: no detector ran there). `issue add <screen>
+  <pose,…|all|inner|-> <high|medium|low> "<what happens>" [--regression] [--found-by detector|eye|review|test]
+  [--where <file:line>]` records what a review, a look or a test found that no detector table shows (`-` for no pose;
+  `--found-by` is `review` unless given) and prints its id (`I1`, `I2`, …, never reused); the screen is one the file
+  or the before table names (one the flows do not reach: `screen <name>` first). `issue fix <id> "<how>"` and `issue
+  wontfix <id> "<why>"` close it, and `wontfix` is refused for a regression (fix it, or revert the change that caused
+  it). `show` counts the open issues. Each capture removes a screen's snapshots in the poses it takes first, so a pose
+  it skips is not captured.
 - Both write to `.duo/captures/<name>/` in the current directory (`OUT=<dir>` to change it) and need `DUO_UDID` and
   `DUO_PY` (the path to `duo.py`).
 - `swift run --package-path tools/detect --scratch-path ~/Library/Caches/duo-detect duo-detect .duo/captures/<name>
@@ -100,6 +124,16 @@ can still need more than the 150 s a screen gets to launch and reach its screen:
   line says "the app was not in front" means it crashed or quit on the way there: the shot shows the Home Screen, and
   the simulator's crash report (`~/Library/Logs/DiagnosticReports/<app name>-<date>.ips`, moved to `Retired/` after a
   while) says where. A crash on the fold can be intermittent: one capture without it proves nothing.
+- `tools/routes.sh <app folder> [<type or file name> …]`: the route inventory a structural change's proposal in
+  `.duo/PLAN.md` carries, and the change takes through, every line of it: each push, stack replaced, pop,
+  presentation, SwiftUI navigation, state restoration, URL, notification and quick action in the app's Swift code, and
+  each walk of the hierarchy (`as? UINavigationController`, `selectedViewController`, `viewControllers`, …), as a
+  Markdown table (`| file:line | kind | code |`) with a count by kind. With names, only the files that mention one or
+  are so named (the types the change wraps or reroutes). It reads the code with `rg`, skipping tests and build folders;
+  in Claude Code, where `rg` is a shell function a script cannot call, it runs Claude Code's own
+  (`$CLAUDE_CODE_EXECPATH`) as `rg`. A SwiftUI app's moves are listed where it changes a `…path` (`append`,
+  `removeLast`, `= []`) or calls a router's `navigate(to:`; follow the rest of an app's own router by hand
+  (IceCubesApp presents its sheets by setting `routerPath.presentedSheet`).
 
 What the snapshot-based detectors can and cannot see: they read what accessibility exposes. A SwiftUI grid without
 accessible cells is measured from its text; decoration (a sheet's shadow) is ignored; content under a sheet is not in
@@ -111,4 +145,5 @@ overlay on the cover and inline on the inner display reads as lost (T7); a contr
 with it (T1 skips it). What accessibility does not show, no detector sees: text cut off at a pane's edge, words broken
 in a narrow column, an action moved into an overflow, a control's selected look (the fill Wikipedia's open-contents
 button lost, found only by counting its pixels against before). A pane's content stopping short of the fold is T14 only where a
-search field or a segmented control shows it; measure the rest against the pane in the snapshot.
+search field or a segmented control shows it; measure the rest against the pane in the snapshot. Record each of these
+you find with `progress.py issue add` (`--regression` when it is worse than before), so `done` and the report know it.

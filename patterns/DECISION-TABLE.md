@@ -6,6 +6,31 @@ A cell is valid only with a citation: `[apple-apps/<app>/<pose>]`, `[metrics:<po
 Tech-talk citations give the chapter's start time. Corpus findings never justify a cell; they are the defects the cells
 prevent (`patterns/TAXONOMY.md`). A cell with no citation reads `UNJUSTIFIED`, and its pattern cannot ship there.
 
+## Local and structural changes
+
+A cell names a pattern; the change that applies it to an app is one of two kinds. A hands-free run makes local changes
+only, and proposes structural ones (`skills/foldsmith-duo/SKILL.md`). Each pattern page says which is which for it.
+- **Local**: runs only where the window has a vertical bar or a reserved region (gated as the skill's step 5 says),
+  adds no container of the app's own, and changes no navigation. The sheet rule; Even grid's metrics; column widths or
+  placement inside a split the app already has (`UISplitViewController`, `NavigationSplitView`, a `TabView` sidebar);
+  bar items made `.verticalPreferred`, keeping their custom view, and text-only bar items given a symbol and a title,
+  gated where the window has a vertical bar (NetNewsWire's Add Feed Cancel and Add ran on every iOS 27.1 device: gate
+  it); the map rule; `Arrangement` gated where the window has a vertical bar or a reserved region.
+  Also local, though it runs on every device: a fix for a crash or lost state on the fold that puts the app on the path
+  it already takes on iPhone, with the same tabs and screens (IceCubesApp's logged-out tabs made plain `Tab`s, as on
+  iPhone; a gate would change the tabs at every fold, the rebuild that crashed). The report says what it changes on
+  iPad and Mac (IceCubesApp: Settings may show in the floating tab bar).
+- **Structural**: a container or split of the app's own where it has none, rerouted pushes or presentations,
+  Reflowing columns (a page rewritten), or anything else that changes behaviour where there is no fold: a custom view
+  turned into a titled item on every iOS 27.1 device, an `ArrangementView` with no gate. Three levels in two panes is
+  structural even inside a split the app has: a picked item is pushed onto the list pane, a stack it never was on
+  (NetNewsWire's feeds list moved onto the timeline column's stack on the fold).
+
+Of the screens the three runs ended with no finding, all but NetNewsWire's feeds (three levels) got a change of the
+local kinds above, two of them ungated (NetNewsWire's Add Feed bar items, which a gate makes local; IceCubesApp's tabs,
+the iPhone path); Wikipedia's regressions came from a container of its own and from toolbar changes on every iOS 27.1
+device ([`verification/runs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/)).
+
 ## Inputs
 
 **I1 Content relationship** (from the screen's model, not its current layout)

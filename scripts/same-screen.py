@@ -23,8 +23,9 @@ BARS = {"navigationBar", "toolbar", "tabBar"}
 MAP_ITEM = 100   # pt: the largest thing that lies on a map (a pin, a count, a label) rather than over it
 
 
-def signature(path):
-    d = json.load(open(path))
+def kept(d):
+    """The nodes of snapshot d that are not inside scrolling content, not on a map and not system elements, in order.
+    progress.py compares their frames to prove a cell marked fine as is."""
     nodes = d["nodes"]
     maps = [n["frame"] for n in nodes if n["type"] == "map"]
 
@@ -35,14 +36,21 @@ def signature(path):
 
     inside = [False] * len(nodes)
     in_bar = [False] * len(nodes)
-    sig = collections.Counter()
     for i, n in enumerate(nodes):
         parent = n["parent"]
         in_bar[i] = parent >= 0 and (in_bar[parent] or nodes[parent]["type"] in BARS)
         inside[i] = parent >= 0 and (inside[parent] or nodes[parent]["type"] in SCROLLING)
         inside[i] = inside[i] or (not in_bar[i] and n["type"] not in BARS and n["type"] != "map" and on_map(n["frame"]))
+        if not inside[i] and n["type"] not in SYSTEM:
+            yield n
+
+
+def signature(path):
+    d = json.load(open(path))
+    sig = collections.Counter()
+    for n in kept(d):
         name = n.get("label") or n.get("identifier")
-        if name and not inside[i] and n["type"] not in SYSTEM:
+        if name:
             sig[(n["type"], name)] += 1
     return [round(v) for v in d["window"]], sig
 

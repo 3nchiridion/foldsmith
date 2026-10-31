@@ -11,6 +11,7 @@ Copies of the Foldsmith repository's capture and detection tools, so the skill w
 | `capture-corpus-app.sh` | `scripts/capture-corpus-app.sh` |
 | `capture-corpus-flow.sh` | `scripts/capture-corpus-flow.sh` |
 | `progress.py` | `scripts/progress.py` |
+| `routes.sh` | `scripts/routes.sh` |
 | `same-screen.py` | `scripts/same-screen.py` |
 | `tap/` | `Tap/` (XcodeGen spec and the XCUITest runner; `xcodegen generate` makes the project) |
 | `detect/` | `Sources/DuoDetectors`, `Sources/duo-detect` (Package.swift generated) |

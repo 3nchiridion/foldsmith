@@ -41,8 +41,10 @@ jobs:
         run: swift test --package-path . 2>&1 | tail -50
       - name: Skill references and tools match the repository
         run: python3 scripts/sync-skill-references.py --check
-      - name: The progress file's regression check
-        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: The progress file's checks and the route inventory
+        run: |
+          command -v rg >/dev/null || brew install ripgrep >/dev/null   # test_routes.py skips without it
+          python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: The skill's bundled detectors build on their own
         run: swift build --package-path skills/foldsmith-duo/tools/detect 2>&1 | tail -5
       - name: Find Duo simulator

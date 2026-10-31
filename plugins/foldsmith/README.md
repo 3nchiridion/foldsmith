@@ -26,10 +26,15 @@ one, say) is left for you, with the reason; one that only needs some content get
 ## What one install brings
 - **The `foldsmith-duo` skill**: finds the app's screens, captures each one in all seven Duo poses, classifies it
   against Foldsmith's decision table, applies that pattern's reference implementation, and checks every pose with
-  before/after screenshots and the detectors. It never stops to ask; what it cannot do goes to its "left" list with
-  the reason. It commits one screen at a time on a `duo-migration` branch and never pushes.
+  before/after screenshots and the detectors. Hands-free it makes local fixes only: each runs only where the phone
+  has a fold, adds no container to the app and changes no navigation. A structural fix (a container where the app has
+  none, rerouted navigation, a change on every device) it proposes in `.duo/PLAN.md`, with the navigation routes it
+  would touch, and makes only when you pass `--structural`. It never stops to ask; what it cannot do goes to its
+  "left" list with the reason, and what a review or a look finds that no detector shows it records as an issue: an
+  open regression keeps its screen from done. It commits one screen at a time on a `duo-migration` branch and never
+  pushes.
 - **`/foldsmith-start`**: the one command to run in your app's folder. Run it again in a later session and it resumes from
-  where the last one stopped.
+  where the last one stopped; `/foldsmith-start --structural` also makes the structural changes it proposed.
 - **The pane** beside the chat, following `.duo/migration.json` (the skill rewrites it after every step). It finds the
   newest progress file under the session's folder by itself, and in the desktop app or VS Code offers an App picker
   when there are several (elsewhere, `/foldsmith watch <folder>` switches):
@@ -63,9 +68,10 @@ one, say) is left for you, with the reason; one that only needs some content get
   Ghostty; elsewhere the shot's description), Enlarge before, Enlarge after and Compare full size sit in one row, and
   the enlarged view is the capture itself as a terminal image.
 
-Commands: `/foldsmith-start [app folder]` runs or resumes the migration; `/foldsmith` opens the pane; `/foldsmith watch <folder>` follows
-an app in another folder (remembered per folder; `/foldsmith watch` alone goes back to the newest); `/foldsmith demo` shows sample
-data; `/foldsmith off` returns to the progress file.
+Commands: `/foldsmith-start [app folder] [--structural]` runs or resumes the migration (with `--structural`, the
+structural changes too); `/foldsmith` opens the pane; `/foldsmith watch <folder>` follows an app in another folder
+(remembered per folder; `/foldsmith watch` alone goes back to the newest); `/foldsmith demo` shows sample data;
+`/foldsmith off` returns to the progress file.
 
 ## Install
 From the Claude directory: add Foldsmith under Customize → Plugins → Discover on claude.ai, and it reaches Claude Code
@@ -162,7 +168,8 @@ shots included, reach that device through Claude Code, as the rest of the sessio
   at one fixed commit (`60cdda2f487434c9c3cd4dad9431e12a48ec1d04`) into `~/Library/Caches/duo-driver`, only when that
   commit is not already there, from that public repository. A `duo.py` you already have is used instead;
 - runs the detectors with `swift run duo-detect` from `tools/detect/` (no package dependencies), building into
-  `~/Library/Caches/duo-detect`; the static scans with `rg` (ripgrep); and its own scripts with `bash` and `python3`
+  `~/Library/Caches/duo-detect`; the static scans with `rg` (ripgrep), which also lists the app's navigation routes
+  for a plan (`tools/routes.sh`); and its own scripts with `bash` and `python3`
   (standard library only), which also use `perl` (for time limits), `sips` and `shasum`. The flow file it writes for
   each app (`.duo/flows/<app>.flow`) is run by `bash`: in a repository someone else wrote, read it before you resume a
   migration there, as you would a build script;
@@ -170,9 +177,10 @@ shots included, reach that device through Claude Code, as the rest of the sessio
   conversation, may start a fresh subagent to review a screen's diff and shots, and adopts the scene lifecycle with
   Apple's `app-resizability` skill when that is installed;
 - changes your app's code and commits each change on a `duo-migration` branch; it never pushes, opens no pull request
-  and merges nothing. It writes `.duo/` in your app's folder (the progress file, flows, reports and captures) and adds
-  the captures and its lock file to the repository's `.git/info/exclude`. Each capture also leaves its `xcodebuild`
-  test logs and results and its accessibility dumps in a `duo-tap.*` folder in your temporary folder.
+  and merges nothing. It writes `.duo/` in your app's folder (the progress file, flows, reports, the plan of proposed
+  structural changes and captures) and adds the captures and its lock file to the repository's `.git/info/exclude`.
+  Each capture also leaves its `xcodebuild` test logs and results and its accessibility dumps in a `duo-tap.*` folder
+  in your temporary folder.
 
 ## Development
 Report a problem as an issue in the repository, with the app, the pose and what the pane or `.duo/REPORT.md` showed

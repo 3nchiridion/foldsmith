@@ -19,7 +19,7 @@ Hand-written, condensed from raw/ with citations, and left alone here: apple.md,
 tools/ — the capture scripts, the tap runner and the detectors, copied verbatim, so an agent using the skill outside
 this repository captures and checks poses the same way (references/simulator.md says how):
   scripts/capture-app.sh, scripts/capture-corpus-app.sh, scripts/capture-corpus-flow.sh, scripts/progress.py,
-  scripts/same-screen.py                                       → tools/
+  scripts/routes.sh, scripts/same-screen.py                    → tools/
   Tap/project.yml, Tap/DuoTapUITests/                          → tools/tap/
   Sources/DuoDetectors/, Sources/duo-detect/                   → tools/detect/Sources/ (with a Package.swift of its own)
 
@@ -174,6 +174,7 @@ Copies of the Foldsmith repository's capture and detection tools, so the skill w
 | `capture-corpus-app.sh` | `scripts/capture-corpus-app.sh` |
 | `capture-corpus-flow.sh` | `scripts/capture-corpus-flow.sh` |
 | `progress.py` | `scripts/progress.py` |
+| `routes.sh` | `scripts/routes.sh` |
 | `same-screen.py` | `scripts/same-screen.py` |
 | `tap/` | `Tap/` (XcodeGen spec and the XCUITest runner; `xcodegen generate` makes the project) |
 | `detect/` | `Sources/DuoDetectors`, `Sources/duo-detect` (Package.swift generated) |
@@ -197,7 +198,8 @@ def plan():
 
     out["LICENSE"] = (ROOT / "LICENSE").read_bytes()
     out["tools/README.md"] = TOOLS_README
-    for script in ["capture-app.sh", "capture-corpus-app.sh", "capture-corpus-flow.sh", "progress.py", "same-screen.py"]:
+    for script in ["capture-app.sh", "capture-corpus-app.sh", "capture-corpus-flow.sh", "progress.py", "routes.sh",
+                   "same-screen.py"]:
         out[f"tools/{script}"] = (ROOT / "scripts" / script).read_bytes()
     out["tools/tap/project.yml"] = (ROOT / "Tap/project.yml").read_bytes()
     for f in sorted((ROOT / "Tap/DuoTapUITests").rglob("*.swift")):

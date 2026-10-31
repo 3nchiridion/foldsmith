@@ -96,8 +96,11 @@ and 6 low regressions and 2 incomplete fixes, none fixed. The detectors read any
 Install the `foldsmith` plugin, open your app's folder in Claude Code, and run `/foldsmith-start`. The bundled
 `foldsmith-duo` skill takes the whole app from audit to verified without stopping to ask: it finds the screens,
 captures each in all seven Duo poses, applies the catalog's patterns, and proves every pose with before/after shots.
-It commits one screen at a time on a `duo-migration` branch, never pushes, and keeps `.duo/migration.json` current,
-so a later session resumes where it stopped.
+Hands-free it makes local changes only, which run only where the phone has a fold, add no container and change no
+navigation; a structural one (a container where the app has none, rerouted navigation, a change on every device) it
+proposes in `.duo/PLAN.md` with the navigation routes it would touch, and makes when you run
+`/foldsmith-start --structural`. It commits one screen at a time on a `duo-migration` branch, never pushes, and keeps
+`.duo/migration.json` current, so a later session resumes where it stopped.
 
 A pane beside the chat follows it, as at the top of this page: the run's figures, the screen × pose matrix, before
 and after for any screen and pose (enlarged to the pane's width on a press), the live simulator, and what is done and
@@ -159,6 +162,8 @@ With Xcode 27.1 and xcodegen:
 - `swift run duo-detect <dir>`: the detectors on a folder of frame records or accessibility snapshots;
 - `python3 scripts/sync-skill-references.py --check`: the skill's generated references match their sources (run it
   without `--check` after editing `patterns/`, `Sources/` or `SKILL.md`);
+- `python3 -m unittest discover -s scripts -p 'test_*.py'`: the progress file's checks, and the route inventory where
+  `rg` is installed;
 - `cd Examples/Catalog && xcodegen generate && open Catalog.xcodeproj`, then run the catalog on the iPhone Duo
   simulator;
 - `gh workflow run ci.yml -f goldens=true`: G2, every config captured in every pose and compared with the goldens in
@@ -175,7 +180,7 @@ With Xcode 27.1 and xcodegen:
 | `plugins/foldsmith/` | the plugin: the skill, `/foldsmith-start`, and the pane |
 | `skills/foldsmith-duo/` | the skill on its own: `SKILL.md`, its references (generated from `patterns/`) and tools |
 | [foldsmith-evidence](https://github.com/3nchiridion/foldsmith-evidence) | the evidence, in a repository of its own: `verification/` (`matrices/`, the goldens; `oracle/`, against Apple's apps; `accessibility/`, the catalog read through XCTest; `runs/`, the three migrations; `ab/`, a blind A/B, set aside) and `raw/` (notes on Apple's talks and docs, SDK notes, measured metrics, screenshots of Apple's and the corpus apps, developer questions, the corpus manifest and defects) |
-| `scripts/` | capture (catalog, corpus apps, Apple apps), matrix compose and diff, the progress file, skill sync, redaction |
+| `scripts/` | capture (catalog, corpus apps, Apple apps), matrix compose and diff, the progress file, the route inventory for a structural plan (`routes.sh`), skill sync, redaction |
 | `Probe/`, `Tap/` | DuoProbe, which logged each pose's geometry; DuoTapUITests, which taps an app on the shut Duo and holds it while the host folds and shoots |
 | `docs/` | `history/` (the working log `STATUS.md`, `DEVIATIONS.md`, the first plan `MAC-PHASE.md`) and images (`images/matrices/`: each pattern's pose matrix, small) |
 | `.claude-plugin/` | `marketplace.json`: this repository as the Claude Code marketplace `foldsmith`, listing its one plugin `foldsmith` |
