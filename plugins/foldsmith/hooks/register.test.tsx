@@ -255,11 +255,11 @@ test('a progress file from a shared repository cannot make the pane open a link 
     ...JSON.parse(MIGRATED),
     driver: '/app/evil.py',
     screens: [
-      { name: 'Folders', cells: { book: { state: 'verified', before: '../../etc/secret.png', after: '/Users/me/elsewhere.png' } } },
+      { name: 'Folders', cells: { book: { state: 'verified', before: '../../etc/outside.png', after: '/Users/me/elsewhere.png' } } },
       { name: 'Note', cells: { book: { state: 'verified', before: '.duo/captures/Notes/before/linked.png' } } },
     ],
   })
-  const links = { '/app/.duo/REPORT.md': '/app/notes.command', '/app/.duo/captures/Notes/before/linked.png': '/etc/secret.png' }
+  const links = { '/app/.duo/REPORT.md': '/app/notes.command', '/app/.duo/captures/Notes/before/linked.png': '/etc/outside.png' }
   const runs = machine(on, { '/app/.duo/migration.json': status, '/app/.duo/REPORT.md': '# Report' }, () => 1, links)
   await $.session.start({ cwd: '/app', surface: 'desktop', isInteractive: true })
 
@@ -270,6 +270,6 @@ test('a progress file from a shared repository cannot make the pane open a link 
   await ui.unmount()
   const ran = runs.map(argv => argv.join(' '))
   expect(ran.filter(line => line.startsWith('/usr/bin/open'))).toEqual(['/usr/bin/open -R /app/.duo/captures'])
-  expect(ran.some(line => /evil\.py|\.\.|elsewhere|secret|linked/.test(line))).toBe(false)
+  expect(ran.some(line => /evil\.py|\.\.|elsewhere|outside|linked/.test(line))).toBe(false)
   expect(ran.every(line => line.startsWith('/'))).toBe(true)
 })

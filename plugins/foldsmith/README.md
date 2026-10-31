@@ -100,7 +100,7 @@ shots included, reach that device through Claude Code, as the rest of the sessio
   screen, which clears the app's data on the simulator. The app makes whatever network requests it normally makes;
 - fetches `duo.py` from [WhitenWhiten/iphone-duo-simulator-skill](https://github.com/WhitenWhiten/iphone-duo-simulator-skill)
   at one fixed commit (`60cdda2f487434c9c3cd4dad9431e12a48ec1d04`) into `~/Library/Caches/duo-driver`, only when that
-  commit is not already there, with no sign-in. A `duo.py` you already have is used instead;
+  commit is not already there, from that public repository. A `duo.py` you already have is used instead;
 - runs the detectors with `swift run duo-detect` from `tools/detect/` (no package dependencies), building into
   `~/Library/Caches/duo-detect`; the static scans with `rg` (ripgrep); and its own scripts with `bash` and `python3`
   (standard library only), which also use `perl` (for time limits), `sips` and `shasum`. The flow file it writes for

@@ -21,7 +21,7 @@ runs, reads and sends", gives every program and when it runs.
   simulator; to recover one that crash-loops it may shut it down and boot it again.
 - **Fetches `duo.py`** from [WhitenWhiten/iphone-duo-simulator-skill](https://github.com/WhitenWhiten/iphone-duo-simulator-skill)
   at one fixed commit (`60cdda2f487434c9c3cd4dad9431e12a48ec1d04`) into `~/Library/Caches/duo-driver`, only when it is
-  missing, with no sign-in.
+  missing, from that public repository.
 - **Runs the detectors** with `swift run duo-detect` from `tools/detect/` (no package dependencies), building into
   `~/Library/Caches/duo-detect`.
 - **Changes your app's code** and commits each change on a branch named `duo-migration` in your app's repository. It
