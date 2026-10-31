@@ -33,16 +33,35 @@ one, say) is left for you, with the reason; one that only needs some content get
 - **The pane** beside the chat, following `.duo/migration.json` (the skill rewrites it after every step). It finds the
   newest progress file under the session's folder by itself, and in the desktop app or VS Code offers an App picker
   when there are several (elsewhere, `/foldsmith watch <folder>` switches):
-  - the app, its folder and branch, and where the run stands (the phase, or Finished and what is left for you);
-  - the simulator, live: the panel that is drawing, every 4 seconds while the pane is on screen; Pause / Resume;
-  - the screen × pose matrix: hover a cell for its state and defect classes;
-  - the picked cell: its state, classes and the skill's reason, and before and after with the fold drawn (a red band
-    while the phone is bent, dashed when it lies flat); Previous, Next and Next defect step through the cells;
-  - what is done and what is left, kept in the progress file, so it survives the session;
-  - the activity, newest first;
-  - Resume migration, Open report and Show captures.
+  - the app, its folder and branch, where the run stands (the phase, or Finished and what is left for you), and
+    Resume migration, Open report and Show captures (the last two not on the phone: they open on the Mac);
+  - the figures: screens finished, poses good, defects by class (`T14 ×10 · T5 ×5`) with Inspect next, which goes to
+    the next defect, and what is left for you; under them a bar of every cell by state, with its legend;
+  - the picked cell, large: its state, pattern and defect classes (and any class waived, with the reason), every pose
+    as a button (keys 1 to 8), the screen picker (‹ Screen and Screen ›, keys `k` and `j`, on the phone, past 64
+    screens or with a name over 32 characters), Previous, Next and Next defect, before and after as large as the pane
+    allows, side by side while both keep a useful size, with the fold drawn (a blue band while the phone is bent,
+    dashed when it lies flat), and the skill's notes on that screen in full;
+  - Enlarge above each shot, and Compare full size where both draw larger than on the dashboard (not on the phone,
+    which offers Enlarge only where it draws the shot larger), draw the shot, or both, across the whole pane and never
+    smaller than on the dashboard, sharp: fitted to the pane's height or filling its width (`f`, desktop and VS Code;
+    the phone fills its width). The poses, Previous, Next and the screen buttons move through the cells without
+    leaving it, Open in Preview (desktop and VS Code) opens the capture itself, and ‹ Dashboard (`z`) goes back;
+  - the screen × pose matrix: a row per screen, its name a button that picks it (a name over 20 characters wraps
+    beside a View button), each cell its state or defect classes;
+  - what is left, each item in full with a button per screen it names, and what is done (behind Show done when the
+    pane's text budget runs short), kept in the progress file, so they survive the session;
+  - the simulator, live: the panel that is drawing, every 4 seconds while the pane is on screen and no shot is
+    enlarged, for a migration of up to 40 screens (above that it says the live view is off); Pause / Resume;
+  - the activity, newest first: five lines, then fifty more at a time, then a page at a time.
 
-  In a terminal, pictures draw where the terminal can show images (kitty, Ghostty, iTerm2 3.5+), and the matrix is text.
+  From 150 columns wide (not on the phone) the matrix sits beside the stage, and the shots keep the size a narrower
+  pane gives them: a landscape pair spans the pane below the figures, the picked cell and the matrix; a portrait pair
+  stays in the stage's column, the matrix and the notes beside it. No text is cut short: long lines wrap, and what
+  does not fit the pane's text budget waits behind a button (what is left and what is done a page at a time). In a
+  terminal the figures are one line, the matrix is text, pictures draw where the terminal shows images (kitty and
+  Ghostty; elsewhere the shot's description), Enlarge before, Enlarge after and Compare full size sit in one row, and
+  the enlarged view is the capture itself as a terminal image.
 
 Commands: `/foldsmith-start [app folder]` runs or resumes the migration; `/foldsmith` opens the pane; `/foldsmith watch <folder>` follows
 an app in another folder (remembered per folder; `/foldsmith watch` alone goes back to the newest); `/foldsmith demo` shows sample
@@ -83,8 +102,9 @@ is the one fetch of `duo.py` below, the app's own build and use, and your Claude
 - `session.start` registers the `/foldsmith` command, reads your home folder (`/usr/bin/printenv HOME`), makes its
   scratch folder (`mkdir -p ~/Library/Caches/foldsmith`), starts three timers that run for the whole session, and looks
   for progress files: every 1.5 seconds it checks the followed app's `.duo/migration.json` and reads it when it has
-  changed, every minute it looks for progress files again, and every 4 seconds, only while the pane is drawn on screen
-  and not paused, it takes a frame of the simulator;
+  changed (and, while a shot is enlarged on the desktop or in VS Code, whether its strips are cut), every minute it
+  looks for progress files again, and every 4 seconds, only while the pane is drawn on screen, not paused and no shot
+  is enlarged, for a migration of up to 40 screens, it takes a frame of the simulator;
 - `command.run`, for `/foldsmith` only, opens the pane: `demo` shows sample data, `off` goes back to the progress file,
   `watch <folder>` follows that folder and remembers the choice, and with nothing after it, it looks for progress files;
 - `ui.render` draws the pane.
@@ -103,18 +123,22 @@ full path in `/usr/bin` or `/bin`, with the paths and the simulator's ID filled 
 - for the live view, `python3 <duo.py> --udid <ID> shot --out ~/Library/Caches/foldsmith --name live`, where `duo.py`
   is only the one in `~/Library/Caches/duo-driver` or `~/.claude/skills/iphone-duo-simulator`, never a path named by a
   progress file or found in the project; without one, `xcrun simctl io <ID> screenshot ~/Library/Caches/foldsmith/live.png`;
-- `sips`, to make a shot a small JPEG in `~/Library/Caches/foldsmith` and read its size;
+- `sips`, to make a shot a JPEG small enough to draw in `~/Library/Caches/foldsmith` and read its size, and, when you
+  enlarge a shot on the desktop or in VS Code, to make a larger copy of it and of the other shot of that cell there
+  and cut each into strips (padding it with `-p`, cropping each strip with `-c`), each drawn as its own picture; a
+  cut that fails is not run again until the shot changes;
 - `open`, only when you press a button: Open report opens `.duo/REPORT.md` in your text editor and Show captures shows
   the `.duo/captures` folder in Finder, each only when it is a real file or folder in the app's folder and not a link;
-  Open before and Open after open that shot in Preview (`/System/Applications/Preview.app`, PNG and JPEG files only).
+  Open in Preview, in the enlarged view on the desktop and in VS Code, opens that shot in Preview
+  (`/System/Applications/Preview.app`, PNG and JPEG files only).
 
 It reads the `.duo/migration.json` of each app folder it finds or remembers, and the before and after shots those files
 name, only inside that app's folder (a `.duo` folder or progress file that is a link, or a shot path that leads out by
 `..` or through a link, is ignored), checks that
 `.duo/REPORT.md` exists before offering Open report, and reads its own pictures in `~/Library/Caches/foldsmith`, which
-it draws inside the pane as embedded images. It writes only those pictures, and in Claude Code's plugin storage the
-paths of up to eight app folders where it found a progress file and, for each session folder, the app you chose to
-follow (with `/foldsmith watch`, the App picker or a Migrations found button). It changes nothing in your app and makes
+it draws inside the pane as embedded images. It writes only those pictures (the enlarged copies and their strips among
+them), and in Claude Code's plugin storage the paths of up to eight app folders where it found a progress file and, for
+each session folder, the app you chose to follow (with `/foldsmith watch`, the App picker or a Migrations found button). It changes nothing in your app and makes
 no network request: the `http://www.w3.org/2000/svg` in its code is the name of the SVG format, not an address. Its
 Start migration, Resume migration and Restart if stopped buttons put `/foldsmith-start` in the prompt for you to send;
 they do not send it. When you follow the session from the Claude mobile app, the pane's drawings, simulator frames and

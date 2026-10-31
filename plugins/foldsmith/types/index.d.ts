@@ -12,7 +12,7 @@ export type CellState = 'pending' | 'unchanged' | 'finding' | 'proposed' | 'migr
 
 // `before` and `after`: shots of this screen in this pose, relative to the app's repo. `finding`: every class the
 // audit saw there, space-separated (`T14 T7`); `label` is the one the matrix shows. `waived`: class id → why the shot
-// does not bear out that detector line after the migration (`progress.py waive`); the pane does not show it.
+// does not bear out that detector line after the migration (`progress.py waive`); the pane shows it with the cell.
 export type Cell = {
   state: CellState
   label?: string
@@ -51,7 +51,14 @@ export type Known = { root: string; app: string; mtime: number }
 // What the pane knows about the followed folder besides the progress file.
 export type Folder = { branch: string | null; report: boolean }
 
-export type Expanded = { notes: boolean; log: boolean }
+// The activity lines drawn: `count` from the `start`th newest.
+export type LogView = { start: number; count: number }
+
+export type ZoomSide = 'before' | 'after' | 'both'
+
+// The enlarged view: one shot, or both, drawn across the pane in place of the dashboard. `sharp`: it was opened on the
+// desktop or in VS Code, which draw it from strips cut for it; elsewhere it draws the pictures it already has.
+export type Zoom = { side: ZoomSide; sharp: boolean }
 
 declare module 'claude-code' {
   interface PluginState {
@@ -64,10 +71,18 @@ declare module 'claude-code' {
       liveNote: string | null
       paused: boolean
       pick: Pick | null
-      pictures: { [file: string]: Picture }
+      // The picked cell's shots by file: a picture, or null when none was small enough to draw.
+      pictures: { [file: string]: Picture | null }
       known: Known[]
       folderInfo: Folder
-      expanded: Expanded
+      logView: LogView
+      doneShown: boolean
+      // The first item drawn of what is done and of what is left, when they are drawn a page at a time.
+      doneStart: number
+      leftStart: number
+      zoom: Zoom | null
+      zoomFit: boolean
+      zoomRev: number
     }
   }
 }
