@@ -94,12 +94,12 @@ Install it one way, not both: Claude Code loads only one copy of a plugin, and i
 `/foldsmith demo` shows the pane with sample data. In your app's folder, `/foldsmith-start` starts the migration; in a
 later session, running it again resumes from where it stopped. A run takes hours, since every screen is captured in
 every pose before and after its change: IceCubesApp's five screens took about two. Results depend on the app.
-IceCubesApp's five public screens and NetNewsWire's five ended with no finding in any pose: 8 and 19 cells fixed and
-verified, the rest fine as they were (NetNewsWire's feeds screen after a follow-up on a design call made by Foldsmith's
-owner; a detector added after that run finds its Reader View button beside the vertical bar in 8 cells, not fixed; the
-rest of IceCubesApp was not run). Wikipedia's run finished 2 of its 11 screens and did not pass review: its last check
-found 2 medium and 6 low regressions and 2 incomplete fixes, none fixed. When a run ends, read `.duo/REPORT.md` and
-review the commits on `duo-migration` before you merge them; Foldsmith never merges.
+IceCubesApp's five public screens and NetNewsWire's five ended with no detector finding in any pose (8 and 19 cells
+fixed and verified, the rest fine as they were); an independent review afterwards confirmed 7 items in IceCubesApp,
+none a regression (the rest of the app was not run), and 15 in NetNewsWire, 9 of them regressions, mostly from a
+three-level change a hands-free run now proposes instead of making. Wikipedia's run finished 2 of its 11 screens and
+did not pass review: its last check found 2 medium and 6 low regressions and 2 incomplete fixes. None is fixed. When a
+run ends, read `.duo/REPORT.md` and review the commits on `duo-migration` before you merge them; Foldsmith never merges.
 
 ## What it runs, reads and sends
 Everything runs on your Mac, as you. The pane's and the skill's own code send nothing anywhere. What reaches the network
