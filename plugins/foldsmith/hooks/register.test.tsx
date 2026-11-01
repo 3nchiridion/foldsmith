@@ -114,15 +114,20 @@ function machine(
   on('fs.exists', (_, e) => ({ value: e.path in files || e.path.endsWith('.png') }))
   const real = (path: string) =>
     links[path] ?? `/${path.split('/').reduce((parts: string[], part) => (part === '..' ? parts.slice(0, -1) : part && part !== '.' ? [...parts, part] : parts), []).join('/')}`
-  on('fs.stat', (_, e) => ({
-    value: {
-      kind: /\/(\.duo|captures)$/.test(e.path) ? 'dir' : 'file',
-      size: 10,
-      mtimeMs: mtime(e.path),
-      isLink: e.path in links,
-      ...(e.resolve ? { realPath: real(e.path) } : {}),
-    },
-  }))
+  // Every other path is there; a capture's lock only when the test lists it, as a file or a link.
+  on('fs.stat', (_, e) =>
+    e.path.endsWith('/.capture.lock') && !(e.path in files) && !(e.path in links)
+      ? { deny: 'no such file' }
+      : {
+          value: {
+            kind: /\/(\.duo|captures)$/.test(e.path) ? 'dir' : 'file',
+            size: 10,
+            mtimeMs: mtime(e.path),
+            isLink: e.path in links,
+            ...(e.resolve ? { realPath: real(e.path) } : {}),
+          },
+        },
+  )
   on('fs.read', (_, e) => {
     if (e.as !== 'bytes') return { value: files[e.path] ?? '' }
     const n = pictures.bytes?.(e.path)
@@ -1223,6 +1228,33 @@ test('the live view runs only for a migration of up to 40 screens, and never whi
   expect(await more.find({ type: 'Text', text: /^Live view off for migrations of more than 40 screens$/ })).toBeDefined()
   expect(await more.find({ key: 'live' })).toBeUndefined()
   await more.unmount()
+})
+
+test("the live view runs nothing while a capture holds the folder's lock, and a link there is no lock", async ($, on) => {
+  const clock = mock.clock(on)
+  const files: Files = { '/app/.duo/migration.json': SEVEN, '/app/.duo/.capture.lock': 'pid 4242\n', '/linked/.duo/migration.json': SEVEN }
+  const runs = machine(on, files, () => 1, { '/linked/.duo/.capture.lock': '/elsewhere/lock' }, { clock: true, duo: true, shown: true })
+  on('command.run', () => ({ text: '' }))
+  await $.session.start({ cwd: '/app', surface: 'desktop', isInteractive: true })
+  const simulator = () => runs.filter(argv => argv.includes('simctl') || argv.some(arg => arg.endsWith('duo.py'))).length
+
+  const ui = await $.ui.mount({ ...at(100), surface: 'desktop' })
+  await clock.advance(8000)
+  expect(simulator()).toBe(0)
+  expect(await ui.find({ type: 'Text', text: /^waiting while a capture runs$/ })).toBeDefined()
+  // The capture ends and takes its lock with it: the next tick shoots the simulator.
+  delete files['/app/.duo/.capture.lock']
+  await clock.advance(4000)
+  expect(runs.filter(argv => argv.includes('screenshot')).length).toBe(1)
+  expect(await ui.find({ type: 'Text', text: /^waiting while a capture runs$/ })).toBeUndefined()
+  await ui.unmount()
+
+  // A lock that is a link, which the app's repository could carry, does not stop the live view.
+  await $.command.run({ command: 'foldsmith', args: 'watch /linked', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 100 } })
+  const linked = await $.ui.mount({ ...at(100), surface: 'desktop' })
+  await clock.advance(4000)
+  expect(runs.filter(argv => argv.includes('screenshot')).length).toBe(2)
+  await linked.unmount()
 })
 
 test('sixty-four screens of defects in every pose, with long notes, stay inside the text budget', async ($, on) => {

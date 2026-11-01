@@ -1,6 +1,11 @@
 build/
 *.xcodeproj
 !Probe/project.yml
+# The tap runner's project is committed (made by xcodegen from Tap/project.yml; CI checks it matches), and so are its
+# copies in the skill and the plugin, so a person builds it with xcodebuild alone
+!DuoTap.xcodeproj/
+# ...but not what Xcode adds to it when it opens or builds it (CI compares the project with xcodegen's)
+IDEWorkspaceChecks.plist
 .build/
 DerivedData/
 *.png.tmp

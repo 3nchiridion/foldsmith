@@ -37,6 +37,8 @@ of the file or the before table, is refused too. The checks:
     its cell), or where no detector ran after (not captured, or no-rotate: neither can be waived);
   - a pose that had findings before where the after capture has a class the before one did not (not waived on its
     cell): T1 T5 before and T14 after is a new problem, not the old one fixed;
+  - a pose not captured before (n/a in the before table: a skipped cell) that has a finding after (not waived on its
+    cell): nothing tells it from a regression until the pose is captured into before;
   - a cell marked `unchanged` whose before and after accessibility snapshots (the <screen>-<pose>.json the tap runner
     writes beside each shot) differ: every element with a label or an identifier outside scrolling content and not a
     system element (same-screen.py's exclusions), as type, label or identifier, and frame in whole points, the rows
@@ -174,6 +176,13 @@ def regressions(m, repo, names=None):
         for pose, words in cells.items():
             now = after.get(key, (name, {}))[1].get(pose, ["n/a"])
             mine = waived.get(key, {}).get(pose, {})
+            if words in ([], ["n/a"]):
+                # Not captured before (a skipped cell): nothing tells an after finding there from a regression.
+                left = [w for w in now if w not in NOT_CLASSES and w not in mine]
+                if left:
+                    found.append(f"{name} {pose}: not captured before, {' '.join(left)} after (capture the pose into "
+                                 "before from the commit the migration started from, to tell whether it is new)")
+                continue
             if words != ["·"]:
                 new = [w for w in now if w not in NOT_CLASSES and w not in words and w not in mine]
                 if new and any(w not in NOT_CLASSES for w in words):

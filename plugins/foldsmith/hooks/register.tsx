@@ -17,6 +17,8 @@ import type { Cell, CellState, Folder, Known, LogView, Migration, Phase, Pick, P
 
 // The skill writes this file at every step; the pane only reads it.
 const STATUS_FILE = '.duo/migration.json'
+// A capture (tools/capture-app.sh) holds this file while it drives the simulator; the live view waits while it is there.
+const CAPTURE_LOCK = '.duo/.capture.lock'
 const PANE = 'foldsmith'
 const TITLE = 'Foldsmith'
 // The SVG namespace, the only URL in this file: a name, not an address the pane contacts.
@@ -1232,8 +1234,9 @@ async function findDuo($: EngineInterface, named?: string): Promise<string | nul
   }
 }
 
-// The duo.py the pane runs for the live view: only one in the user's own folders, where the skill fetches it, never a
-// path from a progress file or the project, which anyone who shares a repository can write.
+// The duo.py the pane runs for the live view: only one in the user's own folders (an earlier skill's fetch, or the
+// upstream skill), never a path from a progress file or the project, which anyone who shares a repository can write.
+// The skill now bundles its own driver and fills neither, so without one the live view uses simctl io screenshot.
 async function findDriver($: EngineInterface): Promise<string | null> {
   if (!home) return null
   for (const path of [`${home}/Library/Caches/duo-driver/scripts/duo.py`, `${home}/.claude/skills/iphone-duo-simulator/scripts/duo.py`])
@@ -1257,7 +1260,9 @@ async function openDuo($: EngineInterface, base: string, name: 'REPORT.md' | 'ca
 }
 
 // One frame of the simulator: the panel that is drawing (through duo.py when it is there), made small. Only while the
-// pane is on screen, not paused, not enlarged, and the migration small enough to draw it.
+// pane is on screen, not paused, not enlarged, and the migration small enough to draw it. Never beside a capture: while
+// the followed folder holds the capture's lock (a real file, not a link) the pane runs nothing, so no duo.py of its own
+// shoots the simulator while the capture folds it.
 async function liveTick($: EngineInterface) {
   if (liveBusy || !scratch || (await read($, source)) !== 'file' || (await read($, paused)) || (await read($, zoom))) return
   const m = await read($, migration)
@@ -1266,6 +1271,11 @@ async function liveTick($: EngineInterface) {
   if (!pane || !pane.isPlaced || !pane.isShown) return
   liveBusy = true
   try {
+    const base = await folder($)
+    if (await isReal($, [[`${base}/.duo`, 'dir'], [`${base}/${CAPTURE_LOCK}`, 'file']])) {
+      await update($, liveNote, () => 'waiting while a capture runs')
+      return
+    }
     const udid = await findDuo($, m.simulator)
     if (!udid) {
       await update($, liveNote, () => 'no booted iPhone Duo simulator')

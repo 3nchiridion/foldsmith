@@ -92,9 +92,15 @@ pattern's shape but break those, so the run did not build them (not measured her
 - Move the article's bars into the vertical bar: symbols with a title, or custom views set to `.verticalPreferred`
   (T10; a custom-view toolbar can vanish in book, T7). Choose with `visibilityPriority` which actions stay in the bar
   when it is short (the cover, turned) and check the rest in its overflow.
-- Check the page at the pane's width with everything the article shows beside its text: Wikipedia's inline contents
-  left the text clipped at the edge of the 372 pt pane, a regression the review caught; in that pane the contents now
-  open as the app's overlay and the article keeps the whole pane (Fold-aligned split, "UIKit without a split view").
+- Check the page at the pane's width with everything the article shows beside its text: Wikipedia's inline contents,
+  laid out for the window's regular width, broke words mid-word and left the text clipped at the edge of the 372 pt
+  pane, a regression the review caught. Its first fix, the overlay the app uses on narrow screens, covered the list and
+  blurred the article, and the next review counted it worse than before. What holds: the contents take the list pane,
+  in their side-column form, beside the article, which keeps the whole detail pane, and go back to the overlay only on
+  the outer display, when the phone closes (Fold-aligned split, "UIKit without a split view"). Hide the list they
+  cover from accessibility, replace them when the article in the detail pane changes, and read the app's "contents
+  visible" setting for a new article only: read on every entry into the pane, it opened Wikipedia's contents on every
+  unfold.
 - Where the article opens full-screen with no list (Wikipedia from Home or Places) it still crosses the fold: T5,
   left in `todo` until columns can keep those features.
 

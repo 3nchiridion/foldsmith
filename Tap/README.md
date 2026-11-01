@@ -11,12 +11,20 @@ Why not Xcode's own device-interaction tools: they answer through Xcode's agent 
 user to approve the agent per Xcode launch and per connection, and each scripted command is a new connection.
 
 ## Build once
+`DuoTap.xcodeproj` is committed, so `xcodebuild` alone builds it (the skill's copy is `tools/tap/`):
 ```sh
-cd Tap && xcodegen generate
+cd Tap
 xcodebuild build-for-testing -project DuoTap.xcodeproj -scheme DuoTapUITests \
   -destination "platform=iOS Simulator,id=$DUO_UDID" -derivedDataPath build
 ls build/Build/Products/*.xctestrun
 ```
+The project is made from `project.yml` by XcodeGen, the version in `.xcodegen-version` (2.45.3). After changing
+`project.yml`, or adding or removing a file in `DuoTapUITests/` (editing one needs nothing), run `xcodegen generate`
+here with that version and `python3 scripts/sync-skill-references.py`, and commit the project with them: CI
+regenerates it and fails when the committed one differs. A CI image whose xcodegen is another version skips that check with a
+warning, since a new XcodeGen can change what it writes (a scheme's defaults) with no change here; to move to it, update
+`.xcodegen-version` and regenerate in the same commit. What Xcode adds when it opens or builds the project
+(`xcuserdata/`, `IDEWorkspaceChecks.plist`, an empty `xcshareddata/swiftpm/`) is ignored by git and by the check.
 Steps in `DUO_TAPS` are separated by `;`. A plain step taps by label or identifier (exact, else a case-insensitive
 substring of a label). `type:<text>` types into the focused field, `springboard:<label>` taps a button of a system
 alert if one is up (permission prompts, "Open in …?"), `try:<label>` taps only if the element is there,

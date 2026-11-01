@@ -279,8 +279,15 @@ class NewClasses(Run):
         self.cmd_ok("waive", "inbox", "book", "T7", "the overlay has Close on the cover")
         self.assertEqual(self.cmd("check").stdout.strip(), "inbox book: T1 before, T1 T7 T14 after (T14 is new)")
 
-    def test_a_pose_not_captured_before_has_nothing_to_compare(self):
-        self.tables(rows("before", inbox="·,·,n/a,no-rotate,·,·,·"), rows("after", inbox="·,·,T14,T5,·,·,·"))
+    def test_a_pose_not_captured_before_blocks_only_a_finding_after(self):
+        # no-rotate before is a captured finding (the app kept the other orientation); n/a before is a skipped cell,
+        # so a finding after there cannot be told from a regression.
+        self.tables(rows("before", inbox="·,·,n/a,no-rotate,n/a,·,·"), rows("after", inbox="·,·,T14,T5,·,·,·"))
+        self.assertEqual(self.cmd("check").stdout.strip().splitlines()[0],
+                         "inbox book: not captured before, T14 after (capture the pose into before from the commit "
+                         "the migration started from, to tell whether it is new)")
+        self.assertNotEqual(self.cmd("done", "inbox: split").returncode, 0)
+        self.cmd_ok("waive", "inbox", "book", "T14", "the bar's items sit beside the fold, not on it")
         self.cmd_ok("done", "inbox: split")
 
 

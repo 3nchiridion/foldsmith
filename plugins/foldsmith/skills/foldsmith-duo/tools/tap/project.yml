@@ -1,4 +1,5 @@
-# XcodeGen spec. On the Mac: `cd Tap && xcodegen generate`
+# XcodeGen spec for DuoTap.xcodeproj, which is committed: xcodebuild alone builds the runner. Regenerate it only in the
+# Foldsmith repository (cd Tap && xcodegen generate, with the version in Tap/.xcodegen-version; CI checks the two match).
 name: DuoTap
 options:
   bundleIdPrefix: dev.enchiridion.duopatterns

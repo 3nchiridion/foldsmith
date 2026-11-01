@@ -2,16 +2,19 @@
 
 # tools/
 
-Copies of the Foldsmith repository's capture and detection tools, so the skill works outside it. How to use them:
-`../references/simulator.md`.
+Copies of the Foldsmith repository's preflight, capture and detection tools and the simulator driver, so the skill works
+outside it and downloads nothing. How to use them: `../references/simulator.md`.
 
 | Here | Repository source |
 |---|---|
+| `appstore.py` | `scripts/appstore.py` (the App Store's iPhone Duo screenshots from the captures) |
 | `capture-app.sh` | `scripts/capture-app.sh` |
 | `capture-corpus-app.sh` | `scripts/capture-corpus-app.sh` |
 | `capture-corpus-flow.sh` | `scripts/capture-corpus-flow.sh` |
+| `preflight.sh` | `scripts/preflight.sh` (checks the Mac, writes the app's `.duo/env`) |
 | `progress.py` | `scripts/progress.py` |
 | `routes.sh` | `scripts/routes.sh` |
 | `same-screen.py` | `scripts/same-screen.py` |
-| `tap/` | `Tap/` (XcodeGen spec and the XCUITest runner; `xcodegen generate` makes the project) |
+| `driver/` | `third_party/duo-driver/` (`duo.py` and `duo_fold.c`, MIT; upstream and commit in its README) |
+| `tap/` | `Tap/` (the XCUITest runner, its XcodeGen spec and the project made from it: `xcodebuild` builds it) |
 | `detect/` | `Sources/DuoDetectors`, `Sources/duo-detect` (Package.swift generated) |
