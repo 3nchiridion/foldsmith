@@ -3,8 +3,9 @@
 Foldsmith adapts an existing iOS app to iPhone Duo, Apple's foldable, hands-free on your Mac. It finds the app's
 screens, captures each one in all seven poses on the simulator, applies a measured layout pattern where a screen needs
 one, and checks every pose again with before and after shots. It commits each change on a `duo-migration` branch in
-your app's repository and never pushes; a pane beside the chat shows the run as it goes. It can also audit an app
-without changing it, and export the App Store's iPhone Duo screenshots from its captures.
+your app's repository, app code only (its working folder `.duo/` is never committed), and never pushes; a pane beside
+the chat shows the run as it goes. It can also audit an app without changing it, review a migration independently in
+a new session, and export the App Store's iPhone Duo screenshots from its captures.
 
 ## Requirements
 Foldsmith runs in Claude Code (the terminal, an IDE extension or the desktop app's Code tab) on a Mac, since it builds
@@ -19,7 +20,8 @@ your app and drives the simulator:
 - 5 GB free on the home volume, 10 to be safe;
 - Claude Code 2.1.308 or later (`claude update`; 2.1.236 and older reject the plugin's hooks);
 - your app's source (SwiftUI or UIKit) in a git repository, building for the simulator with Xcode 27.1, with nothing
-  uncommitted outside `.duo/` before you start.
+  uncommitted outside `.duo/` before you start, since the run commits on a branch. `.duo/` is kept out of git
+  (`.git/info/exclude`); `git clean -fdx` deletes it, the progress file with it.
 
 Nothing else is installed or downloaded: no xcodegen (the tap runner's Xcode project is committed and `xcodebuild`
 builds it), the simulator driver ships with the skill, and the App Store export uses macOS's built-in `sips`. Both
@@ -37,16 +39,22 @@ reinstalling the app. Their shots hold your own content and stay in `.duo/captur
 ## What one install brings
 - **The `foldsmith-duo` skill**: finds the app's screens, captures each one in all seven Duo poses, classifies it
   against Foldsmith's decision table, applies that pattern's reference implementation, and checks every pose with
-  before/after screenshots and the detectors. Hands-free it makes local fixes only: each runs only where the phone
-  has a fold, adds no container to the app and changes no navigation. A structural fix (a container where the app has
+  before/after screenshots and the detectors. Hands-free it makes local fixes only: each runs only where the phone has
+  a fold, adds no container to the app and changes no navigation. A structural fix (a container where the app has
   none, rerouted navigation, a change on every device) it proposes in `.duo/PLAN.md`, with the navigation routes it
   would touch, and makes only when you pass `--structural`. It never stops to ask; what it cannot do goes to its
   "left" list with the reason, and what a review or a look finds that no detector shows it records as an issue: an
-  open regression keeps its screen from done. It commits one screen at a time on a `duo-migration` branch and never
-  pushes. It also audits an app without changing it, and exports the App Store's iPhone Duo screenshots from the
-  captures: per screen, one shot for each size App Store Connect lists for iPhone Duo (the outer display 1398 × 2034
-  and 2034 × 1398, the inner display 2007 × 2853 and 2853 × 2007), only from cells verified or fine as they were, with
-  a clean detector table and no open issue in that pose, flattened to JPEG with no alpha channel and never resized.
+  open regression keeps its screen from done, and so do a control gone with no record of where it went, a `verified`
+  cell that keeps its old finding, a cited commit not on the branch and an after shot from older code; the run does
+  not finish without an independent review on record (or a record of why none could be started). It reads the
+  project's contribution rules first and commits in the project's style, one screen at a time, on its own
+  `duo-migration` branch (`git switch -c duo-migration --no-track`), app code only, so the branch can become a pull
+  request; it never pushes and opens none. It checks that the branch still builds with the Xcode the project's CI uses
+  (`tools/sdkguard.py`: every iOS 27 API and Foldsmith reference type inside `#if compiler(>=6.4)`). It also audits an
+  app without changing it, and exports the App Store's iPhone Duo screenshots from the captures: per screen, one shot
+  for each size App Store Connect lists for iPhone Duo (the outer display 1398 × 2034 and 2034 × 1398, the inner
+  display 2007 × 2853 and 2853 × 2007), only from cells verified or fine as they were, with a clean detector table and
+  no open issue in that pose, flattened to JPEG with no alpha channel and never resized.
 - **`/foldsmith-audit`**: what your app needs on the Duo, changing nothing. It runs the preflight, captures every screen
   in every pose, runs the detectors, looks at every shot and classifies each screen, then writes `.duo/audit.md` (the
   classes per screen and pose, the classification and why) and `.duo/PLAN.md` (per screen, the pattern and the fix,
@@ -57,6 +65,10 @@ reinstalling the app. Their shots hold your own content and stay in `.duo/captur
   progress file or from where the last session stopped; after you have logged in on the simulator yourself, it checks
   the screens that needed your own login again. `/foldsmith-start --structural` also makes the structural changes it
   proposed.
+- **`/foldsmith-review`**: an independent review of the migration, in a new session: the diff, the captures and the
+  code against the skill's `references/review.md`, the run's own report read last. It records confirmed findings as
+  issues and the review in the progress file, and appends `## Independent review (<date>)` to `.duo/REPORT.md`; it
+  changes no code and commits nothing. With a regression recorded, `/foldsmith-start` resumes and fixes it.
 - **The pane** beside the chat, following `.duo/migration.json` (the skill rewrites it after every step). It finds the
   newest progress file under the session's folder by itself, and in the desktop app or VS Code offers an App picker
   when there are several (elsewhere, `/foldsmith watch <folder>` switches):
@@ -92,10 +104,10 @@ reinstalling the app. Their shots hold your own content and stay in `.duo/captur
   the enlarged view is the capture itself as a terminal image.
 
 Commands: `/foldsmith-audit [app folder]` audits the app without changing it; `/foldsmith-start [app folder]
-[--structural]` runs or resumes the migration (with `--structural`, the structural changes too); `/foldsmith` opens the
-pane; `/foldsmith watch <folder>` follows an app in another folder
-(remembered per folder; `/foldsmith watch` alone goes back to the newest); `/foldsmith demo` shows sample data;
-`/foldsmith off` returns to the progress file.
+[--structural]` runs or resumes the migration (with `--structural`, the structural changes too); `/foldsmith-review
+[app folder]` reviews a migration independently (in a new session), changing no code; `/foldsmith` opens the pane;
+`/foldsmith watch <folder>` follows an app in another folder (remembered per folder; `/foldsmith watch` alone goes
+back to the newest); `/foldsmith demo` shows sample data; `/foldsmith off` returns to the progress file.
 
 ## Install
 From the Claude directory: add Foldsmith under Customize → Plugins → Discover on claude.ai, and it reaches Claude Code
@@ -126,6 +138,8 @@ none a regression (the rest of the app was not run), and 15 in NetNewsWire, 9 of
 three-level change a hands-free run now proposes instead of making. Wikipedia's run finished 2 of its 11 screens and
 did not pass review: its last check found 2 medium and 6 low regressions and 2 incomplete fixes. None is fixed. When a
 run ends, read `.duo/REPORT.md` and review the commits on `duo-migration` before you merge them; Foldsmith never merges.
+If the run could not start its own independent review (its report says so), run `/foldsmith-review` in a new session
+first.
 
 ## What it runs, reads and sends
 Everything runs on your Mac, as you. The pane's and the skill's own code send nothing anywhere, and the skill downloads
@@ -191,10 +205,19 @@ shots included, reach that device through Claude Code, as the rest of the sessio
   selected one), the versions of `python3`, `rg` and Claude Code (`$CLAUDE_CODE_EXECPATH --version`, else `claude
   --version`), `df -Pk ~`, `git rev-parse`, `git status`, `git branch` and `git check-ignore` in the app, the
   `simulator` of the app's `.duo/migration.json`, the app's earlier `.duo/env` (read as text, never run), and the tap
-  runner's `.xctestrun` in `~/Library/Caches/duo-tap/build`. It installs, creates, renames and boots nothing, and
-  writes only `<app>/.duo/env` (the simulator's ID and the paths of the driver and the tap runner) and one line in the
-  repository's `.git/info/exclude`, `/.duo/env` (after the app folder's path, when the app is not at the repository's
-  root);
+  runner's `.xctestrun` in `~/Library/Caches/duo-tap/build`, and runs the read-only `git ls-files`, `git for-each-ref`,
+  `git show-ref` and `git rev-parse` (files already tracked under `.duo/`, a remote `duo-migration` branch, an upstream
+  on a local one) and `tools/sdkguard.py --ci-only` (below). It installs, creates, renames and boots nothing, and writes
+  only `<app>/.duo/env` (the simulator's ID and the paths of the driver and the tap runner) and one line in the
+  repository's `.git/info/exclude`, `/.duo/*` (after the app folder's path, when the app is not at the repository's
+  root), which keeps everything in `.duo/` out of git;
+- checks the project's CI toolchain with `tools/sdkguard.py`, which reads the CI files (`.github/workflows/*.yml` and
+  `*.yaml`, `.github/actions/**/action.yml`, the `.sh` scripts a workflow runs, `.xcode-version`,
+  `.circleci/config.yml`, `bitrise.yml`, `.gitlab-ci.yml`, `.travis.yml`, `fastlane/Fastfile`, `Makefile`,
+  `ci_scripts/`), each `/Applications/Xcode*.app`'s `Contents/version.plist` and the changed Swift files, and runs the
+  read-only `git rev-parse`, `diff`, `ls-files`, `merge-base`, `symbolic-ref` and `for-each-ref`. It writes nothing and
+  runs no build: the `xcodebuild` line it prints, for an installed Xcode that matches the CI's, the skill runs as it
+  runs any build, into `~/Library/Caches/duo-build`;
 - builds the app with `xcodebuild`, which downloads the app's Swift packages if they are not already on the Mac, and
   its tap runner (`tools/tap/DuoTap.xcodeproj`, committed, so no xcodegen) with `xcodebuild build-for-testing` /
   `test-without-building`, into `~/Library/Caches/duo-tap`;
@@ -225,9 +248,12 @@ shots included, reach that device through Claude Code, as the rest of the sessio
   use `perl` (for time limits), `sips`, `shasum`, `df` and `du`. The flow file it writes for each app
   (`.duo/flows/<app>.flow`) is run by `bash`: in a repository someone else wrote, read it before you resume a
   migration there, as you would a build script;
+- keeps the progress file with `tools/progress.py`, which runs the read-only `git rev-parse`, `diff`, `ls-files`,
+  `merge-base` and `log` in the app's repository (with `GIT_OPTIONAL_LOCKS=0`, so it never writes git's index), for
+  the code identity each capture records, the commits the run cites and the shots taken from older code;
 - reads the app's code, every shot and the app's crash reports (`~/Library/Logs/DiagnosticReports`) into your Claude
-  conversation, may start a fresh subagent to review a screen's diff and shots, and adopts the scene lifecycle with
-  Apple's `app-resizability` skill when that is installed;
+  conversation, starts a fresh subagent for the independent review (`references/review.md`) when the session can, and
+  adopts the scene lifecycle with Apple's `app-resizability` skill when that is installed;
 - exports the App Store set with `tools/appstore.py`, which reads `.duo/migration.json`, the capture's `detectors.md`
   and its PNGs (only paths inside the repository), runs `sips` locally, writes JPEGs and a README under
   `.duo/appstore/`, and adds `/.duo/appstore/` (after the app folder's path, when the app is not at the repository's
@@ -235,10 +261,13 @@ shots included, reach that device through Claude Code, as the rest of the sessio
   did not write, and makes no network connection and uploads nothing;
 - in an audit (`/foldsmith-audit`) writes only under `.duo/` (and the `.git/info/exclude` lines named here), and
   changes no source, branch or commit;
-- in a migration changes your app's code and commits each change on a `duo-migration` branch; it never pushes, opens
-  no pull request and merges nothing. It writes `.duo/` in your app's folder (the progress file, flows, reports, the
-  plan of proposed structural changes, captures, `.duo/env` and the App Store set) and adds the captures, the App
-  Store set, `.duo/env` and its lock files to the repository's `.git/info/exclude`.
+- in a migration changes your app's code and commits each change on a `duo-migration` branch, app code only; it never
+  pushes, opens no pull request and merges nothing. It writes `.duo/` in your app's folder (the progress file, flows,
+  reports, the plan of proposed structural changes, captures, `.duo/env` and the App Store set), none of it committed:
+  the preflight's `/.duo/*` line in `.git/info/exclude` keeps it out of git;
+- in a review (`/foldsmith-review`) writes only the progress file's issues and review, a section of `.duo/REPORT.md`
+  and, where only a shot settles a claim, a probe capture into a scratch folder under `.duo/captures/`; it changes no
+  code, branch or commit.
   Each capture also leaves its `xcodebuild` test logs and results and its accessibility dumps in a `duo-tap.*` folder
   in your temporary folder.
 

@@ -95,6 +95,21 @@ repository. `EvenGrid(items, minCellWidth: 150) { item in Cell(item) }`. The fol
 `#available(iOS 27.1, *)`; before 27.1 it is the plain grid. Uses `reservedRegions(kind: .division, options:
 .includeInactive)` so the count does not change when the phone goes from flat to book.
 
+The file is wrapped whole in `#if compiler(>=6.4)`, so an older Xcode, often the project's CI, compiles it to
+nothing (`#available` is checked only at run time: `skills/foldsmith-duo/references/apple.md`, "Toolchain"); the
+call site sits inside the same guard, with the layout the app had in `#else`:
+
+```swift
+// Xcode 27 brings Swift 6.4 and the iOS 27 SDK; an older Xcode (often the project's CI) builds the #else.
+#if compiler(>=6.4)
+EvenGrid(items, minCellWidth: 150) { item in Cell(item) }
+#else
+ScrollView {                                // the app's own grid, as it was
+    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))]) { ForEach(items) { Cell($0) } }
+}
+#endif
+```
+
 ## Detectors this pattern must pass
 T1 (crease-straddle, for any fixed control over the grid), T14 (columns-off-fold). Run on every capture by
 `swift test` (`Tests/DuoPoseTestingTests/MatrixTests.swift`); the `naive` variant must show T14 in book and nothing

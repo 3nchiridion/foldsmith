@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Preflight: what a Foldsmith run needs on this Mac, checked before anything changes. Read-only, except that when
-# nothing blocks it writes <app folder>/.duo/env and adds that file to the repository's .git/info/exclude.
+# nothing blocks it writes <app folder>/.duo/env and adds everything in the app's .duo/ to the repository's
+# .git/info/exclude (`/<app>/.duo/*`; an old `.duo/env` line stays): the run never commits .duo/, so its commits carry
+# only app code and the branch can become a pull request.
 #
 # Usage:
 #   bash preflight.sh <app folder>
@@ -19,8 +21,15 @@
 #     ($CLAUDE_CODE_EXECPATH, as that function does).
 #   Free space on the home volume: at least 5 GB; under 10 GB warns.
 #   The app folder is a git repository with nothing uncommitted outside .duo/ (the run commits on a branch). The fix
-#     it prints leaves .duo/ alone (an audit's progress file and captures are uncommitted). On duo-migration, the
-#     changes are the run's own unfinished change: the fix says so.
+#     it prints leaves .duo/ alone (an audit's progress file and captures are uncommitted): `-- ':/' ':(exclude).duo'`,
+#     or no pathspec where the project's own rules ignore the .duo folder itself (git refuses the exclusion there). On
+#     duo-migration, the changes are the run's own unfinished change: the fix says so.
+#   Files under .duo/ that git already tracks (an earlier run committed them): a warning naming them, with the fix
+#     (git rm -r --cached .duo, then a commit); it does not block.
+#   A remote-tracking */duo-migration with no local duo-migration: a note that the run makes its own branch with
+#     `git switch -c duo-migration --no-track`, so it never tracks another run's.
+#   The CI's Xcode: one note with what `sdkguard.py --ci-only` (beside this script) finds in the repository's CI files
+#     and what it means for the run, or "no CI Xcode found in the repository".
 #   Claude Code 2.1.308 or later, which the plugin's pane needs: this session's ($CLAUDE_CODE_EXECPATH), else `claude`
 #     on PATH. Neither is a note: the skill also runs in other agents.
 # When nothing blocks it writes <app folder>/.duo/env, shell exports to source before each tool (`source .duo/env`), and
@@ -321,8 +330,11 @@ if ! command -v git >/dev/null 2>&1; then
 else
   INSIDE="$(git -C "$APP" rev-parse --is-inside-work-tree 2>&1)"
   # Every fix below leaves the app's .duo/ alone: an audit's progress file, flows, reports and captures are not
-  # committed, and a stash or an `add -A` without this pathspec would take them along.
+  # committed, and a stash or an `add -A` without this pathspec would take them along. Where the project's own rules
+  # ignore the .duo folder itself (a .duo/ line in its .gitignore), git refuses that pathspec in `add` and `stash`
+  # ("paths are ignored", exit 1) and leaves .duo/ out by itself: there the fix names no exclusion.
   BUT_DUO="':/' ':(exclude).duo'"
+  [ "$INSIDE" = true ] && git -C "$APP" check-ignore -q -- .duo 2>/dev/null && BUT_DUO="':/'"
   if [ "$INSIDE" != true ]; then
     missing "$APP is not a git repository (the run commits each change on a branch):" \
             "$(printf '%s\n' "$INSIDE" | head -1)" \
@@ -350,7 +362,74 @@ else
     else
       ok "$APP: git repository, nothing uncommitted outside .duo/ (${BRANCH:-detached HEAD})"
     fi
+    # .duo/ is the run's working folder, never committed: files an earlier run committed there would ride along in
+    # every commit's tree and in a pull request.
+    TRACKED="$(git -C "$APP" ls-files -- .duo 2>/dev/null)"
+    if [ -n "$TRACKED" ]; then
+      N="$(printf '%s\n' "$TRACKED" | wc -l | tr -d ' ')"
+      SHOWN="$(printf '%s\n' "$TRACKED" | head -3 | tr '\n' ';' | sed 's/;$//; s/;/, /g')"
+      [ "$N" -gt 3 ] && SHOWN="$SHOWN, …"
+      warn "$N file(s) under .duo/ are tracked by git, so a pull request would carry them (the run no longer" \
+           "commits .duo/): $SHOWN" \
+           "fix: git -C $(q "$APP") rm -r --cached -- .duo, then commit that" \
+           "     (the files stay on disk, and .git/info/exclude keeps .duo/ out from then on). After that commit," \
+           "     never check out an earlier commit, or another run's duo-migration, in the app folder: git overwrites" \
+           "     the ignored .duo/ with the old files and deletes it on the way back. Read old code with" \
+           "     git show <rev>:<path>, or in a git worktree outside the folder"
+    fi
+    REMOTE_RUN="$(git -C "$APP" for-each-ref --format='%(refname:short)' 'refs/remotes/*/duo-migration' 2>/dev/null \
+                  | head -1)"
+    if [ -n "$REMOTE_RUN" ] && ! git -C "$APP" show-ref --verify --quiet refs/heads/duo-migration; then
+      note "$REMOTE_RUN exists and there is no local duo-migration: a plain git checkout duo-migration would track" \
+           "it (another run's branch), so the run makes its own: git switch -c duo-migration --no-track"
+    fi
+    # A run never gives duo-migration an upstream (--no-track, never push). One that tracks */duo-migration was made
+    # by a plain checkout of another run's branch, whose commits it now holds, or the person pushed this run's branch
+    # (git push -u, a pull request): the branch's first reflog entry tells them apart (its start point a remote's
+    # branch, or HEAD). With no reflog, the warning says both. The run does not act on it.
+    UPSTREAM="$(git -C "$APP" rev-parse --abbrev-ref 'duo-migration@{upstream}' 2>/dev/null)"
+    case "$UPSTREAM" in
+      */duo-migration)
+        FIRST="$(git -C "$APP" reflog show --format=%gs refs/heads/duo-migration -- 2>/dev/null | tail -1)"
+        FROM="${FIRST#branch: Created from }"
+        if [ "$FROM" = "$FIRST" ]; then
+          ORIGIN=unknown
+        else
+          ORIGIN=local
+          case "$FROM" in refs/remotes/*) ORIGIN=remote ;; esac
+          for R in $(git -C "$APP" remote 2>/dev/null); do
+            case "$FROM" in "$R"/*) ORIGIN=remote ;; esac
+          done
+        fi
+        UNSET="fix: git -C $(q "$APP") branch --unset-upstream duo-migration, and check that"
+        LOGGED="     git -C $(q "$APP") log --oneline <base>..duo-migration holds only this run's commits"
+        case "$ORIGIN" in
+          remote)
+            warn "duo-migration tracks $UPSTREAM, another run's branch (made from $FROM, as a plain git checkout" \
+                 "duo-migration does)" \
+                 "$UNSET" "$LOGGED" ;;
+          unknown)
+            warn "duo-migration tracks $UPSTREAM: if a plain git checkout of another run's branch made it, it holds" \
+                 "that run's commits; if you pushed this run's branch yourself (a pull request), leave it" \
+                 "$UNSET" "$LOGGED" ;;
+        esac ;;   # made here from HEAD and pushed: this run's own, nothing to say
+    esac
   fi
+fi
+
+# --- The CI's Xcode (sdkguard.py reads the CI files; a branch must still build with that Xcode)
+if [ -n "$HAVE_PY" ]; then
+  if [ -f "$HERE/sdkguard.py" ]; then
+    CI_OUT="$(SDKGUARD_APPLICATIONS="$APPS" bounded 60 python3 "$HERE/sdkguard.py" --ci-only "$APP" 2>&1 </dev/null)"
+    CI_SAY="$(printf '%s\n' "$CI_OUT" | sed -n 's/^verdict: //p' | head -1)"
+    [ -n "$CI_SAY" ] || CI_SAY="sdkguard.py --ci-only gave no verdict: $(printf '%s\n' "$CI_OUT" | tail -1)"
+  else
+    CI_SAY="no CI check: sdkguard.py is missing beside this script ($HERE); reinstall the skill"
+  fi
+  CI_ROWS=()   # the sentence in rows of at most 110 characters, a path or a flag never split
+  while IFS= read -r line; do CI_ROWS+=("$line"); done < <(python3 -c 'import sys, textwrap
+print("\n".join(textwrap.wrap(sys.argv[1], 110, break_on_hyphens=False, break_long_words=False)))' "$CI_SAY")
+  note "${CI_ROWS[@]}"
 fi
 
 # --- Claude Code
@@ -419,9 +498,13 @@ if [ "$BLOCKS" -gt 0 ]; then
 fi
 EXCLUDE="$(git -C "$APP" rev-parse --git-path info/exclude)"
 case "$EXCLUDE" in /*) ;; *) EXCLUDE="$APP/$EXCLUDE" ;; esac
-# The app's folder from the repository's top, as a gitignore pattern: [ ] * ? and \ in a folder's name are escaped, so
-# "ios app [beta]" is that folder, not a class of characters. The line starts with "/", so a # or ! in a name is plain.
-ENTRY="/$(git -C "$APP" rev-parse --show-prefix | sed 's/[][\\*?]/\\&/g').duo/env"
+# Everything in the app's .duo/, from the repository's top, as a gitignore pattern: .duo/env holds this Mac's paths, and
+# the progress file, flows, reports and captures are the run's working files, never committed. `.duo/*`, not `.duo/`:
+# with the folder itself ignored, git refuses `add -A -- . ':(exclude).duo'` and the same stash ("paths are ignored",
+# exit 1), the commands the fixes above print; with its contents ignored both forms work, and plain `git add -A` too.
+# [ ] * ? and \ in a folder's name are escaped, so "ios app [beta]" is that folder, not a class of characters; the line
+# starts with "/", so a # or ! in a name is plain. An older preflight's .duo/env line is left as it is.
+ENTRY="/$(git -C "$APP" rev-parse --show-prefix | sed 's/[][\\*?]/\\&/g').duo/*"
 if ! grep -qxF "$ENTRY" "$EXCLUDE" 2>/dev/null; then
   mkdir -p "$(dirname "$EXCLUDE")"
   [ -s "$EXCLUDE" ] && [ -n "$(tail -c 1 "$EXCLUDE")" ] && echo >> "$EXCLUDE"
@@ -443,11 +526,7 @@ TMP="$APP/.duo/env.tmp.$$"
   echo "# What this file set, NAME=value per line: a preflight run after sourcing it derives those again."
   echo "export FOLDSMITH_ENV_SET=$(q "$SET")"
 } > "$TMP" && mv -f "$TMP" "$APP/.duo/env" || { rm -f "$TMP"; echo "could not write $APP/.duo/env" >&2; exit 1; }
-if ! git -C "$APP" check-ignore -q -- .duo/env 2>/dev/null; then
-  warn ".duo/env is not ignored by git although $ENTRY is in $EXCLUDE: it is tracked, so a commit can carry this" \
-       "Mac's paths" "fix: git -C $(q "$APP") rm --cached -- .duo/env, and commit that"
-fi
-echo "wrote $APP/.duo/env (kept out of git by $ENTRY in .git/info/exclude); source it before each tool:"
+echo "wrote $APP/.duo/env (.duo/ is kept out of git by $ENTRY in .git/info/exclude); source it before each tool:"
 if [ -n "$DEV" ]; then echo "  DEVELOPER_DIR=$DEV"; fi
 echo "  DUO_UDID=$UDID ($UDID_LINE)"
 echo "  DUO_PY=$PY_PATH"

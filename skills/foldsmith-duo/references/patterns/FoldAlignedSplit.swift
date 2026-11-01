@@ -30,6 +30,9 @@
 // macOS SDKs do not have them, and `PresentationPlacement.trailing` is unavailable on visionOS and macOS, so there the
 // file compiles to a plain NavigationSplitView and both modifiers leave the view as it is.
 
+// Xcode 27 brings Swift 6.4 and the iOS 27 SDK; an older Xcode compiles this file to nothing: guard each use alike.
+#if compiler(>=6.4)
+
 import SwiftUI
 
 public extension EnvironmentValues {
@@ -110,3 +113,5 @@ private struct FoldAwareSheetPlacement: ViewModifier {
     }
 }
 #endif
+
+#endif  // compiler(>=6.4)

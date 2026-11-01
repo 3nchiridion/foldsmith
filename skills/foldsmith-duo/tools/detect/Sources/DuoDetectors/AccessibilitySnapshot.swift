@@ -29,7 +29,8 @@ import CoreGraphics
 ///   `screenNames` names what stays on screen (the bars, and the controls outside scrolling content): what T7
 ///   compares across poses.
 /// - Sheets: the element after a `PopoverDismissRegion` (the dimming that dismisses a presentation) is the presented
-///   sheet, unless it fills the window. While one is up XCTest leaves what is under it out of the tree.
+///   sheet, unless it fills the window. While one is up XCTest leaves what is under it out of the tree. Its own
+///   navigation bar is not a pane's (T14) and runs the sheet's width, so T10 reads the sheet for where that bar is.
 /// - Columns: content inside a scrolling container that is not itself inside one or inside a sheet. The horizontal
 ///   extents of its visible content (text, images, controls, cells) are merged where they touch; each run separated
 ///   from the next by a gutter is a column if it holds text or cells, and a run of images or controls alone (an avatar

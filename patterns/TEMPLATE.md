@@ -23,7 +23,7 @@ Apple app + pose + screenshot path. Corpus app before/after.
 The adjacent pattern that fits instead and the input that distinguishes them.
 
 ## Reference implementation
-`Sources/Patterns/<Pattern>.swift` — one self-contained file, copy-in, `#available(iOS 27.1, *)` with a fallback that is the pre-Duo layout. No dependency on this repo.
+`Sources/Patterns/<Pattern>.swift` — one self-contained file, copy-in, `#available(iOS 27.1, *)` with a fallback that is the pre-Duo layout, and the whole file inside `#if compiler(>=6.4)` (Swift 6.4 is Xcode 27's) with a one-line comment saying why, so a copy compiles to nothing on an older Xcode. No dependency on this repo. The call site, shown here, sits inside the same guard with the pre-Duo layout in `#else`.
 
 ## Detectors this pattern must pass
 List of taxonomy ids (T1…) that the harness runs for it.

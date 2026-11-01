@@ -17,11 +17,14 @@ question and without changing the app's code. The arguments, if any: $ARGUMENTS
 - Write `.duo/audit.md` (per screen and pose, the classes found; the classification and why) and `.duo/PLAN.md` in
   its two sections: `## Local`, per screen the pattern and the fix the migration would make, and `## Structural
   (proposed)`, each structural change with the routes the skill's `tools/routes.sh` lists (the decision table's "Local
-  and structural changes" says which is which).
+  and structural changes" says which is which). PLAN.md also gives the preflight's note on the Xcode the project's CI
+  builds with (`tools/sdkguard.py --ci-only`) and what it asks of the migration: below Xcode 27, every iOS 27 API
+  inside `#if compiler(>=6.4)`; on Xcode 27.0, a proposal to move the CI to 27.1.
 - Export the App Store set from the cells already fine: the skill's `tools/appstore.py --kind before`.
 - Change no code, make no branch, commit nothing, push nothing. The progress file ends at phase `classify`, so the
   Foldsmith pane shows the audit, and `/foldsmith-start` later takes it up without repeating it.
-- Close with the screens that have findings and the fix for each; what the App Store set holds, where, and that every
+- Close with the screens that have findings and the fix for each; the Xcode the project's CI uses (or that none is
+  named in the repository); what the App Store set holds, where, and that every
   image must be checked for personal content and the status bar before it is uploaded; and the screens no taps
   reached, with why. For each one that needs the person's own login, say: sign in on the Duo simulator yourself
   (name it as the progress file does, `iPhone Duo (<UDID>)`), then run `/foldsmith-audit` or `/foldsmith-start`

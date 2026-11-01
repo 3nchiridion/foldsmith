@@ -12,6 +12,7 @@ outside it and downloads nothing. How to use them: `../references/simulator.md`.
 | `capture-corpus-app.sh` | `scripts/capture-corpus-app.sh` |
 | `capture-corpus-flow.sh` | `scripts/capture-corpus-flow.sh` |
 | `preflight.sh` | `scripts/preflight.sh` (checks the Mac, writes the app's `.duo/env`) |
+| `sdkguard.py` | `scripts/sdkguard.py` (the CI's Xcode, and iOS 27 uses outside `#if compiler(>=6.4)`) |
 | `progress.py` | `scripts/progress.py` |
 | `routes.sh` | `scripts/routes.sh` |
 | `same-screen.py` | `scripts/same-screen.py` |

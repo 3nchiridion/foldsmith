@@ -54,6 +54,29 @@ private func classes(_ elements: [Element], _ pose: Pose) -> Set<String> {
     #expect(lost == ["split-three": ["flat-upright", "laptop", "tent"]])
 }
 
+@Test func addFeedIsStrandedOnlyWhereItsSheetReachesTheVerticalBar() throws {
+    // NetNewsWire's Add Feed in its 0.8.0 rerun, before and after. On the cover the sheet spans the window (8–458 and
+    // 8–670 pt) and its bar goes vertical: Cancel and Add as text are left outside it before, as symbols they are in
+    // it after. Open flat the sheet is centred (245.5–705.5 of 951 pt) with a horizontal bar of its own, the same
+    // snapshot before and after. In book it sat on the leading half (8–467.3 pt), where the system keeps a horizontal
+    // bar too (the catalog's sheet there keeps its symbols in it), so only its side was the defect; on the trailing
+    // half after (483.5–942.8 pt) its bar reaches the band and the symbols are in it.
+    let measured = Dictionary(uniqueKeysWithValues: try Pose.load().map { ($0.name, $0) })
+    var found: [String: [String: [String]]] = [:]
+    for kind in ["before", "after"] {
+        for pose in ["closed", "closed-sideways", "book", "flat-sideways"] {
+            let file = Fixtures.netNewsWireRerunAddFeed.appendingPathComponent("\(kind)/add-feed-\(pose).json")
+            let elements = try AccessibilitySnapshot.load(file).detectorElements
+            found[kind, default: [:]][pose] = Detectors.runAll(elements: elements, pose: try #require(measured[pose]))
+                .map { "\($0.classId) \($0.element?.name ?? "")" }.sorted()
+        }
+    }
+    let stranded = ["T10 Add", "T10 Cancel"]
+    #expect(found["before"] == ["closed": stranded, "closed-sideways": stranded, "book": ["T15 sheet"],
+                                "flat-sideways": []])
+    #expect(found["after"] == ["closed": [], "closed-sideways": [], "book": [], "flat-sideways": []])
+}
+
 // The rules on small synthetic trees.
 private typealias Node = AccessibilitySnapshot.Node
 private func node(_ parent: Int, _ type: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double, id: String? = nil) -> Node {

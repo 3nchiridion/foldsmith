@@ -8,10 +8,11 @@ Everything the skill knows, each file traceable to [`raw/`](https://github.com/3
 | `taxonomy.md` | copy of `patterns/TAXONOMY.md` | `scripts/sync-skill-references.py` |
 | `patterns/<name>.md`, `patterns/matrices/` | the v0 pattern pages and their pose matrices | `scripts/sync-skill-references.py` |
 | `metrics.md` | pose table from [`raw/metrics.json`](https://github.com/3nchiridion/foldsmith-evidence/blob/main/raw/metrics.json) | `scripts/sync-skill-references.py` |
-| `apple.md` | Apple's rules condensed from [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/), with citations, no transcript text | by hand |
-| `simulator.md` | pose control and capture commands that worked on the Mac | by hand |
+| `apple.md` | Apple's rules condensed from [`raw/apple-docs/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/apple-docs/), with citations, no transcript text; the toolchain's Swift version and API availability, measured | by hand |
+| `simulator.md` | pose control, capture commands that worked on the Mac, and what each tool does | by hand |
+| `review.md` | the independent review: its inputs, its checklist, what it records | by hand |
 | `detectors-static.md` | source scans for T3, T5, T9, T10, T13, T14 | by hand |
-| `../tools/` | capture scripts, tap runner, detectors (copies; see `tools/README.md`) | `scripts/sync-skill-references.py` |
+| `../tools/` | preflight, capture scripts, tap runner, detectors, progress file, toolchain check (copies; see `tools/README.md`) | `scripts/sync-skill-references.py` |
 
 Do not edit the generated files here: edit the source and run `python3 scripts/sync-skill-references.py`. CI fails
 when they differ (`--check`). Nothing in here may contain a rule that is not traceable to [`raw/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/raw/).

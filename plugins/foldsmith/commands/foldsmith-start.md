@@ -11,6 +11,16 @@ The arguments, if any: $ARGUMENTS
   One exception: on `duo-migration`, uncommitted changes outside `.duo/` are the migration's own (an interrupted
   session's unfinished change, or a build's side effect): finish and commit that change, or put it aside with the stash
   line the preflight prints (it keeps `.duo/`), log which, and run the preflight again.
+- Before the first edit, read the project's own contribution rules and follow them, as the skill's Hands-free says:
+  commit subjects in the project's style, property order and file layout as its guidelines say. Commits carry app
+  code only, never `.duo/`, so `duo-migration` can become a pull request; the report says what the project asks of
+  one, and none is opened.
+- Before `phase done`, the independent review of the skill's `references/review.md`, by a fresh subagent given that page
+  by its path, the app folder and the base, not the run's conclusions; `.duo/REPORT.md` is drafted first, without the
+  review section, so the review's last item can check its claims, and the review section is added after. A session that
+  cannot start one records `review none` with why, and the report and closing message ask the person to run
+  `/foldsmith-review` in a new session before merging. A regression that review records later sets the run back to
+  `verify`; this command then resumes and fixes it.
 - The run never logs in to the app. A screen that needs the person's own login waits in `todo` as `needs sign-in`;
   once they have signed in on the Duo simulator themselves, this command checks it again and carries on, never
   reinstalling the app.

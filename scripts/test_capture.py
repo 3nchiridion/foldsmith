@@ -3,13 +3,17 @@
 (the detectors), df and sleep, so no simulator is needed: each bug a run hit stays fixed (exit 3 on a skipped screen, a
 failed shot or a missing snapshot, a SCREEN= recapture that appends, the "lost the screen" line naming the pose whose
 round trip lost it, a crash reported rather than counted clean), and so do the lock, the disk guard, the stop on a
-signal, the stop when capture-app.sh is killed outright, a wrong call that touches nothing, and RESUME=1.
+signal, the stop when capture-app.sh is killed outright, a wrong call that touches nothing, and RESUME=1. The code
+identity (progress.py codeid) on each line of .captured, in small git repositories: RESUME=1 keeps a cell only from the
+same code, a SCREEN= recapture replaces only that screen's lines, a capture stopped early leaves the cells it did not
+reach readable as from their code, and progress.py check reads what a capture wrote. LAUNCH_ARGS as the tap runner gets
+it.
 
 The runner stand-in answers the capture's flag files with canned snapshots (a screen's bars and buttons, the pose's
-window) and follows runner.json: "fail" (taps that reach nothing), "lose" (taps → the pose whose round trip loses the
-screen), "crash" (taps → the pose where the app is gone), "silent" (taps → the pose whose snapshot never comes), "hold"
-("<taps>:taps": wait there while the hold file is there), "deaf" (never let go on release, only on TERM),
-"fill_disk_after" (taps after whose release the disk is full).
+window), appends TEST_RUNNER_DUO_ARGS to the args file (NUL after each), and follows runner.json: "fail" (taps that
+reach nothing), "lose" (taps → the pose whose round trip loses the screen), "crash" (taps → the pose where the app is
+gone), "silent" (taps → the pose whose snapshot never comes), "hold" ("<taps>:taps": wait there while the hold file is
+there), "deaf" (never let go on release, only on TERM), "fill_disk_after" (taps after whose release the disk is full).
 Sleeps run at a fiftieth of their length.
 
     python3 -m unittest discover -s scripts -p 'test_*.py'
@@ -28,6 +32,8 @@ import unittest
 HERE = pathlib.Path(__file__).resolve().parent
 CAPTURE_APP = HERE / "capture-app.sh"
 CAPTURE_FLOW = HERE / "capture-corpus-flow.sh"
+PROGRESS = HERE / "progress.py"
+TAP_RUNNER = HERE.parent / "Tap" / "DuoTapUITests" / "DuoTapTests.swift"
 PLENTY_KB = 100 * 1024 * 1024
 FULL_KB = 2 * 1024 * 1024
 
@@ -79,6 +85,8 @@ def on_term(*_):
 
 signal.signal(signal.SIGTERM, on_term)
 log("start " + ("locked" if pathlib.Path(".duo/.capture.lock").is_file() else "unlocked"))
+with open(shim / "args", "ab") as f:
+    f.write(os.environb.get(b"TEST_RUNNER_DUO_ARGS", b"(not set)") + b"\\0")
 POSES = {("close", "sideways"): "closed", ("close", "upright"): "closed-sideways", ("book", "sideways"): "book",
          ("laptop", "upright"): "laptop", ("laptop", "landscape-right"): "tent", ("open", "sideways"): "flat-sideways",
          ("open", "upright"): "flat-upright"}
@@ -203,6 +211,10 @@ class Capture(unittest.TestCase):
             "PATH": f"{self.bin}:/usr/bin:/bin:/usr/sbin:/sbin", "HOME": str(self.home), "SHIM": str(self.shim),
             "DUO_UDID": "TEST-UDID", "DUO_PY": str(self.bin / "duo.py"), "DUO_TAP_XCTESTRUN": str(root / "x.xctestrun"),
             "XCODE_OUT": str(root / "xcode"), "TMPDIR": str(root), "WAIT": "1", "TAP_WAIT": "1",
+            # git finds no repository above the temporary folder, and commits need no configuration
+            "GIT_CEILING_DIRECTORIES": os.path.realpath(root), "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_AUTHOR_NAME": "Test", "GIT_AUTHOR_EMAIL": "test@example.com",
+            "GIT_COMMITTER_NAME": "Test", "GIT_COMMITTER_EMAIL": "test@example.com",
         }
 
     def tearDown(self):
@@ -221,6 +233,30 @@ class Capture(unittest.TestCase):
     def runner_log(self):
         return (self.shim / "runner.log").read_text().splitlines()
 
+    def starts(self):
+        return [line.split()[1] for line in self.runner_log() if " start " in line]
+
+    def git(self, *args):
+        done = subprocess.run(["git", "-C", str(self.app), *args], env=self.env, capture_output=True, text=True)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        return done.stdout.strip()
+
+    def commit(self, source="let version = 1\n"):
+        """The app as a git repository, App.swift holding source, committed: the new HEAD (.duo/ stays untracked)."""
+        if not (self.app / ".git").exists():
+            self.git("init", "-q")
+        (self.app / "App.swift").write_text(source)
+        self.git("add", "App.swift")
+        self.git("commit", "-q", "-m", "Change the app")
+        return self.git("rev-parse", "HEAD")
+
+    def progress(self, *args):
+        return subprocess.run([sys.executable, str(PROGRESS), "--file", str(self.app / ".duo" / "migration.json"),
+                               *args], cwd=self.app, env=self.env, capture_output=True, text=True, timeout=60)
+
+    def sha(self):
+        return subprocess.run(["shasum", "-a", "256", str(self.flow)], capture_output=True, text=True).stdout.split()[0]
+
     def test_a_clean_capture_records_every_cell_and_keeps_the_lock_only_while_it_runs(self):
         progress = self.app / ".duo" / "migration.json"
         progress.write_text(json.dumps({"app": "Notes", "phase": "audit", "screens": []}))
@@ -229,10 +265,11 @@ class Capture(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stderr)
         for cell in ("folders-closed-cover.png", "folders-book-inner.png", "settings-closed.json", "settings-book.json"):
             self.assertTrue((before / cell).exists(), cell)
-        sha = subprocess.run(["shasum", "-a", "256", str(self.flow)], capture_output=True, text=True).stdout.split()[0]
+        sha = self.sha()
+        # Outside git the code identity is none.
         self.assertEqual(sorted(self.text(".captured", before).splitlines()),
-                         sorted(f"{sha} {s} {p}" for s in ("folders", "settings") for p in ("closed", "book")))
-        self.assertIn(f"flow: {self.flow} sha256 {sha}", self.text("capture.txt", before))
+                         sorted(f"{sha} {s} {p} none" for s in ("folders", "settings") for p in ("closed", "book")))
+        self.assertIn(f"flow: {self.flow} sha256 {sha}\ncode: none\n", self.text("capture.txt", before))
         self.assertEqual(self.text("findings.txt", before).strip(), "4 captures, 0 findings")
         # The runner only ever ran under the lock, and the lock went with the capture.
         self.assertTrue(all(line.endswith("start locked") for line in self.runner_log() if " start " in line))
@@ -364,6 +401,201 @@ class Capture(unittest.TestCase):
         self.assertIn("holds no capture of this flow", done.stderr)
         self.assertEqual([line.split()[1] for line in self.runner_log() if " start " in line],
                          ["Folders", "Settings", "Folders", "Settings"])
+
+    def test_each_line_carries_the_code_and_resume_keeps_a_cell_only_from_the_same_code(self):
+        head = self.commit()
+        sha = self.sha()
+        self.assertEqual(self.capture(ONLY="closed book").returncode, 0)
+        self.assertEqual(sorted(self.text(".captured").splitlines()),
+                         sorted(f"{sha} {s} {p} {head}" for s in ("folders", "settings") for p in ("closed", "book")))
+        self.assertIn(f"flow: {self.flow} sha256 {sha}\ncode: {head}\ncaptured: ", self.text("capture.txt"))
+
+        # The same code: every cell is kept, nothing is said about the code.
+        done = self.capture(ONLY="closed book", RESUME="1")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(self.starts(), ["Folders", "Settings"])
+        self.assertEqual(self.text("capture.txt").count("every pose asked for was captured before (RESUME=1)"), 2)
+        self.assertNotIn("code changed", self.text("capture.txt"))
+        self.assertRegex(self.text("capture.txt"), rf"\nresumed: every screen, \S+, flow sha256 {sha}\ncode: {head}\n")
+
+        # An edit not committed is other code too: every cell is taken again, and said so once.
+        (self.app / "App.swift").write_text("let version = 2\n")
+        code = self.progress("codeid").stdout.strip()
+        self.assertRegex(code, rf"^{head}\+[0-9a-f]{{16}}$")
+        done = self.capture(ONLY="closed book", RESUME="1")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(self.starts(), ["Folders", "Settings", "Folders", "Settings"])
+        said = "code changed since the earlier capture: taking every cell again\n"
+        self.assertEqual(self.text("capture.txt").count(said), 1)
+        self.assertNotIn("kept from the earlier capture", self.text("capture.txt"))
+        self.assertEqual(sorted(self.text(".captured").splitlines()),
+                         sorted(f"{sha} {s} {p} {code}" for s in ("folders", "settings") for p in ("closed", "book")),
+                         "the lines from the other code went with their shots")
+
+    def test_resume_never_keeps_a_line_with_no_code(self):
+        self.commit()
+        sha = self.sha()
+        self.assertEqual(self.capture(ONLY="closed").returncode, 0)
+        record = self.out / ".captured"
+        record.write_text("".join(f"{sha} {s} closed\n" for s in ("folders", "settings")))   # as 0.8.0 wrote it
+        done = self.capture(ONLY="closed", RESUME="1")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(self.starts(), ["Folders", "Settings", "Folders", "Settings"])
+        self.assertIn("the earlier capture recorded no code (it was taken before 0.8.1): taking every cell again\n",
+                      self.text("capture.txt"))
+        self.assertFalse([line for line in record.read_text().splitlines() if len(line.split()) != 4])
+
+    def test_a_resume_after_a_commit_takes_the_cells_again_and_check_reads_the_code(self):
+        progress = self.app / ".duo" / "migration.json"
+        progress.write_text(json.dumps({"app": "Notes", "phase": "verify", "screens": []}))
+        after = self.app / ".duo" / "captures" / "Notes" / "after"
+        head = self.commit()
+        self.assertEqual(self.capture(out=after, ONLY="closed book").returncode, 0)
+        for s in ("folders", "settings"):
+            self.assertEqual(self.progress("cell", s, "closed,book", "verified").returncode, 0)
+        check = self.progress("check", "folders", "settings")
+        self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
+        self.assertNotIn("code identity", check.stderr)
+        self.assertNotIn("after shot is from", check.stdout)
+
+        self.commit("let version = 2\n")
+        check = self.progress("check", "folders", "settings")
+        self.assertEqual(check.returncode, 1, check.stdout + check.stderr)
+        self.assertIn(f"settings book: its after shot is from {head[:7]} and 1 file changed since (App.swift): rebuild "
+                      "and install from the committed tree (step 6), then capture it again (SCREEN=settings, same "
+                      "after folder)\n", check.stdout)
+        self.assertEqual(check.stdout.count("its after shot is from"), 4)
+
+        # The shims stand in for the rebuild and install a run makes first: the code identity cannot see the app.
+        done = self.capture(out=after, ONLY="closed book", RESUME="1")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(self.starts(), ["Folders", "Settings", "Folders", "Settings"])
+        self.assertEqual(self.text("capture.txt", after).count("code changed since the earlier capture"), 1)
+        check = self.progress("check", "folders", "settings")
+        self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
+        self.assertNotIn("code identity", check.stderr)
+
+    def test_a_screen_recapture_replaces_that_screens_lines_and_keeps_the_others(self):
+        first = self.commit()
+        sha = self.sha()
+        self.assertEqual(self.capture(ONLY="closed book").returncode, 0)
+        folders = [line for line in self.text(".captured").splitlines() if " folders " in line]
+        then = self.commit("let version = 2\n")
+        done = self.capture(SCREEN="settings", ONLY="closed book")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        lines = self.text(".captured").splitlines()
+        self.assertEqual([line for line in lines if " folders " in line], folders)
+        self.assertEqual(folders, [f"{sha} folders closed {first}", f"{sha} folders book {first}"])
+        self.assertEqual(sorted(line for line in lines if " settings " in line),
+                         sorted(f"{sha} settings {p} {then}" for p in ("closed", "book")))
+        # A resume of the whole flow keeps settings, taken from this code, and takes folders again.
+        done = self.capture(ONLY="closed book", RESUME="1")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(self.starts(), ["Folders", "Settings", "Settings", "Folders"])
+        self.assertIn("code changed since the earlier capture, for 2 cells: taking those again (2 kept)\n",
+                      self.text("capture.txt"))
+        self.assertEqual(sorted(self.text(".captured").splitlines()),
+                         sorted(f"{sha} {s} {p} {then}" for s in ("folders", "settings") for p in ("closed", "book")))
+
+    def test_a_capture_stopped_early_leaves_the_cells_it_did_not_reach_on_record_as_from_their_code(self):
+        progress = self.app / ".duo" / "migration.json"
+        progress.write_text(json.dumps({"app": "Notes", "phase": "verify", "screens": []}))
+        after = self.app / ".duo" / "captures" / "Notes" / "after"
+        first = self.commit()
+        self.assertEqual(self.capture(out=after, ONLY="closed").returncode, 0)
+        self.assertEqual(self.progress("cell", "settings", "closed", "verified").returncode, 0)
+        self.commit("let version = 2\n")
+        (self.shim / "hold").write_text("")
+        self.runner(hold="Folders:taps")
+        env = {**self.env, "ONLY": "closed", "TAP_TIMEOUT": "6000"}
+        stopped = subprocess.Popen(["bash", str(CAPTURE_APP), str(self.flow), str(after)], cwd=self.app, env=env,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        try:
+            for _ in range(600):
+                if (self.shim / "holding").exists():
+                    break
+                time.sleep(0.05)
+            self.assertTrue((self.shim / "holding").exists(), "the capture reached the held screen")
+            stopped.send_signal(signal.SIGINT)
+            stopped.communicate(timeout=60)
+        finally:
+            if stopped.poll() is None:
+                stopped.kill()
+        self.assertEqual(stopped.returncode, 130)
+        # folders' line went with its shot; settings, not reached, keeps the code its shot came from, and RESUME=1
+        # would not keep it.
+        self.assertEqual(self.text(".captured", after).splitlines(), [f"retaking settings closed {first}"])
+        check = self.progress("check", "settings")
+        self.assertEqual(check.returncode, 1, check.stdout + check.stderr)
+        self.assertIn(f"settings closed: its after shot is from {first[:7]} and 1 file changed since", check.stdout)
+        self.assertNotIn("code identity", check.stderr)
+
+        (self.shim / "hold").unlink()
+        done = self.capture(out=after, ONLY="closed", RESUME="1")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(self.starts(), ["Folders", "Settings", "Folders", "Folders", "Settings"])
+        self.assertEqual(self.progress("check", "settings").returncode, 0)
+
+    def test_a_one_screen_flow_stopped_mid_screen_after_a_commit_refuses_done(self):
+        # The stop removes the screen's only lines and shots: .captured is left empty, and that proves nothing.
+        self.flow.write_text(FLOW.replace('  "settings=Settings"\n', ""))
+        progress = self.app / ".duo" / "migration.json"
+        progress.write_text(json.dumps({"app": "Notes", "phase": "verify", "screens": []}))
+        after = self.app / ".duo" / "captures" / "Notes" / "after"
+        self.commit()
+        self.assertEqual(self.capture(out=after, ONLY="closed book").returncode, 0)
+        self.assertEqual(self.progress("cell", "folders", "closed,book", "verified").returncode, 0)
+        self.assertEqual(self.progress("check", "folders").returncode, 0)
+        self.commit("let version = 2\n")
+        self.assertEqual(self.progress("check", "folders").returncode, 1)
+        (self.shim / "hold").write_text("")
+        self.runner(hold="Folders:taps")
+        env = {**self.env, "ONLY": "closed book", "TAP_TIMEOUT": "6000"}
+        stopped = subprocess.Popen(["bash", str(CAPTURE_APP), str(self.flow), str(after)], cwd=self.app, env=env,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        try:
+            for _ in range(600):
+                if (self.shim / "holding").exists():
+                    break
+                time.sleep(0.05)
+            self.assertTrue((self.shim / "holding").exists(), "the capture reached the held screen")
+            stopped.send_signal(signal.SIGINT)
+            stopped.communicate(timeout=60)
+        finally:
+            if stopped.poll() is None:
+                stopped.kill()
+        self.assertEqual(stopped.returncode, 130)
+        self.assertEqual(self.text(".captured", after), "")
+        self.assertFalse((after / "folders-closed-cover.png").exists())
+        done = self.progress("done", "folders: Fold-aligned split")
+        self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+        for pose in ("closed", "book"):
+            self.assertIn(f"folders {pose}: its after shot is not there (a capture stopped mid-screen?): capture it "
+                          "again (SCREEN=folders, same after folder)", done.stderr)
+
+    def launch_args(self, value):
+        """What the runner's environment gets as TEST_RUNNER_DUO_ARGS from a flow file's LAUNCH_ARGS line, as bytes."""
+        self.flow.write_text(f'BUNDLE=dev.example.Notes\nLAUNCH_ARGS="{value}"\nSCREENS=(\n  "folders=Folders"\n)\n')
+        done = self.capture(ONLY="closed")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        return (self.shim / "args").read_bytes().split(b"\0")[0]
+
+    def runner_splits(self, value):
+        """The app's launch arguments from DUO_ARGS as the tap runner makes them: split at each space and nowhere
+        else, empty pieces dropped (Swift's split(separator:)); the test fails if the runner stops doing that."""
+        self.assertRegex(TAP_RUNNER.read_text(),
+                         r'let launchArgs = \(env\["DUO_ARGS"\] \?\? ""\)\.split\(separator: " "\)\.map\(String\.init\)')
+        return [piece for piece in value.split(" ") if piece]
+
+    def test_launch_args_reach_the_runner_byte_for_byte(self):
+        got = self.launch_args("-ShowArticle <false/> -Count 2")
+        self.assertEqual(got, b"-ShowArticle <false/> -Count 2")
+        self.assertEqual(self.runner_splits(got.decode()), ["-ShowArticle", "<false/>", "-Count", "2"])
+
+    def test_single_quotes_inside_launch_args_reach_the_runner_as_characters(self):
+        got = self.launch_args("-ShowArticle '<false/>' -Count 2")
+        self.assertEqual(got, b"-ShowArticle '<false/>' -Count 2")
+        self.assertEqual(self.runner_splits(got.decode()), ["-ShowArticle", "'<false/>'", "-Count", "2"])
 
     def test_low_disk_before_the_capture_exits_4_and_deletes_nothing(self):
         (self.shim / "free_kb").write_text(str(FULL_KB))
@@ -511,12 +743,16 @@ class Capture(unittest.TestCase):
 
     def test_the_flow_script_alone_takes_the_lock_and_gives_it_back(self):
         out = self.app / "shots"
+        head = self.commit()
         done = subprocess.run(["bash", str(CAPTURE_FLOW), "Notes", "dev.example.Notes", "folders=Folders"], cwd=self.app,
                               env={**self.env, "OUT": str(out), "ONLY": "closed"}, capture_output=True, text=True, timeout=60)
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertTrue((out / "folders-closed-cover.png").exists())
         self.assertTrue(self.runner_log()[0].endswith("start locked"))
         self.assertFalse(self.lock.exists())
+        # Alone, it takes the code identity itself, once, before the first shot lands.
+        self.assertEqual(done.stdout.splitlines()[0], f"code: {head}")
+        self.assertEqual((out / ".captured").read_text().split()[1:], ["folders", "closed", head])
 
 
 class SharedCode(unittest.TestCase):

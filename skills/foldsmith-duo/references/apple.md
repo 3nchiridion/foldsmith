@@ -74,6 +74,45 @@ doc pages in places. No transcript text is quoted.
 - Don't override bar placement in general; opt out (`toolbarVerticalBehavior(.disabled)`) only for single-page,
   bottom-heavy apps or simple sheets [hig vertical controls; tt-111462 14:21].
 
+## Toolchain
+Measured on the project's Mac, or cited where it is not.
+- `#available` is a run-time check, and neither it nor `@available` (a declaration attribute the compiler checks) hides
+  a symbol the SDK lacks from the compiler, so code that names an iOS 27 symbol does not compile with an SDK that lacks
+  it, whatever guards it at run time [The Swift Programming Language, "Statements": availability condition, compiler
+  control statements; "Attributes": available]. Both NetNewsWire runs broke the project's CI, which builds with Xcode
+  26.6, this way (foldsmith-evidence, `verification/runs/NetNewsWire/`).
+- Xcode 27.1 (27A9275) ships Apple Swift 6.4 (swiftlang-6.4.0.34.1) [measured: `xcrun swift --version`]; Xcode 27.0
+  (27A266a) ships Swift 6.4 too [https://blakecrosley.com/blog/xcode-27-release, quoting Apple's release notes]. So
+  `#if compiler(>=6.4)` separates Xcode 26.x from 27.x and passes on both 27.0 and 27.1: no supported compile-time
+  check separates 27.0 from 27.1 (`compiler()` is the same), and a CI on Xcode 27.0 compiles the 27.0 symbols and none
+  of the 27.1 ones. The underscored `#if canImport(UIKit, _version: 9127.0.85)` reads the SDK's UIKit version
+  (`current-version: 9127.0.85` in the iOS 27.1 SDK's `UIKit.tbd`) [measured: `swiftc -typecheck` passes at
+  `9127.0.85` and fails at `9127.1`], but it is unsupported and unmeasured against a 27.0 SDK (none installed here):
+  the advice stays to move such a CI to Xcode 27.1.
+- iOS 27.0 in the iOS 27.1 SDK: `visibilityPriority` (SwiftUI and UIKit), `ToolbarItemVisibilityPriority`,
+  `UIBarButtonItemVisibilityPriority`, `paddingRemoved` (Swift: `isPaddingRemoved`), `preferredPlacement`
+  (`UISheetPresentationController`; also `UITabBarController.Sidebar`), `UISheetPresentationController.Placement`,
+  SwiftUI's `presentationPlacement(_:)` and `PresentationPlacement`, `ToolbarOverflowMenu`, `topBarPinnedTrailing`,
+  `defaultTabBarPlacement`. iOS 27.1: `axisBehavior` (SwiftUI and UIKit), `UIBarButtonItem.AxisBehavior`,
+  `ToolbarItemAxisBehavior`, `verticalBarEdge`, `UIVerticalBarEdge`, `systemTraitsAffectingVerticalBarEdge`,
+  `preferredVerticalBarBehavior`, `childForPreferredVerticalBarBehavior`, `setNeedsUpdateOfVerticalBarConfiguration`,
+  `UIVerticalBarBehavior`, `verticalBarCompressionBehavior`, `reservedRegions`, `ReservedRegion`,
+  `UIHingeInteraction`, `UIHinge`, `onHingeChange`, `DeviceHinge`, `DeviceHingeContext`, SwiftUI's
+  `toolbarVerticalEdge` (`anyAppleOS 27.1`), `toolbarVerticalBehavior` and `toolbarVerticalCompressionBehavior`,
+  `UIArrangementViewController` (with `updateArrangement`, `setViewProperties`, `arrangementViewController`),
+  `UISplitArrangement`, `UIOverlayArrangement`, `ArrangementView` and the arrangement modifiers. Older:
+  `menuRepresentation` and `additionalOverflowItems`, iOS 16.0; `UITab.preferredPlacement`, iOS 18.0, shares a name
+  with the sheet's [measured: `UIBarButtonItem.h:170, 174, 179, 182`, `UISheetPresentationController.h:120`,
+  `UIView.h:760`, `UIHingeInteraction.h:51`, `UIArrangementViewController.h:27`, `UIVerticalBarEdge.h:33`,
+  `UINavigationItem.h:242`, the SwiftUI and SwiftUICore interfaces; `tools/sdkguard.py` holds this list, and its test
+  checks each name against the installed SDK]. Check any other symbol in the SDK before you rely on its version.
+- So every iOS 27 API, and every Foldsmith reference type built on them, goes inside `#if compiler(>=6.4)` with the
+  pre-Duo code in `#else`, `#available` kept inside: a project whose CI builds with an Xcode older than 27 needs it
+  (`tools/sdkguard.py` says which Xcode the CI uses), and it costs nothing where the CI is newer. The guard does not
+  help a CI on Xcode 27.0: it passes `compiler(>=6.4)`, compiles the guarded code and fails on the 27.1 symbols, and
+  every reference file uses them (`reservedRegions`, `ArrangementView`, `UIHingeInteraction`), so those files need
+  Xcode 27.1. There, propose moving the CI to Xcode 27.1 in `.duo/PLAN.md`.
+
 ## Hinge, scenes, tools
 - Hinge angle and status (`onHingeChange`, `UIHingeInteraction`) are for interactions and effects; layout uses the
   arrangement and region APIs [tt-111464 2:35].

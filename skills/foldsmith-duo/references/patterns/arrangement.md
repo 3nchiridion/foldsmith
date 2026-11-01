@@ -131,12 +131,26 @@ at the foot of its region. On iOS 27.1 it is one `ArrangementView` for every pos
 visionOS and macOS, it is the layout an app had: an `HStack` or `VStack` by shape for a split (one `AnyLayout`, so the
 views keep their state across a change of shape), a `ZStack` for an overlay.
 
+The file is wrapped whole in `#if compiler(>=6.4)`, so an older Xcode, often the project's CI, compiles it to
+nothing (`#available` is checked only at run time: [`skills/foldsmith-duo/references/apple.md`](../apple.md), "Toolchain"); the
+call site sits inside the same guard, with the layout the app had in `#else`:
+
+```swift
+// Xcode 27 brings Swift 6.4 and the iOS 27 SDK; an older Xcode (often the project's CI) builds the #else.
+#if compiler(>=6.4)
+Arrangement(.split) { Player() } secondary: { Transcript() }
+#else
+HStack(spacing: 0) { Player(); Transcript() }   // the app's own stack, as it was
+#endif
+```
+
 UIKit: `UIArrangementViewController` inside the `UINavigationController`, with `setViewController(_:for:)` for
 `.primary` and `.secondary` and `updateArrangement(.split)` or `.overlay` [tt-111463 11:17, 13:07]. Open flat, do what
 the SwiftUI reference does: read `view.reservedRegions(kind: .division, options: .includeInactive)`, give the primary a
 fractional width or height ending at the inactive division's near edge through `UISplitArrangement.ViewProperties`
 and `setViewProperties(_:for: .primary)`, pass that arrangement to `updateArrangement`, and inset the secondary's
-content by the division's width; a ratio is the system's input, not a frame. Not measured in the catalog.
+content by the division's width; a ratio is the system's input, not a frame. Not measured in the catalog. All of it
+goes inside the same guard, behind `#available(iOS 27.1, *)`, with the app's own container in both fallbacks.
 
 ## Detectors this pattern must pass
 T1 (crease-straddle, for the primary's artwork and controls), T5 (stretched-single-column, for the secondary's text),

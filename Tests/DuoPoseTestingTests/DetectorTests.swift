@@ -170,6 +170,32 @@ private func box(_ minX: CGFloat, _ maxX: CGFloat, y: CGFloat = 100, h: CGFloat 
     #expect(StrandedHorizontalItem().run(elements: bars + [leadingPane, custom], pose: book).map(\.element?.identifier) == ["contents"])
 }
 
+@Test func strandedHorizontalItemChecksOnlyABarThatReachesTheVerticalBar() {
+    // Items go vertical only when their container sits on the display's edge [tt-111462 3:09]. NetNewsWire's Add Feed
+    // open flat: a centred sheet with a horizontal bar of its own, Cancel in it.
+    func text(_ label: String, x: CGFloat) -> Element {
+        Element(label: label, role: "control", frame: CGRect(x: x, y: 40, width: 76.7, height: 36),
+                isInteractive: true, inSystemBar: true, inNavigationBar: true)
+    }
+    let centred = Element(identifier: "sheet", role: "sheet", frame: box(245.5, 705.5, y: 18, h: 420))
+    #expect(StrandedHorizontalItem().run(elements: [centred, text("Cancel", x: 265.5)], pose: flatSideways).isEmpty)
+    // On the leading half in book the sheet keeps its bar too (its defect is the side, T15); one that reaches the band
+    // hands its items to the vertical bar, so a text item left in it is stranded.
+    let leading = Element(identifier: "sheet", role: "sheet", frame: box(8, 467.3, y: 18, h: 420))
+    #expect(StrandedHorizontalItem().run(elements: [leading, text("Cancel", x: 28)], pose: book).isEmpty)
+    let wide = Element(identifier: "sheet", role: "sheet", frame: box(8, 943, y: 8, h: 661))
+    #expect(StrandedHorizontalItem().run(elements: [wide, text("Cancel", x: 28)], pose: book).count == 1)
+    // In a split only the detail's bar reaches it: the sidebar's text item stays where the system draws it.
+    let bars = [Element(identifier: "Timeline", role: "bar", frame: CGRect(x: 0, y: 24, width: 475, height: 58)),
+                Element(identifier: "Detail", role: "bar", frame: CGRect(x: 476, y: 24, width: 475, height: 58))]
+    #expect(StrandedHorizontalItem().run(elements: bars + [text("Edit", x: 380), text("Done", x: 700)], pose: book)
+        .map(\.element?.label) == ["Done"])
+    // SwiftUI runs the detail's bar the window's width, under the sidebar's: the narrowest bar over an item is its own.
+    let swiftUI = [Element(identifier: "Folded maps", role: "bar", frame: CGRect(x: 0, y: 24, width: 951, height: 58)),
+                   Element(identifier: "Library", role: "bar", frame: CGRect(x: 0, y: 24, width: 475.7, height: 58))]
+    #expect(StrandedHorizontalItem().run(elements: swiftUI + [text("Edit", x: 380)], pose: book).isEmpty)
+}
+
 // T7
 @Test func stateLossOnFoldFlagsAnInnerPoseWithoutTheShutPhonesBars() {
     let findings = StateLossOnFold.run(closed: ["Feeds"], inner: ["book": ["Timeline", "Detail"], "laptop": ["Feeds", "Detail"],

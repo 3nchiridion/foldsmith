@@ -31,8 +31,11 @@ same thing, in the poses Apple shows it in (G4).
 - `patterns/<pattern>.md` from [`patterns/TEMPLATE.md`](patterns/TEMPLATE.md): context, forces, the solution per pose
   with a citation on every row, consequences, known uses, when not to use it, and the detectors it must pass.
 - `Sources/Patterns/<Pattern>.swift`: one copy-in file with no dependency on this repository, iOS 27.1 APIs behind
-  `#available(iOS 27.1, *)` with the pre-Duo layout as the fallback, and Duo-only code behind
-  `#if os(iOS) && !targetEnvironment(macCatalyst)`. Never branch on device identity, idiom or orientation.
+  `#available(iOS 27.1, *)` with the pre-Duo layout as the fallback, Duo-only code behind
+  `#if os(iOS) && !targetEnvironment(macCatalyst)`, and the whole file inside `#if compiler(>=6.4)` (Swift 6.4 is
+  Xcode 27's), with a one-line comment saying why, so a copy compiles to nothing on an older Xcode; the page's call
+  site sits inside the same guard with the pre-Duo layout in `#else`, and `scripts/sdkguard.py` lists the type among
+  the Foldsmith reference types. Never branch on device identity, idiom or orientation.
 
 ### 3. Put it in the catalog and capture its matrix
 - In `Examples/Catalog/`, a demo for the pattern in `Catalog/Demos.swift` (a case for it in `CatalogApp.swift`) with at
@@ -64,7 +67,8 @@ same thing, in the poses Apple shows it in (G4).
 - Add the page to `PAGES` in `scripts/sync-skill-references.py`, run it, and commit what it writes: the skill
   (`skills/foldsmith-duo/`) and the plugin's copy carry the page, the reference and the matrix.
 
-Before the pull request: `swift test`, `python3 -m unittest discover -s scripts -p 'test_*.py'`,
-`python3 scripts/sync-skill-references.py --check`, and, if you touched the plugin, `claude plugin validate
-plugins/foldsmith` and `claude plugin test plugins/foldsmith` (Claude Code 2.1.308 or later). G2 runs on demand:
-`gh workflow run ci.yml -f goldens=true`.
+Before the pull request: `swift test` (it does not compile `Sources/Patterns`: the catalog build does, and
+`scripts/test_sdkguard.py` checks each file sits whole inside the guard), `python3 -m unittest discover -s scripts -p
+'test_*.py'`, `python3 scripts/sync-skill-references.py --check`, and, if you touched the plugin, `claude plugin
+validate plugins/foldsmith` and `claude plugin test plugins/foldsmith` (Claude Code 2.1.308 or later). G2 runs on
+demand: `gh workflow run ci.yml -f goldens=true`.

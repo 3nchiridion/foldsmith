@@ -115,9 +115,9 @@ class Preflight(unittest.TestCase):
         self.set_sims(simctl())
 
     # --- helpers
-    def g(self, *args, cwd=None):
+    def g(self, *args, cwd=None, check=True):
         return subprocess.run([self.git, "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args],
-                              cwd=cwd or self.app, capture_output=True, text=True, check=True,
+                              cwd=cwd or self.app, capture_output=True, text=True, check=check,
                               env={"HOME": str(self.home), "PATH": os.environ["PATH"], "GIT_CONFIG_NOSYSTEM": "1"})
 
     def repo(self, path):
@@ -206,11 +206,11 @@ class Preflight(unittest.TestCase):
         for key in ("DUO_UDID", "DUO_PY"):
             self.assertIn(f"  {key}={env[key]}", r.stdout)
         exclude = (self.app / ".git/info/exclude").read_text().splitlines()
-        self.assertEqual(exclude.count("/.duo/env"), 1)
+        self.assertEqual(exclude.count("/.duo/*"), 1)
         self.assertEqual(self.g("status", "--porcelain").stdout, "")
         # Again: the same env, the exclude line not added twice.
         self.assertEqual(self.run_preflight().returncode, 0)
-        self.assertEqual((self.app / ".git/info/exclude").read_text().splitlines().count("/.duo/env"), 1)
+        self.assertEqual((self.app / ".git/info/exclude").read_text().splitlines().count("/.duo/*"), 1)
         # Read-only towards the simulator: it lists, and never creates, boots, renames or erases anything.
         sim_calls = [c for c in self.calls() if c.startswith("xcrun")]
         self.assertTrue(sim_calls)
@@ -224,6 +224,7 @@ class Preflight(unittest.TestCase):
         tools = SKILL_COPY.parent
         self.assertEqual(self.env_file()["DUO_PY"], str(tools / "driver/duo.py"))
         self.assertIn(f"-project {tools / 'tap/DuoTap.xcodeproj'}", self.row(r, "tap runner"))
+        self.assertTrue(self.row(r, "no CI Xcode found").startswith("note"))   # its own sdkguard.py, beside it
 
     def test_usage(self):
         self.assertEqual(subprocess.run(["bash", str(SCRIPT)], capture_output=True).returncode, 2)
@@ -500,7 +501,7 @@ class Preflight(unittest.TestCase):
         r = self.run_preflight()
         self.assert_blocked(r)
         exclude = self.app / ".git/info/exclude"
-        self.assertNotIn(".duo/env", exclude.read_text() if exclude.exists() else "")
+        self.assertNotIn(".duo", exclude.read_text() if exclude.exists() else "")
 
     def test_a_folder_that_is_not_a_repository_blocks(self):
         plain = self.tmp / "plain"
@@ -520,9 +521,8 @@ class Preflight(unittest.TestCase):
         (root / "ios/.duo/migration.json").write_text("{}")
         r = self.run_preflight(app=root / "ios")
         self.assertEqual(r.returncode, 0, r.stdout)
-        self.assertIn("/ios/.duo/env", (root / ".git/info/exclude").read_text().splitlines())
-        self.assertEqual(self.g("status", "--porcelain", "--untracked-files=all", cwd=root).stdout,
-                         "?? ios/.duo/migration.json\n")
+        self.assertIn("/ios/.duo/*", (root / ".git/info/exclude").read_text().splitlines())
+        self.assertEqual(self.g("status", "--porcelain", "--untracked-files=all", cwd=root).stdout, "")
         (root / ".duo").mkdir()
         (root / ".duo/stray").write_text("\n")   # another folder's .duo is not the app's
         self.assertEqual(self.run_preflight(app=root / "ios").returncode, 1)
@@ -537,8 +537,149 @@ class Preflight(unittest.TestCase):
         r = self.run_preflight(app=app)
         self.assertEqual(r.returncode, 0, r.stdout)
         self.assertNotIn("not ignored", r.stdout)
-        self.assertIn(r"/ios app \[beta\]\*/.duo/env", (root / ".git/info/exclude").read_text().splitlines())
+        self.assertIn(r"/ios app \[beta\]\*/.duo/*", (root / ".git/info/exclude").read_text().splitlines())
         self.assertEqual(self.g("status", "--porcelain", "--untracked-files=all", cwd=root).stdout, "")
+
+    # --- .duo/ out of git, someone else's duo-migration, the CI's Xcode
+    def test_the_whole_duo_folder_is_excluded_and_an_old_env_line_stays(self):
+        exclude = self.app / ".git/info/exclude"
+        exclude.write_text("# git ls-files --others --exclude-from=.git/info/exclude\n/.duo/env")   # no final newline
+        (self.app / ".duo/flows").mkdir(parents=True)
+        (self.app / ".duo/flows/App.flow").write_text("SCREENS=feeds\n")
+        r = self.run_preflight()
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(exclude.read_text().splitlines()[1:], ["/.duo/env", "/.duo/*"])
+        self.assertIn("(.duo/ is kept out of git by /.duo/* in .git/info/exclude)", r.stdout)
+        self.assertEqual(self.g("status", "--porcelain", "--untracked-files=all").stdout, "")
+        # The commands the fixes print still work with it, and so does a plain add: .duo/ stays out of both.
+        (self.app / "App.swift").write_text("struct App { var x = 1 }\n")
+        self.g("add", "-A", "--", ":/", ":(exclude).duo")
+        self.g("add", "-A")
+        self.assertEqual(self.g("status", "--porcelain").stdout, "M  App.swift\n")
+
+    def test_where_the_project_ignores_the_duo_folder_itself_the_fixes_name_no_exclusion(self):
+        (self.app / ".gitignore").write_text(".duo/\n")
+        self.g("add", "-A")
+        self.g("commit", "-q", "-m", "ignore .duo")
+        (self.app / ".duo").mkdir()
+        (self.app / ".duo/migration.json").write_text("{}")
+        (self.app / "App.swift").write_text("struct App { var x = 1 }\n")
+        r = self.run_preflight()
+        self.assertEqual(r.returncode, 1)
+        line = self.row(r, "uncommitted")
+        self.assertNotIn("exclude", line)
+        stash = re.search(r"put them aside, \.duo/ kept: (git .*)$", line, re.M).group(1)
+        self.assertTrue(stash.endswith("stash push --include-untracked -- ':/'"), stash)
+        subprocess.run(["bash", "-c", stash], check=True, capture_output=True,
+                       env={"HOME": str(self.home), "PATH": os.environ["PATH"], "GIT_CONFIG_NOSYSTEM": "1",
+                            "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.invalid",
+                            "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.invalid"})
+        self.assertTrue((self.app / ".duo/migration.json").exists())
+        self.assertEqual(self.run_preflight().returncode, 0)
+
+    def test_tracked_duo_files_warn_with_the_fix_and_do_not_block(self):
+        (self.app / ".duo/flows").mkdir(parents=True)
+        for name in ("PLAN.md", "REPORT.md", "migration.json", "flows/App.flow"):
+            (self.app / ".duo" / name).write_text("x\n")
+        self.g("add", "-A")
+        self.g("commit", "-q", "-m", "an earlier run committed its .duo/")
+        r = self.run_preflight()
+        self.assertEqual(r.returncode, 0, r.stdout)
+        line = self.row(r, "under .duo/ are tracked")
+        self.assertTrue(line.startswith("warn"), line)
+        self.assertIn("4 file(s)", line)
+        self.assertIn(".duo/PLAN.md, .duo/REPORT.md, .duo/flows/App.flow, …", line)
+        self.assertIn("never check out an earlier commit, or another run's duo-migration, in the app folder", line)
+        self.assertIn("git worktree outside the folder", line)
+        fix = re.search(r"fix: (git .*?), then commit that", line).group(1)
+        subprocess.run(["bash", "-c", fix], check=True, capture_output=True, env={"PATH": os.environ["PATH"],
+                                                                                "HOME": str(self.home)})
+        self.g("commit", "-q", "-m", "Stop tracking .duo/")
+        self.assertTrue((self.app / ".duo/PLAN.md").exists())   # still on disk
+        r = self.run_preflight()
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertNotIn("tracked", r.stdout)
+        self.assertEqual(self.g("status", "--porcelain", "--untracked-files=all").stdout, "")
+
+    def test_a_remote_duo_migration_without_a_local_one_gets_a_note(self):
+        upstream = self.repo(self.tmp / "first run")
+        self.g("branch", "duo-migration", cwd=upstream)
+        clone = self.tmp / "rerun"
+        self.g("clone", "-q", str(upstream), str(clone), cwd=self.tmp)
+        r = self.run_preflight(app=clone)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        line = self.row(r, "origin/duo-migration exists")
+        self.assertTrue(line.startswith("note"), line)
+        self.assertIn("git switch -c duo-migration --no-track", line)
+        self.g("switch", "-q", "-c", "duo-migration", "--no-track", cwd=clone)   # as the run does
+        r = self.run_preflight(app=clone)
+        self.assertNotIn("origin/duo-migration exists", r.stdout)
+        self.assertEqual(self.g("rev-parse", "--abbrev-ref", "duo-migration@{upstream}", cwd=clone,
+                                check=False).returncode, 128)   # it tracks nothing
+        self.assertNotIn("tracks origin/duo-migration", r.stdout)
+
+    def test_a_duo_migration_that_tracks_another_runs_branch_warns(self):
+        upstream = self.repo(self.tmp / "first run")
+        self.g("branch", "duo-migration", cwd=upstream)
+        clone = self.tmp / "rerun"
+        self.g("clone", "-q", str(upstream), str(clone), cwd=self.tmp)
+        self.g("checkout", "-q", "duo-migration", cwd=clone)   # the trap: a plain checkout tracks the other run's
+        r = self.run_preflight(app=clone)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertNotIn("origin/duo-migration exists", r.stdout)
+        line = self.row(r, "duo-migration tracks origin/duo-migration, another run's branch")
+        self.assertTrue(line.startswith("warn"), line)
+        fix = re.search(r"fix: (git .*? branch --unset-upstream duo-migration)", line).group(1)
+        subprocess.run(["bash", "-c", fix], check=True, capture_output=True, env={"PATH": os.environ["PATH"],
+                                                                                "HOME": str(self.home)})
+        self.assertNotIn("tracks origin/duo-migration", self.run_preflight(app=clone).stdout)
+
+    def test_this_runs_own_branch_pushed_by_the_person_is_not_another_runs(self):
+        remote = self.tmp / "remote.git"
+        self.g("init", "-q", "--bare", str(remote), cwd=self.tmp)
+        self.g("remote", "add", "origin", str(remote))
+        self.g("switch", "-q", "-c", "duo-migration", "--no-track")   # as the run makes it
+        (self.app / "App.swift").write_text("struct App { var duo = 1 }\n")
+        self.g("commit", "-q", "-am", "Adapt the app to iPhone Duo")
+        self.g("push", "-q", "-u", "origin", "duo-migration")   # as a person opening a pull request does
+        self.assertEqual(self.g("rev-parse", "--abbrev-ref", "duo-migration@{upstream}").stdout.strip(),
+                         "origin/duo-migration")
+        r = self.run_preflight()
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertNotIn("tracks origin/duo-migration", r.stdout)
+        self.assertNotIn("unset-upstream", r.stdout)
+        # With no reflog to tell (expired, or a clone), the warning says both and what to do in each case.
+        shutil.rmtree(self.app / ".git" / "logs")
+        r = self.run_preflight()
+        self.assertEqual(r.returncode, 0, r.stdout)
+        line = self.row(r, "duo-migration tracks origin/duo-migration: if a plain git checkout of another run's branch")
+        self.assertTrue(line.startswith("warn"), line)
+        self.assertIn("if you pushed this run's branch yourself (a pull request), leave it", line)
+        self.assertIn("branch --unset-upstream duo-migration", line)
+
+    def test_the_ci_xcode_is_one_note(self):
+        r = self.run_preflight()
+        self.assertTrue(self.row(r, "no CI Xcode found in the repository").startswith("note"))
+        (self.app / ".github/workflows").mkdir(parents=True)
+        (self.app / ".github/workflows/ci.yml").write_text(
+            "jobs:\n  ios:\n    steps:\n"
+            "      - run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer\n")
+        self.g("add", "-A")
+        self.g("commit", "-q", "-m", "CI")
+        r = self.run_preflight()
+        self.assertEqual(r.returncode, 0, r.stdout)
+        line = self.row(r, "CI builds with Xcode 26.6")
+        self.assertTrue(line.startswith("note"), line)
+        self.assertIn("(.github/workflows/ci.yml:4), which has no iOS 27 SDK", line)
+        self.assertIn("#if compiler(>=6.4)", line)
+        self.assertEqual(len([t for t, text in r.rows if "CI" in text]), 1)
+        self.assertTrue(all(len(l) <= 120 for l in line.splitlines()), line)
+        # An Xcode 27.0 CI: the proposal to move it to 27.1.
+        (self.app / ".github/workflows/ci.yml").write_text("steps:\n  - uses: maxim-lobanov/setup-xcode@v1\n"
+                                                           "    with:\n      xcode-version: '27.0'\n")
+        self.g("commit", "-q", "-am", "CI on 27.0")
+        line = " ".join(self.row(self.run_preflight(), "Xcode 27.0").split())
+        self.assertIn("propose moving CI to Xcode 27.1 in .duo/PLAN.md", line)
 
     # --- Claude Code
     def test_claude_code_absent_is_a_note_and_old_is_a_warning(self):

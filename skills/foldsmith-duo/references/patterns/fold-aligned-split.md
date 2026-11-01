@@ -89,7 +89,11 @@ empty detail (no T7). UIKit apps: see UIKit below.
 ## Consequences
 - No control over the sidebar's width on the inner display. Lists with long rows wrap in the 320 pt flat sidebar.
 - The sheet rule needs every sheet's content to carry the modifier (`foldAwareSheetPlacement()`); a sheet without it
-  falls back to the leading half.
+  falls back to the leading half. That is every sheet among the `present` lines the skill's `tools/routes.sh` lists,
+  nested sheets included (a sheet presented from a sheet). NetNewsWire's rerun left about a dozen nested routes without
+  it (the Import Theme picker, the feed inspector's home page, the SwiftUI `.sheet` calls of screens Settings
+  presents) while its report said "every sheet"; where the system puts a nested sheet with automatic placement was not
+  captured.
 - In book both placements end 8 pt past the crease's centre, inside the division's 20 pt margin: the system's own
   sheet ends at 467.3 pt, the trailing one starts at 483.5 pt. The side is the defect, not the edge.
 - Upright, `FoldAlignedSplit` keeps the list a tap away instead of beside the detail (see Solution).
@@ -101,7 +105,11 @@ empty detail (no T7). UIKit apps: see UIKit below.
 - In laptop the system's sheet spans the horizontal fold (y 82–917 pt). Its form scrolls, which Apple exempts
   [tt-111466 9:28]; a fixed control placed in the middle of a sheet would be T1.
 - An empty detail with a centred placeholder ("No selection") lands on the laptop fold (NetNewsWire, T1): put
-  placeholders at the top of the pane (the catalog's sits at y 202–222 pt upright, clear of 455.5–495.5).
+  placeholders at the top of the pane (the catalog's sits at y 202–222 pt upright, clear of 455.5–495.5). The same goes
+  for every centred message a pane draws while it has nothing else to show (loading, empty, error): find each
+  (placeholder views, `ContentUnavailableView`, a web view's message styles) and move it the same way. NetNewsWire's
+  rerun moved "No selection" and left "Loading…", drawn while Reader View extracts with the same style at 45 % of the
+  pane's height, on the laptop and tent fold; no capture shows a message that brief.
 - Three levels upright on `FoldAlignedSplit`: unfolded at the top level, the person sees an empty detail with the
   collections one tap away (T7, measured). `FoldAlignedTiledSplit` keeps them beside it.
 - A tab sidebar rebuilds its tab bar items whenever the vertical bar comes or goes, which is on every fold. IceCubesApp
@@ -146,6 +154,53 @@ copied with the file above. `FoldAlignedTiledSplit(selection: $selection) { List
 Detail(…) }`; with three levels, a sidebar that holds its own `NavigationStack` passes `sidebarNavigates: true`. Keep
 the selection and the sidebar's path in the caller (they survive the switch between containers).
 
+Both files are wrapped whole in `#if compiler(>=6.4)`: Xcode 27 brings Swift 6.4 and the iOS 27 SDK, and an older
+Xcode, often the project's CI, compiles them to nothing, since `#available` is checked only at run time
+([`skills/foldsmith-duo/references/apple.md`](../apple.md), "Toolchain"). So each call site sits inside the same guard, with the
+layout the app had in `#else`:
+
+```swift
+// Xcode 27 brings Swift 6.4 and the iOS 27 SDK; an older Xcode (often the project's CI) builds the #else.
+#if compiler(>=6.4)
+FoldAlignedTiledSplit(selection: $selection) {
+    FeedList(selection: $selection)
+} detail: {
+    ArticleView(selection)
+}
+#else
+NavigationSplitView {                       // the app's own split, as it was
+    FeedList(selection: $selection)
+        .navigationSplitViewColumnWidth(320)
+} detail: {
+    ArticleView(selection)
+}
+#endif
+
+TimelineView()
+    .sheet(isPresented: $addingFeed) {
+        AddFeedView()
+            #if compiler(>=6.4)
+            .foldAwareSheetPlacement()
+            #endif
+    }
+```
+
+UIKit code that calls an iOS 27 API keeps its `#available` inside the guard, and the layout the app had in both
+fallbacks; the guard leaves out Mac Catalyst too, whose 27.1-era SDK has no reserved regions:
+
+```swift
+// Xcode 27's SDK, on iOS only: Catalyst, visionOS and macOS have no reserved regions
+#if compiler(>=6.4) && os(iOS) && !targetEnvironment(macCatalyst)
+if #available(iOS 27.1, *), !view.reservedRegions(kind: .division, options: .includeInactive).isEmpty {
+    useAutomaticColumnWidths()              // the Duo layout
+} else {
+    useAppColumnWidths()                    // the layout the app had
+}
+#else
+useAppColumnWidths()
+#endif
+```
+
 ## UIKit (`UISplitViewController`)
 Measured on NetNewsWire, a three-column UIKit split, in the hands-free run, not in the catalog
 ([`verification/runs/NetNewsWire/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/NetNewsWire/), the code in `NetNewsWire.patch`):
@@ -161,15 +216,24 @@ Measured on NetNewsWire, a three-column UIKit split, in the hands-free run, not 
   a first launch can keep the overlay, since later passes do not leave it (measured on fresh installs of the catalog:
   `tiled` in laptop came up as an overlay on 5 of 5 with the minimum set in `viewDidLayoutSubviews`, and tiled on 5 of
   5 with it set before the first layout).
+- **Bar items in the narrow detail.** Upright, the detail pane is 328 pt wide, and its bars drop what does not fit:
+  both NetNewsWire runs lost Share from the article's bottom bar, and Previous and Next went behind a top More no
+  capture could open (with Share went Find in Article, which only the article's own share sheet offers). Keep the
+  frequent and status-bearing items with `visibilityPriority` (iOS 27.0: high on them, low on the rare ones), give
+  each custom view a `menuRepresentation` (UIKit has no title for it in an overflow otherwise), and check every item in
+  the after snapshot (the skill's `tools/progress.py controls`): one gone is brought back, or recorded with `moved` and
+  the line of code that puts it in the overflow. These remedies are SDK API, not yet measured on a run.
 - **Sheets.** `sheetPresentationController.preferredPlacement = .trailing` while a vertical division is active,
   `.automatic` otherwise: set it before `present`, and change sheets already up inside `animateChanges` when the fold
-  changes. Gate it with `#available(iOS 27.1, *)` like the region query.
+  changes. Gate it with `#available(iOS 27.1, *)` like the region query. Every sheet route: the `present` lines the
+  skill's `tools/routes.sh` lists, nested sheets included, and in a SwiftUI view `.presentationPlacement(.trailing)`
+  (iOS 27.0) on the same condition.
 - **When to look again.** UIKit has no callback when the reserved regions change. Re-read them on every layout
   (`viewWillLayoutSubviews` for what the split's own layout depends on, such as the detail minimum above), and add a
   `UIHingeInteraction` whose handler calls `setNeedsLayout()`: a sheet presented on the cover moved to the trailing
   half when the phone was unfolded.
 - **Placeholders.** Move an empty detail's placeholder into the upper part of its pane (NetNewsWire: 25 % of its
-  height).
+  height), and every other centred message the pane draws (loading, empty, error; Consequences).
 - **Three levels** (sidebar, list, detail). The two panes are the list pane and the detail; the list pane navigates
   the first two levels. Unfolded from the sidebar, the sidebar sits beside the detail (the catalog's choice, as
   above); a picked item pushes the list onto the list pane and Back returns to the sidebar. A triple-column split
@@ -183,6 +247,31 @@ Measured on NetNewsWire, a three-column UIKit split, in the hands-free run, not 
   `setViewController(_:for:)`, which UIKit applies only at the next rotation of the cover, popping it to the sidebar;
   and doing it in `viewWillTransition`, which a fold onto the cover does not call first and which loops with a sheet
   up. Forcing the sidebar visible instead brings it up as an overlay over a dimmed detail, which this page rejects.
+- **Six checks a `--structural` run must pass.** The first NetNewsWire run swapped the stacks this way (`2b2e1dc`),
+  and its independent review found six regressions in it, all on the inner display and none in a capture
+  ([`verification/runs/NetNewsWire/`](https://github.com/3nchiridion/foldsmith-evidence/tree/main/verification/runs/NetNewsWire/),
+  README and REPORT). Taps reach only the cover, so most are checked in the code; record each as checked, and how, in
+  the log and the report, and one that fails as a regression (`issue add --regression`):
+  1. *Actions that ask for the sidebar leave the panes as they are.* Mark All as Read called
+     `showColumn(.primary)`, whose column then held only the empty controller: an empty column stayed beside the list
+     pane until the phone was closed, and the article closed. Follow every caller of `showColumn` and
+     `preferredDisplayMode` (`rg -n "showColumn\(|preferredDisplayMode"`, the keyboard commands too) through the
+     swapped stacks, with an article open, side by side (book) and upright.
+  2. *Back from the list to the sidebar keeps the open article.* The feeds list's `didShow` deselected the feed, which
+     closed the article. Read what each controller's appearance does while the stacks are swapped.
+  3. *No route pushes and pops one stack in the same run-loop turn.* That Back popped the list, the deselection pushed
+     it again to show a column, and a completion popped it while the push started. Follow each selection callback from
+     Back to its last push or pop.
+  4. *Routes from outside keep what they open.* Handoff, Spotlight, Siri, notifications, search and quick actions (the
+     `restore`, `url`, `notification` and `shortcut` lines of the skill's `tools/routes.sh`) deselected, popping the
+     list pane, and selected at once, pushing it, with no wait at regular width; the flag meant to stop a late
+     deselection was never set. Each route must end on the item it opened, whatever order UIKit's transitions end in.
+  5. *A search started on the cover survives the unfold.* A Search All from ⌘F or the Search quick action left the
+     timeline, with its results, out of the window: the unfold put only the feeds list on the list stack. Where a flow
+     can start the search on the cover (taps, `type:`), capture it and the inner poses; otherwise follow each route
+     that starts one through what the unfold puts on the list stack.
+  6. *The edge swipe cannot bring up the empty column.* The split's `presentsWithGesture` stayed on while the primary
+     column held only the empty controller. Turn it off while the stacks are swapped, as the display-mode button is.
 
 ## UIKit without a split view (tabs of navigation stacks)
 Measured on Wikipedia, whose list tabs (Saved, Activity, Search) are navigation stacks in a `UITabBarController` and

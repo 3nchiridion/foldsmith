@@ -24,8 +24,10 @@
 # the settle after launch, TAP_WAIT (default 2) after each tap; TAP_TIMEOUT (default 150) is how long the runner has to
 # launch and reach a screen before it is skipped. APP_PATH=<.app> reinstalls the app before every screen,
 # for apps that remember their onboarding (Signal). LAUNCH_ARGS="A B" passes launch arguments to the app (an app's own
-# UI-test switches). Build the runner once: the skill's references/simulator.md, "Before the first capture" (the
-# preflight prints the line), or, in the repository, Tap/README.md.
+# UI-test switches, user defaults): the runner splits the value at each space and nowhere else, so a quote or a
+# backslash in it reaches the app as a character and no argument holds a space (-Key <false/>, never -Key '<false/>').
+# Build the runner once: the skill's references/simulator.md, "Before the first capture" (the preflight prints the
+# line), or, in the repository, Tap/README.md.
 # Shots → foldsmith-evidence's raw/corpus/evidence/<name>/<screen>-<pose>-<panel>.png (from the skill's copy:
 # .duo/captures/<name>/; OUT=<dir>
 # puts them elsewhere); xcodebuild logs and the shut-phone snapshots → $XCODE_OUT (scratch). SNAPSHOT=1 also asks the
@@ -49,11 +51,16 @@
 #   still its parent, and on its way out it removes the lock capture-app.sh left.
 # - Before each screen, under 3 GB free on the disk of the home folder or of the shots, it prints a "stopped:" line with
 #   the space and the largest ~/Library/Caches/duo-* folders, deletes nothing, and exits 4.
-# - Each cell captured (its shot, and its snapshot with SNAPSHOT=1) is recorded in <out>/.captured with the flow's
-#   sha256 (FLOW_SHA, which capture-app.sh sets, else that of these arguments). RESUME=1 keeps the cells recorded there
-#   with the same sha256 whose files are still there and captures the rest, so a capture stopped by a signal, a time
-#   limit or the disk carries on where it stopped. Without RESUME=1 the record of the cells it captures is cleared
-#   first, so a later RESUME=1 never keeps a cell from before this capture.
+# - Each cell captured (its shot, and its snapshot with SNAPSHOT=1) is recorded in <out>/.captured as "<flow sha256>
+#   <screen> <pose> <code>": the flow's sha256 (FLOW_SHA, which capture-app.sh sets, else that of these arguments) and
+#   the app's code identity (CAPTURE_CODE, which capture-app.sh sets, else what progress.py codeid prints here, once,
+#   after the lock, on a "code:" line first; none when progress.py is not beside this script). RESUME=1 keeps the cells
+#   recorded there with the same sha256 and the same code whose files are still there and captures the rest, so a
+#   capture stopped by a signal, a time limit or the disk carries on where it stopped, and one resumed after a commit or
+#   an edit takes its cells again and says so once; a line with no code (written before 0.8.1) is never kept. Without
+#   RESUME=1 the lines of the cells it captures are marked "retaking" first, so a later RESUME=1 never keeps a cell from
+#   before this capture while progress.py still reads the code a shot not yet taken again came from. A cell's line
+#   goes with its shot (before its screen), and its new line is added once the cell is captured.
 set -euo pipefail
 
 NAME="${1:?app name}"; BUNDLE="${2:?bundle id}"; shift 2
@@ -164,12 +171,38 @@ for entry in "${POSES[@]}"; do
 done
 [ "${#SELECTED[@]}" -gt 0 ] || { echo "ONLY=\"$ONLY\" names none of the poses" >&2; exit 2; }
 
-# The cells captured, for RESUME=1: "<flow sha256> <screen> <pose>" per line.
+# The cells captured, for RESUME=1 and progress.py check: "<flow sha256> <screen> <pose> <code>" per line.
 SHA="${FLOW_SHA:-$(printf '%s\n' "$NAME" "$BUNDLE" "${LAUNCH_ARGS:-}" "${SCREENS[@]}" | shasum -a 256 | cut -d' ' -f1)}"
 RECORD="$OUT/.captured"
-captured() { # whether RESUME=1 keeps the cell of screen $1 in pose $2
-  [ "${RESUME:-0}" = 1 ] && [ -f "$RECORD" ] && grep -qxF "$SHA $1 $2" "$RECORD" \
+captured() { # whether RESUME=1 keeps the cell of screen $1 in pose $2: a line with this flow and this code, its files
+  [ "${RESUME:-0}" = 1 ] && [ -f "$RECORD" ] && grep -qxF "$SHA $1 $2 $CODE" "$RECORD" \
     && [ -e "$OUT/$1-$2-$(expected_panel "$2").png" ] && { [ "${SNAPSHOT:-0}" != 1 ] || [ -e "$OUT/$1-$2.json" ]; }
+}
+# How the record has the cell $1 ("<screen> <pose>") from this flow: same (this code), other (other code), none (a line
+# with no code, written before 0.8.1), or nothing.
+earlier() {
+  local line rest how=
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      "$SHA $1 $CODE") how=same;;
+      "$SHA $1") [ -n "$how" ] || how=none;;
+      "$SHA $1 "*) rest="${line#"$SHA $1 "}"; case "$rest" in *" "*) ;; *) [ "$how" = same ] || how=other;; esac;;
+    esac
+  done < "$RECORD"
+  echo "$how"
+}
+# Rewrites the record for the cells in $2 ("<screen> <pose>" per line, whatever their flow or code): with $1 = drop
+# their lines go; with $1 = retake their flow sha256 becomes "retaking", so RESUME=1 keeps none of them while
+# progress.py still reads the code each shot came from.
+edit_record() {
+  [ -f "$RECORD" ] || return 0
+  CELLS="$2" awk -v how="$1" -v poses=" $POSE_NAMES " '
+    BEGIN { n = split(ENVIRON["CELLS"], c, "\n"); for (i = 1; i <= n; i++) if (c[i] != "") cell[c[i]] = 1 }
+    NF < 3 { print; next }
+    { at = index(poses, " " $NF " ") ? NF : NF - 1; name = $2; for (i = 3; i < at; i++) name = name " " $i }
+    !((name " " $at) in cell) { print; next }
+    how == "retake" { $1 = "retaking"; print }' "$RECORD" > "$RECORD.new"
+  mv "$RECORD.new" "$RECORD"
 }
 
 # The lock: capture-app.sh's when it runs this script (it names itself in the lock and in CAPTURE_LOCK_PID), with a
@@ -224,11 +257,38 @@ trap 'SIGNAL=TERM; exit 143' TERM
 trap 'SIGNAL=HUP; exit 129' HUP
 trap on_exit EXIT
 
-# A capture that does not resume forgets the cells it is about to take, so a later RESUME=1 keeps only its own.
-if [ "${RESUME:-0}" != 1 ] && [ -f "$RECORD" ]; then
-  for s in "${SCREENS[@]}"; do for entry in "${SELECTED[@]}"; do echo "${s%%=*} ${entry%%|*}"; done; done \
-    | awk 'NR == FNR { drop[$0] = 1; next } !(substr($0, index($0, " ") + 1) in drop)' - "$RECORD" > "$RECORD.new"
-  mv "$RECORD.new" "$RECORD"
+# The code this capture is of, on each line it adds to the record: capture-app.sh's (CAPTURE_CODE), else what
+# progress.py codeid prints (HEAD, then + and a hash when anything outside .duo/ is uncommitted; none outside git).
+CODE_RE='^[0-9a-f]{40}(\+[0-9a-f]{16})?$'
+if [ -n "${CAPTURE_CODE:-}" ]; then
+  CODE="$CAPTURE_CODE"; [[ "$CODE" =~ $CODE_RE ]] || CODE=none
+else
+  CODE=none
+  [ ! -f "$HERE/progress.py" ] || CODE="$(python3 "$HERE/progress.py" codeid 2>/dev/null)" || CODE=none
+  [[ "$CODE" =~ $CODE_RE ]] || CODE=none
+  echo "code: $CODE"
+fi
+
+# A capture that does not resume marks the cells it is about to take, so a later RESUME=1 keeps only its own. One that
+# resumes says once when cells of this flow were captured from other code: it takes those again.
+if [ "${RESUME:-0}" != 1 ]; then
+  cells=
+  for s in "${SCREENS[@]}"; do for entry in "${SELECTED[@]}"; do cells+="${s%%=*} ${entry%%|*}"$'\n'; done; done
+  edit_record retake "$cells"
+elif [ -f "$RECORD" ]; then
+  kept=0; other=0; bare=0
+  for s in "${SCREENS[@]}"; do
+    for entry in "${SELECTED[@]}"; do
+      if captured "${s%%=*}" "${entry%%|*}"; then kept=$((kept+1)); continue; fi
+      case "$(earlier "${s%%=*} ${entry%%|*}")" in other) other=$((other+1));; none) bare=$((bare+1));; esac
+    done
+  done
+  if [ $((other + bare)) -gt 0 ]; then
+    why="code changed since the earlier capture"
+    [ "$other" -gt 0 ] || why="the earlier capture recorded no code (it was taken before 0.8.1)"
+    if [ "$kept" -eq 0 ]; then echo "$why: taking every cell again"
+    else echo "$why, for $((other + bare)) cells: taking those again ($kept kept)"; fi
+  fi
 fi
 
 # Fold and turn the phone, skipping what is already so; a fold always posts the orientation after it.
@@ -278,13 +338,17 @@ for s in "${SCREENS[@]}"; do
   stop_if_orphaned
   if note="$(low_disk "$screen")"; then echo "$note"; STOP_NOTE=1; exit 4; fi
   echo "== $screen"
-  # An earlier pass's shot or snapshot of a cell this pass takes goes first: a pose this pass misses is missing.
+  # An earlier pass's shot, snapshot and line in the record of a cell this pass takes go first: a pose this pass misses
+  # is missing.
+  cells=
   for entry in "${SELECTED[@]}"; do
     label="${entry%%|*}"
     captured "$screen" "$label" && continue
     rm -f "${OUT:?}/$screen-$label-cover.png" "${OUT:?}/$screen-$label-inner.png"
     [ "${SNAPSHOT:-0}" != 1 ] || rm -f "${OUT:?}/$screen-$label.json"
+    cells+="$screen $label"$'\n'
   done
+  edit_record drop "$cells"
   # 1. shut, cover upright: the only state a tap reaches. Some apps (Wikipedia) take an orientation only while
   #    they run, so a change posted with nothing in front leaves the next launch landscape: launch the app, turn
   #    the cover away and back while it is up, and the runner's relaunch then comes up upright. PRIME=0 skips it.
@@ -382,7 +446,7 @@ for s in "${SCREENS[@]}"; do
     shot="$OUT/$screen-$label-$(expected_panel "$label").png"
     [ -z "${ON_SHOT:-}" ] || [ ! -e "$shot" ] || bash -c "$ON_SHOT"' "$@"' _ "$screen" "$label" "$shot" || true
     if [ "$shot_ok" = 1 ] && [ -e "$shot" ] && { [ "${SNAPSHOT:-0}" != 1 ] || [ "$snap_ok" = 1 ]; }; then
-      echo "$SHA $screen $label" >> "$RECORD"
+      echo "$SHA $screen $label $CODE" >> "$RECORD"
     fi
     echo "  $label"
     prev=$label

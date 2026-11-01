@@ -13,9 +13,15 @@ runs, reads and sends", gives every program and when it runs.
 
 **The skill** (`skills/foldsmith-duo/`, the same in the plugin), when you ask it to audit or adapt an app:
 - **Checks the Mac first** with `tools/preflight.sh`: read-only (`xcodebuild -version`, `xcrun simctl list`, `df`,
-  `git status` in the app, the tools' versions, the app's progress file and earlier `.duo/env`, read as text and never
-  run), it installs, creates, renames and boots nothing, and writes only `.duo/env` in the app and one line of the
-  repository's `.git/info/exclude`. Each fix it prints is for you to run.
+  `git status`, `ls-files`, `for-each-ref`, `show-ref` and `check-ignore` in the app, the tools' versions, the app's
+  progress file and earlier `.duo/env`, read as text and never run, and `tools/sdkguard.py --ci-only`), it installs,
+  creates, renames and boots nothing, and writes only `.duo/env` in the app and one line of the repository's
+  `.git/info/exclude`, `/.duo/*`, which keeps the app's `.duo/` out of git. Each fix it prints is for you to run.
+- **Checks the project's CI toolchain** with `tools/sdkguard.py`: it reads the repository's CI files, each
+  `/Applications/Xcode*.app/Contents/version.plist` and the changed Swift files, runs only read-only git commands
+  (`rev-parse`, `diff`, `ls-files`, `merge-base`, `symbolic-ref`, `for-each-ref`), and writes nothing.
+- **Keeps its progress file** with `tools/progress.py`, which runs only read-only git commands in the app's repository
+  (`rev-parse`, `diff`, `ls-files`, `merge-base`, `log`, with `GIT_OPTIONAL_LOCKS=0`) and sends nothing anywhere.
 - **Builds** your app with `xcodebuild` against the iOS 27.1 SDK, and the tap runner (`tools/tap/DuoTap.xcodeproj`,
   committed, so no xcodegen) with `xcodebuild build-for-testing` / `test-without-building`.
 - **Drives the iPhone Duo simulator** you already have, with `xcrun simctl` (`list`, `install`, `launch`, `terminate`,
@@ -38,10 +44,10 @@ runs, reads and sends", gives every program and when it runs.
   repository's `.git/info/exclude`. It refuses an output folder that holds the app or its progress file, replaces only
   files it wrote there (a `README.md` it did not write stops it), and reads no shot path that leads outside the
   repository.
-- **Changes your app's code** (a migration, never an audit) and commits each change on a branch named `duo-migration`
-  in your app's repository. It **never pushes**, opens no pull request, and merges nothing. It writes `.duo/` in your
-  app's folder (progress file, flows, reports; captures, the App Store set, `.duo/env` and lock files are kept out of
-  git through `.git/info/exclude`).
+- **Changes your app's code** (a migration, never an audit or a review) and commits each change on a branch named
+  `duo-migration` in your app's repository, app code only. It **never pushes**, opens no pull request, and merges
+  nothing. It writes `.duo/` in your app's folder (progress file, flows, reports, captures, the App Store set,
+  `.duo/env` and lock files), none of it committed: the preflight's line in `.git/info/exclude` keeps it out of git.
 - Runs its own scripts with `bash` and `python3` (standard library only), and each app's flow file
   (`.duo/flows/<app>.flow`, which it writes) with `bash`: in a repository someone else wrote, read that file before you
   resume a migration there, as you would a build script.

@@ -109,6 +109,19 @@ pattern's shape but break those, so the run did not build them (not measured her
 dependency on this repository. `ReflowingColumns(paragraphs: article.paragraphs)`. The fold query is gated with
 `#available(iOS 27.1, *)`; before 27.1 it is the single scrolling column.
 
+The file is wrapped whole in `#if compiler(>=6.4)`, so an older Xcode, often the project's CI, compiles it to
+nothing (`#available` is checked only at run time: [`skills/foldsmith-duo/references/apple.md`](../apple.md), "Toolchain"); the
+call site sits inside the same guard, with the layout the app had in `#else`:
+
+```swift
+// Xcode 27 brings Swift 6.4 and the iOS 27 SDK; an older Xcode (often the project's CI) builds the #else.
+#if compiler(>=6.4)
+ReflowingColumns(paragraphs: article.paragraphs)
+#else
+ArticleText(article)                        // the app's own column, as it was
+#endif
+```
+
 ## Detectors this pattern must pass
 T5 (stretched-single-column), T14 (columns-off-fold), T1 (crease-straddle) for any fixed control over the text. Run
 on every capture by `swift test`; the `single` variant must show T5 in book and flat-sideways and nothing else.

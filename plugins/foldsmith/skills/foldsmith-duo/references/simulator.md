@@ -37,6 +37,12 @@ Measurements: `metrics.md`.
 - Reset privacy prompts on reinstall (`xcrun simctl privacy <udid> reset all <bundle id>`) or a permission sheet blanks the flow.
 - `duo.py orient` logs the simulator's own names: `sideways` prints "portrait" and `upright` prints "landscape-left".
   The table above is what each pose looks like.
+- A fresh checkout's first build can fail on a source a build phase generates during the build (NetNewsWire's
+  gitignored `SecretKey.swift`). Build once more before diagnosing, and read the target's script phases for
+  generators (`rg -n "shellScript" <App>.xcodeproj/project.pbxproj`).
+- In zsh (macOS's default shell) call each tool by its path with its interpreter (`python3 <skill>/tools/progress.py
+  check`), and never keep a command in a variable: zsh does not split `$P` into words, so `P="python3
+  …/progress.py"; $P check` looks for a program named by the whole string.
 
 ## Before the first capture
 `bash tools/preflight.sh <app folder>` (from the app folder: `bash <skill>/tools/preflight.sh .`), in a shell that has
@@ -53,18 +59,44 @@ blocks, 1 when something does (writing nothing), 2 for a wrong call:
   run either yourself;
 - python3 3.9 or later, and rg, which the static scans and `tools/routes.sh` read code with (in Claude Code, where
   `rg` is a shell function no script can call, `routes.sh` runs Claude Code's own, `$CLAUDE_CODE_EXECPATH`, as `rg`;
-  with neither, it blocks);
+  with neither, it blocks). Its `rg` line says which one it found. In your own commands plain `rg` works, the
+  program or Claude Code's function; `$CLAUDE_CODE_EXECPATH --ripgrep` is not a way to reach it (it failed on
+  NetNewsWire's rerun);
 - at least 5 GB free on the home volume (`df -Pk ~`), a warning under 10, naming the usual folders to clear and
   deleting nothing (Wikipedia's run took it from 12 GB to 2.1 GB);
 - the app folder is a git repository with nothing uncommitted outside `.duo/`, since the migration commits. Its fix
   leaves `.duo/` alone (`git stash push --include-untracked -- ':/' ':(exclude).duo'`, or `git add -A` with the same
-  pathspec): an audit's progress file, flows, reports and captures are not committed, and a plain stash would take
-  them. On `duo-migration` the changes are the migration's own, and the line says so: the run finishes and commits
-  that change or puts it aside, logs which, and runs the preflight again;
+  pathspec; with no pathspec where the project's own `.gitignore` ignores the `.duo` folder itself, since git then
+  refuses the exclusion, "paths are ignored"): an audit's progress file, flows, reports and captures are not
+  committed, and a plain stash would take them. On `duo-migration` the changes are the migration's own, and the line
+  says so: the run finishes and commits that change or puts it aside, logs which, and runs the preflight again;
+- `.duo/` stays out of git: it adds `/.duo/*` (after the app folder's path from the repository's top) to
+  `.git/info/exclude` (an older `/.duo/env` line there is left as it is), since the migration commits app code only.
+  Everything inside `.duo/` is then ignored, so a plain `git add -A` leaves it out and the pathspec forms above still
+  work: commit that way once the preflight has passed. Never add `.duo/` to the project's `.gitignore` (a change to
+  the project, and with the folder itself ignored git refuses those pathspecs). Files under `.duo/` already tracked (a
+  run before 0.8.1 committed its progress file, flows and reports) get a `warn` naming them and the fix, `git -C <app>
+  rm -r --cached -- .duo` and a commit (the files stay on disk); it does not block. On `duo-migration` they are an
+  earlier run's: make that commit yourself and log it; elsewhere the fix is the person's. After that commit never
+  check out an earlier commit, or another run's `duo-migration`, in the app folder: `.duo/` is ignored then, so git
+  overwrites it with the old files and deletes it on the way back (read old code with `git show <rev>:<path>`, or in a
+  `git worktree` outside the folder). Never run `git clean -fdx` in the app: it deletes `.duo/`, the progress file
+  with it;
+- a `note` when a remote has a `duo-migration` branch and the repository has none of its own: the run makes its own
+  with `git switch -c duo-migration --no-track`, so it never tracks someone else's (NetNewsWire's rerun had the first
+  run's branch one plain `git checkout duo-migration` away); and a `warn` when `duo-migration` already tracks a
+  remote's `duo-migration` and its first reflog entry says a remote's branch was its start point (that checkout made
+  it): `git branch --unset-upstream duo-migration`, then check that `git log <base>..duo-migration` holds only this
+  run's commits. A `duo-migration` made here from HEAD and pushed by the person (`git push -u`, a pull request) gets
+  nothing; with no reflog to tell, the `warn` says both cases (unset it if a checkout made it, leave it if the person
+  pushed it). The run does not act on it;
+- a `note` with the Xcode the project's CI builds with (`python3 tools/sdkguard.py --ci-only <app folder>`), or that
+  the repository names none, and what it means for the run: below Xcode 27, every iOS 27 API and every reference
+  type sits inside `#if compiler(>=6.4)`, and step 6 runs `tools/sdkguard.py` ("Tools bundled with this skill");
 - Claude Code 2.1.308 or later, for the pane: this session's, else `claude` on PATH (an older one warns; a note where
   there is none: the skill runs in other agents too).
-When nothing is missing it writes `.duo/env` (atomically, values shell-quoted), keeps it out of git (`/.duo/env` in
-`.git/info/exclude`) and prints one line per value:
+When nothing is missing it writes `.duo/env` (atomically, values shell-quoted), out of git with the rest of `.duo/`,
+and prints one line per value:
 - `DUO_UDID`: the Duo simulator: the progress file's `simulator` when it is an available Duo (a resume captures, and
   the person signs in, there; one that is gone warns), else the one `.duo/env` named, else the booted one when exactly
   one is, else the first;
@@ -108,9 +140,9 @@ line. The exit code says how it ended:
 
 | Exit | What it means | What to do |
 |---|---|---|
-| 0 | every cell asked for was captured: each has its line in `<out-dir>/.captured` (its shot and its snapshot landed) | read the table, look at the shots |
+| 0 | every cell asked for was captured: each has its line in `<out-dir>/.captured` from this flow and this code (its shot and its snapshot landed) | read the table, look at the shots |
 | 2 | a wrong call, caught before anything is touched (no lock taken, `capture.txt` as it was): no flow file, no `BUNDLE` or `SCREENS` in it, a `SCREEN=` that names none of its screens, an `ONLY=` word that is not a pose, `DUO_UDID` unset, `DUO_PY` or `DUO_TAP_XCTESTRUN` not a file | fix the call; usually `source .duo/env` |
-| 3 | cells not captured: a screen its taps did not reach, a pose with no shot or no snapshot (every such line says "skipped"); `findings.txt` and stderr repeat the lines and list each cell of the run with no line in `.captured` | capture them again (`SCREEN=… ONLY=…`) before reading the table: a missing cell is missing, not clean |
+| 3 | cells not captured: a screen its taps did not reach, a pose with no shot or no snapshot (every such line says "skipped"); `findings.txt` and stderr repeat the lines and list each cell of the run with no line in `.captured` from this flow and this code | capture them again (`SCREEN=… ONLY=…`) before reading the table: a missing cell is missing, not clean |
 | 4 | under 3 GB free on the disk of the home folder or the output folder, checked before the capture, before each screen and before the detectors' build; the message names the space and the three largest `~/Library/Caches/duo-*` folders with their sizes | delete nothing; hands-free, put it first in `todo` and end the run, so the person frees space; then `RESUME=1` |
 | 5 | another capture holds `.duo/.capture.lock` and its pid is a running `capture-app.sh` or `capture-corpus-flow.sh`; nothing was touched | wait for it to end; never remove the lock of a live capture |
 | 128 + n | stopped by signal n: 130 INT, 143 TERM, 129 HUP | the same command with `RESUME=1` |
@@ -135,12 +167,26 @@ kept: the same command with RESUME=1 carries on from there.`, naming the signal 
 passes INT on to its flow script as USR1, since a background job ignores INT). Any other early exit writes the same
 line with `exit N`.
 
-Each cell captured (its shot and its snapshot) is recorded in `<out-dir>/.captured` with the flow's sha256. With
-`RESUME=1`, the same flow file into the same folder keeps the cells recorded there whose files still exist ("kept from
-the earlier capture"; a screen with every cell kept starts no runner), captures the rest, adds a `resumed:` line to
-`capture.txt`, and runs the detectors over the whole folder. A changed flow (another sha256) says so and captures every
-cell. A capture without `RESUME=1` first clears the record of the cells it takes, so a resume never keeps a cell an
-earlier build captured.
+Each cell captured (its shot and its snapshot) is recorded in `<out-dir>/.captured` as `<flow sha256> <screen> <pose>
+<code>`, where the code identity is what `python3 tools/progress.py codeid` prints once at the start of the run (the
+commit, then `+` and a hash when anything outside `.duo/` is uncommitted; `none` outside git). `capture.txt` has it on
+a `code: <code>` line right after the `flow:` line, and each `resumed:` and `recaptured:` line is followed by its own
+`code:` line; `capture-corpus-flow.sh` run on its own takes the code itself and prints `code: <code>` as its first
+line. With `RESUME=1`, the same flow file into the same folder from the same code keeps the cells recorded there whose
+files still exist ("kept from the earlier capture"; a screen with every cell kept starts no runner), captures the
+rest, adds a `resumed:` line to `capture.txt`, and runs the detectors over the whole folder. A changed flow (another
+sha256) says so and captures every cell, and so does changed code (a commit, an edit). A resume says which, once, in
+`capture.txt`:
+- `code changed since the earlier capture: taking every cell again` when no cell is kept;
+- `code changed since the earlier capture, for N cells: taking those again (K kept)` when some are (after a `SCREEN=`
+  recapture from the new code, say);
+- `the earlier capture recorded no code (it was taken before 0.8.1): taking every cell again` (or the `, for N cells:
+  …` form) when the only lines from this flow are three-field lines, which are never kept.
+A capture without `RESUME=1` first marks the lines of the cells it takes `retaking` (a `SCREEN=` capture, that screen's
+lines only), so a later `RESUME=1` keeps none of them, while `progress.py check` still reads which code each shot not
+yet taken again came from. A cell's line goes with its shot and snapshot just before its screen is captured, and its
+new line is added once the cell is captured. `progress.py check` reads the same record: an after shot from other code
+than the code checked out is stale ("Tools bundled with this skill", `progress.py`).
 
 ## Taps
 A tap takes about 4 s. If the runner's log (`$XCODE_OUT/<screen>.log`) shows "Wait for com.apple.springboard to idle"
@@ -158,9 +204,21 @@ can still need more than the 150 s a screen gets to launch and reach its screen:
   uninstalls the app and installs that `.app` afresh before every screen (with its privacy prompts reset), for an app
   that remembers its onboarding: it clears the app's data and any login each time. Use it for the audit
   (`.duo/captures/<app>/before`) and the proof (`…/after`).
-  `LAUNCH_ARGS` are user defaults: write a boolean as `-Key '<false/>'` (property-list syntax), since `-Key NO` arrives as
-  the string "NO" and an app that reads a `Bool` ignores it. The app keeps its saved settings from screen to screen (a
-  screen's taps that open the contents leave them open for the next), so pin every setting a capture depends on there.
+  `LAUNCH_ARGS` are user defaults, `-<key> <value>` pairs. bash sources the flow file and the tap runner splits the
+  value at spaces with no quoting of its own, so write the whole value in one pair of quotes (double or single) with
+  none inside: `LAUNCH_ARGS="-ShowArticle <false/> -Count 2"`. A quote inside it reaches the app as a character (`-Key
+  '<false/>'` arrives as the string `'<false/>'`), no value can hold a space, runs of spaces count as one, a tab or a
+  newline does not split, and inside double quotes bash expands `$` and backticks (single quotes take the value
+  literally). The runner splits at each space and nowhere else (Swift's `split(separator: " ")` of `DUO_ARGS`, which
+  `capture-corpus-flow.sh` passes to xcodebuild as `TEST_RUNNER_DUO_ARGS`). Write a boolean in property-list syntax,
+  `<false/>` or `<true/>`, since `-Key NO` arrives as the string "NO" and an app that reads a `Bool` ignores it;
+  `<dict/>` stands for an empty dictionary. The app keeps its saved settings from screen to screen (a screen's taps
+  that open the contents leave them open for the next), so pin every setting a capture depends on there. An app that
+  restores its last selection at launch starts each screen where the last one ended (NetNewsWire restores the feed and
+  the article): find what it restores from (`rg -n
+  "restorationIdentifier|stateRestoration|NSUserActivity|UserDefaults"`) and pin those keys (NetNewsWire's rerun:
+  `-selectedSidebarItem <dict/> -selectedArticle <dict/>`), or reinstall it before every screen with `APP_PATH`, which
+  clears all its data.
   `SCREEN="a b"` and `ONLY="book laptop"` limit it to those screens and poses; `TAP_TIMEOUT` (default 150 s) is how
   long a screen's taps may take. Before each screen it removes that screen's shots and snapshots in the poses it is
   about to take, so a pose it misses is missing, not the earlier pass's picture. It exits 3, and repeats the lines,
@@ -186,13 +244,16 @@ can still need more than the 150 s a screen gets to launch and reach its screen:
   capture an overflow menu in a probe flow with `ONLY="closed closed-sideways"`, and read what an inner pose's overflow
   holds from its snapshot (what the bars lack) and the code. A control that exists only on the inner display (a button
   in a detail pane, a list pane that now holds another screen) cannot be tapped: check it by its shots and its code
-  path, and say so in the report.
+  path, and say so in the report. So a control moved into an inner pose's overflow is proven by the line of code that
+  puts it there (`progress.py moved … <file>:<line>`), or brought back; "the system probably overflows it" is not
+  evidence. A custom-view item needs a `menuRepresentation`, or the overflow has no title for it.
   `FRESH=1` relaunches before every inner pose. `SNAPSHOT=1` also saves the
   app's accessibility tree in that pose (`<screen>-<pose>.json`), which is what the detectors read. Its runner: "Before
   the first capture".
 - `tools/progress.py`: every change to `.duo/migration.json` (`init`, `phase`, `screen`, `cell`, `todo`, `done`,
-  `waive`, `issue`, `log`, `check`, `show`; `--help` lists them), locked and written whole. `capture-app.sh` calls it
-  for each shot of a `before` or `after` capture, so the cells get their pictures as the capture goes. A wrong line
+  `waive`, `issue`, `moved`, `review`, `log`; and `check`, `controls`, `codeid`, `show`, which change nothing;
+  `--help` lists them), locked and written whole. `capture-app.sh` calls it for each shot of a `before` or `after`
+  capture, so the cells get their pictures as the capture goes. A wrong line
   comes out the same way it went in: `todo --remove <prefix>`, `done --remove <prefix>`. A done line names its screens
   as the pane reads them: the words before its first `: `, split at commas and "and", each a screen's name or its first
   words (`article and contents from Home: …`); one with no `: `, or a part that names no screen, is refused. `done
@@ -214,34 +275,183 @@ can still need more than the 150 s a screen gets to launch and reach its screen:
     pins at its edge and the card a pin opens. Mark the cell `verified` if it changed and is right, or `waive <screen>
     <pose> unchanged "<why>"` where only other live content moved (a toast, content still loading, a feed's rows). A
     cell with no snapshot to compare, or one that cannot be read, is noted, not counted: it proves nothing either way;
-  - an open issue marked as a regression.
+  - a control gone, with no record of where it went. A control is a button, link, switch, toggle, segmented control,
+    slider, stepper, text, secure or search field, or menu or pop-up button, with a label or an identifier, outside
+    scrolling content and not a system element (the same exclusions as the `unchanged` comparison). It is gone from a
+    cell when the before snapshot has it and the after snapshot has no control with its identifier (when it has one)
+    nor its label (trimmed, any case); checked on every cell with both snapshots that is not `unchanged` or `pending`.
+    The line reads `<screen> <pose>: "<control>" (before at x,y w×h) is gone`. `controls [<screen>…]` lists each one
+    and whether a record covers it, and ends `N gone, M recorded` (or `no control gone`); it changes nothing. Bring it
+    back (`visibilityPriority`, a shorter title, a narrower neighbour), or record where it went: `moved <screen>
+    <pose,…|all|inner> "<control>" "<where it went>" <evidence> [--as "<new label>"]`, one record per pose (top-level
+    `"moved": [{screen, pose, control, to, evidence, kind, as?}]`). The evidence is a snapshot of that cell (kind
+    `shot`): its path from the repository, a `.json` under `.duo/captures/` and not a before one, named for the cell
+    (`<screen>-<pose>.json`, or `<screen>-<words>-<pose>.json` for a probe, in any case), that has a control or a menu
+    item (a menu the capture opened) with the control's label or identifier, or the `--as` label when it was relabelled
+    (the split's display-mode button: "split view horizontally left" became "enter full screen"). A shot proves only
+    its own pose: the cover's snapshot, where the control still sits on the bar, says nothing about an inner pose's
+    overflow (NetNewsWire's rerun), so one snapshot given for several poses is refused. Or `<file>:<line>` of the app's
+    source that puts it there (kind `code`: a `menuRepresentation`, `additionalOverflowItems`, a menu): a file git
+    tracks, outside `.duo/` and `.git/`, and a line that exists and is not blank; what it says, the review reads.
+    Refused too: a pose the control is not gone from, an `--as` that names an overflow button (More, or an identifier
+    with `Overflow`), an `--as` label the before snapshot already has (a neighbour that was always there is not the
+    control relabelled), and one `--as` label for two controls in the same cell. `check` tests each record's evidence
+    again every time: a record whose file or snapshot changed so that it no longer holds counts for nothing (`; its
+    moved record no longer holds: <why>`). A record whose control is back is noted (`moved record … no longer needed:
+    the control is back; progress.py moved --remove …`), not counted, and `show` marks it so the report does not list
+    it. `moved --remove <screen> <pose,…> "<control>"` takes a record back;
+  - a `verified` cell whose after table still has a class its before table had, not waived on the cell: leave it
+    `finding`, fix it, or waive it with why (feeds' T7 could be marked verified with T7 still there before 0.8.1); and
+    a `verified` or `unchanged` one with a class before where no detector ran after (`n/a`, `no-rotate`, or no row
+    for the screen: `<screen> <pose> is unchanged but no detector ran after: capture it into the after folder`), which
+    no waiver lifts: nothing shows the finding gone, or the pose fine as is;
+  - a done line that says "every pose" or "all poses" with "verified" while a cell of a screen it names is not
+    `verified`; the refusal gives the counts to write instead (`settings: Fold-aligned split (sheet rule), 1 verified,
+    6 unchanged`);
+  - a commit cited that is not on the branch: every word of 7 to 40 hexadecimal characters, with a digit and a letter
+    (not part of a UUID, nor the hash after a code identity's `+`), in the done lines, issues (what, where, note) and
+    moved records of the screens checked, and for `phase done` and `check` with no screen named the `made:` lines of
+    `.duo/PLAN.md` too, must name an ancestor of HEAD. An amended or rebased commit is not one (NetNewsWire's rerun
+    cited the commit from before an amend): `issue I3's note cites 87584b9, which is not on this branch (an amended or
+    rebased commit?): cite 8e7c888 ("…")`, naming the commit on the branch with the same tree or subject when there is
+    one. Cite that one, and never amend or rebase a commit once it is cited;
+  - a stale after shot: a `verified` or `unchanged` cell whose after shot was captured from other code than the code
+    now (its `.captured` line, "Long captures": its commit not on the branch, a file outside `.duo/` changed since, or
+    uncommitted changes then or now), not waived `stale` on the cell with why: `<screen> <pose>: its after shot is
+    from <short>[ with uncommitted changes] and <n> files changed since (<up to three>): rebuild and install from the
+    committed tree (step 6), then capture it again (SCREEN=<screen>, same after folder)`, or `…, which is not on this
+    branch` or `…, which the code now does not have`. Commit first, then rebuild and install from the committed tree,
+    then capture: a capture of uncommitted code proves nothing about what is committed, and the code identity comes
+    from git, not from the app on the simulator, so a capture without the rebuild records the new commit over shots of
+    the old build. A `stale` waiver keeps the code identity it was given at and holds only while nothing outside
+    `.duo/` changes after it (a later change: `… (waived at <short>; files changed since)`); given on uncommitted
+    code, it ends at the next commit even when that commit changes nothing, so commit first, then waive (`waive` says
+    so when the code has uncommitted changes). A shot whose line has no code (captured before 0.8.1), or that has no
+    line, gets the note `(no code identity for <screen> <pose>)`, not counted, except a cell whose after shot is not
+    there while its folder has a `.captured` (an empty one too): a capture stopped mid-screen (it removes a cell's
+    shot and line just before the screen) left it with no proof, and a missing shot proves nothing: `…: its after
+    shot is not there (a capture stopped mid-screen?): capture it again (SCREEN=<screen>, same after folder)`;
+  - an open issue marked as a regression;
+  - for `phase done`, and `check` with no screen named from phase `verify` on, no independent review on record (`no
+    independent review on record: record the independent review (references/review.md): progress.py review subagent
+    "…"; …`; before `verify`, `check` only notes it): `review <subagent|session|none> "<summary>"` appends `{kind,
+    summary, codeid, at}` to `"reviews"` (`review.md`). `check` with no screen named prints the latest last, `review:
+    <kind>, <at>, saw <short>: <summary>`, and the note `(the last review saw <short>, the code is now <short>)` when
+    the code has changed since. An `issue add --regression` once the phase is `done` sets it back to `verify`, logs
+    it and says so on stderr (`phase done → verify: regression I<n> reopens the run until it is fixed`).
+  Outside a git repository, or before its first commit, the cited commits and the shots' code are not checked (one
+  note). The git commands are read-only (`rev-parse`, `diff`, `ls-files`, `merge-base`, `log`), with
+  `GIT_OPTIONAL_LOCKS=0`.
+
+  `codeid` prints the code identity the captures record, of the repository holding `.duo/`: HEAD's 40 hexadecimal
+  characters, then `+` and 16 more when anything outside `.duo/` is uncommitted (a sha256 of `git diff HEAD
+  --full-index --binary`, with every diff option that git's configuration could change named at its default (full
+  blob ids, prefixes, context, order, algorithm, renames, path quoting), so another Mac, or the same one after a
+  fetch, gives the same identity, and of each untracked file's path and bytes), or `none` outside git or before the
+  first commit. It reads no progress file and always exits 0.
 
   `waive <screen> <pose,…> <id> "<why>"` records on its cell a detector line, or a new class, the shot does not bear
-  out (a pose not captured, or `no-rotate`, cannot be waived: no detector ran there). `issue add <screen>
-  <pose,…|all|inner|-> <high|medium|low> "<what happens>" [--regression] [--found-by detector|eye|review|test]
-  [--where <file:line>]` records what a review, a look or a test found that no detector table shows (`-` for no pose;
-  `--found-by` is `review` unless given) and prints its id (`I1`, `I2`, …, never reused); the screen is one the file
-  or the before table names (one the flows do not reach: `screen <name>` first). `issue fix <id> "<how>"` and `issue
-  wontfix <id> "<why>"` close it, and `wontfix` is refused for a regression (fix it, or revert the change that caused
-  it). `show` counts the open issues. Each capture removes a screen's snapshots in the poses it takes first, so a pose
+  out (a pose not captured, or `no-rotate`, cannot be waived: no detector ran there); the id `unchanged` or `stale`
+  waives those checks, for a reason the report repeats (`stale`: the commits since cannot reach that screen, and why;
+  it holds until the next change outside `.duo/`).
+  `issue add <screen> <pose,…|all|inner|-> <high|medium|low> "<what happens>" [--regression] [--found-by
+  detector|eye|review|test] [--where <file:line>]` records what a review, a look or a test found that no detector
+  table shows (`-` for no pose; `--found-by` is `review` unless given) and prints its id (`I1`, `I2`, …, never
+  reused); the screen is one the file or the before table names (one the flows do not reach: `screen <name>` first).
+  `issue fix <id> "<how>"` and `issue wontfix <id> "<why>"` close it, and `wontfix` is refused for a regression (fix
+  it, or revert the change that caused it). `show` counts the open issues and the cells by state, and lists every
+  waiver, moved control and review. Each capture removes a screen's snapshots in the poses it takes first, so a pose
   it skips is not captured.
 - Both write to `.duo/captures/<name>/` in the current directory (`OUT=<dir>` to change it). `DUO_PY` defaults to the
   bundled `tools/driver/duo.py`; without `DUO_UDID` (and `capture-corpus-flow.sh`, with it `capture-app.sh`, without
   `DUO_TAP_XCTESTRUN`), they exit 2 before touching anything. `source .duo/env` sets all three.
 - `tools/preflight.sh <app folder>`: the checks and `.duo/env` ("Before the first capture").
+- `tools/sdkguard.py [<app folder>] [--base <rev>] [--scheme <name>] [--ci-only]`: whether the branch builds with the
+  Xcode the project's CI uses, read-only. `#available` is checked at run time, and neither it nor `@available` hides
+  a symbol from the compiler, so an Xcode without the iOS 27 SDK cannot compile a symbol it guards (`apple.md`,
+  "Toolchain"); both NetNewsWire runs broke the project's CI on Xcode 26.6 this way. It prints each Xcode version the
+  repository names, with its `file:line`, from `.github/workflows/*.yml`, `.github/actions/**/action.yml`, the `.sh`
+  scripts a workflow runs, `.xcode-version`, `.circleci/config.yml`, `bitrise.yml`, `.gitlab-ci.yml`, `.travis.yml`,
+  `fastlane/Fastfile`, `Makefile` and `ci_scripts/`, comments left out: the literal forms, a GitHub matrix (a list
+  under a key, flow or block, or `include:` entries) and a variable (`XCODE: "26.6"`, `XCODE=26.6`, `export`, `?=`,
+  `:=`; a shell default, `XCODE="${XCODE:-26.6}"` or `: "${XCODE:=26.6}"` under a value the workflow passes in, and
+  `XCODE=${1:-26.6}`, the script's own), each read where it is used (`${{ matrix.xcode }}`, `${{ env.XCODE }}`,
+  `$XCODE`, `${XCODE}`, `$(XCODE)`; `${XCODE:-26.6}` gives its default where `XCODE` is not set), every value of a
+  matrix, and a variable named `XCODE` or `…XCODE_VERSION…` where it is set too (a default only where it holds). A
+  workflow is read
+  with its parts and the variables it sets: the `.sh` scripts it runs, the `Makefile` when it runs `make`, the local
+  actions it uses (`uses: ./…`). The lowest is the constraint. A workflow that builds (`xcodebuild`, `swift build` or
+  `test`, fastlane) on a `macos-*` runner, itself or through its parts, or asks setup-xcode for `latest` or
+  `latest-stable`, and names no version there (`xcodes select` with no version reads `.xcode-version`) gets its own
+  line: the runner image picks that Xcode, not the repository, so check the image before trusting a pass. With
+  `ci_scripts/`, Xcode Cloud's, the version is set in App Store Connect, not in the repository. It prints each
+  `/Applications/Xcode*.app`'s version; when one matches the CI's, the build line that proves the branch compiles
+  with it (`DEVELOPER_DIR=<that
+  Xcode>/Contents/Developer xcodebuild -project|-workspace '<path>' -scheme <scheme> -destination 'generic/platform=iOS
+  Simulator' -derivedDataPath ~/Library/Caches/duo-build/<app>-ci build`; `--scheme` fills the scheme, else it reads
+  `<scheme>`): run it. Then, in the Swift lines added since the base (`--base`; else `duo-baseline`; else the merge
+  base with `origin/HEAD`, unless that points at a `duo-migration` branch, `main` or `master`; else exit 2 asking for
+  `--base`, naming a remote `duo-baseline` if there is one: pass the base the log names), and in untracked Swift files
+  whole, `.duo/` left out, it flags outside comments and strings (interpolations are code) each `#available`,
+  `#unavailable` or `@available` naming iOS 27 or `anyAppleOS` (one split over lines counts on its first line), each
+  curated iOS 27.0 or 27.1 symbol (the names the patterns and references use, each version read from the SDK:
+  `apple.md`, "Toolchain"), each Foldsmith reference type (`FoldAlignedSplit`, `FoldAlignedTiledSplit`, `Arrangement`,
+  `ArrangementStyle`, `EvenGrid`, `ReflowingColumns`, `readsBookFold`, `foldAwareSheetPlacement`,
+  `duoBookFoldIsActive`), and each name the branch declares only inside the guard (a type, a top-level function or
+  variable, a member of an extension such as a `Notification.Name`, a member of a type that is not itself inside the
+  guard, a private one in its own file only and an enum case too unless named with its enum
+  (`PaneLayout.foldTiled`), never an override, in a type's body or in an extension; a member of a type written whole
+  in the guard that its pre-Duo twin in `#else` lacks; a local `let`, `var` or `func` used bare in the rest of its
+  block; each name of a list, `case a, b` or `var a = 0, b = 0`; a property-wrapped var's `$x` and `_x` too,
+  `Toggle(isOn: $x)`, `_x = State(initialValue:)`, `model.$x`; read from every changed Swift file first: wrapping a
+  helper file or a method whole does not guard its uses; a name also declared in an `#else` stub is fine (a member's
+  in its own type, an extension of that type or at the top level, and for `$x` and `_x` only a wrapped stub, since
+  `#else let x` has no `$x`; a local's in its block, or at the top level); beside an extension of another type that
+  declares it outside the guard, a guarded member counts where it is used bare or through `self` in its type's body
+  and not elsewhere; a type's own member declared outside the guard under the same name is its own where it is used
+  bare or through `self` in that type's body and its extensions (a private one's in its own file), and a local or
+  parameter is its own where it is used bare in its block, from the line after a `let` or `var`, from just after the
+  `{` for a closure's parameter (`{ [weak self] x in`), and only in the block an `if let` opens (`self.x = x`,
+  `let x = self.x`, `if let x = x`, and the shorthand `if let x {` and `guard let x else`, also on a line that
+  continues the condition, still read the outer one), while `view.name`, `.name` and uses elsewhere still count), not
+  inside `#if compiler(>=6.4)` (also with `&&`; not with `||`) or the `#else` of `#if compiler(<6.4)` or
+  `#if !compiler(>=6.4)`. The line that declares a name is not a use of it, nor is a label named like it (`f(x: 1)`,
+  `func f(x: Int)`, `case a(x: Int)`, `} x: {`; the value in `f(x: x)`, `c ? x : y` and `[x: 1]` still counts, and a
+  dictionary key after a comma or alone on its line is read as a label); a guarded local named like something the
+  SDK or a superclass declares (`let title`) is flagged though its bare use compiles with the guard false, since that
+  code then means something else; and a Foldsmith name the app declares itself outside a guard (the first NetNewsWire
+  run's own `enum FoldAlignedSplit`) is the app's: a `note:` line, and its uses are not flagged as
+  Foldsmith's. `// sdkguard: ok <why>` on the line, or alone on the line above (not after code there), waives one; a
+  waiver with no why does not count (a tab's `UITab.preferredPlacement`, iOS 18, shares a curated name and is waived
+  so), and each waived line is listed with its why under `waived:` for the review. The lines read `<file>:<line>:
+  <symbol> is iOS <v>: …` (`<name> is declared only inside #if compiler(>=6.4) at <file>:<line>: guard this use too`;
+  an availability check alone, which compiles anywhere: `… opens iOS 27 code: put it inside #if compiler(>=6.4) with
+  the code it guards`), under `iOS 27 uses added since <base> (<sha>), in N changed Swift files:`, and the last line
+  starts `verdict: `. CI below Xcode 27: each is an error, exit 1, the lines that do not compile and the availability
+  checks counted apart: wrap it in `#if compiler(>=6.4) … #else <the pre-Duo code> #endif`, keeping `#available`
+  inside. CI on Xcode 27.0: only 27.1 symbols are errors, inside the guard too, since Xcode 27.0 ships Swift 6.4 like
+  27.1 and no supported compile-time check separates them: propose moving the CI to Xcode 27.1 in `.duo/PLAN.md` (the
+  run is blocked on the CI there: SKILL.md step 6). CI on 27.1 or later, or none named: notes, exit 0. `--ci-only`
+  prints the Xcode lines and the verdict sentence only, reads no code and always exits 0 (the preflight's note); 2 is
+  a wrong call (no such folder or commit, no base, not a git repository). It writes nothing; git runs read-only
+  (`rev-parse`, `diff`, `ls-files`, `merge-base`, `symbolic-ref`, `for-each-ref`).
 - `tools/appstore.py`: the App Store set ("App Store screenshots").
 - `swift run --package-path tools/detect --scratch-path ~/Library/Caches/duo-detect duo-detect <out-dir> --markdown
   <out-dir>/detectors.md`: `capture-app.sh` runs it over every capture, so the proof needs no separate run, and
-  `progress.py` and `appstore.py` read only that `detectors.md` beside the shots. The taxonomy
-  detectors (T1, T2, T4, T5, T10, T14, T15, and T7 across poses) on those snapshots, one row per screen, one column per
-  pose. T10 covers custom-view toolbar items as well as text ones, T7 in book or flat-sideways can mean the shut
-  phone's stranded toolbar items are gone there (the line says which), and T14 also reports a leading pane whose
-  search field or segmented control stops well short of the fold. A cell reading `no-rotate` means the app's window kept the other orientation in that pose. A
-  snapshot taken while the app was not in front means it crashed or quit on the way to that pose: `capture.txt` gets a
-  line for it, `capture-app.sh` repeats it at the end in `findings.txt` and on stderr as T7 in that cell, never a clean
-  one (the exit code does not change), and the detectors' T7 line says "the app was not in front". The shot shows the
-  Home Screen, and the simulator's crash report (`~/Library/Logs/DiagnosticReports/<app name>-<date>.ips`, moved to
-  `Retired/` after a while) says where. A crash on the fold can be intermittent: one capture without it proves nothing.
+  `progress.py` and `appstore.py` read only that `detectors.md` beside the shots. The taxonomy detectors (T1, T2, T4,
+  T5, T10, T14, T15, and T7 across poses) on those snapshots, one row per screen, one column per pose. T10 covers
+  custom-view toolbar items as well as text ones, only in the bar that reaches the vertical bar's band: the sheet the
+  item sits in, else the narrowest navigation bar over it, else the window (a sheet away from the window's edge keeps
+  a horizontal bar of its own, where text items are right: centred open flat sideways, or on the leading half in book,
+  where its defect is the side, T15; NetNewsWire's Add Feed), T7 in book or flat-sideways can mean the shut phone's
+  stranded toolbar items are gone there (the line says which), and T14 also reports a leading pane whose search field
+  or segmented control stops well short of the fold. A cell reading `no-rotate` means the app's window kept the other
+  orientation in that pose. A snapshot taken while the app was not in front means it crashed or quit on the way to
+  that pose: `capture.txt` gets a line for it, `capture-app.sh` repeats it at the end in `findings.txt` and on stderr
+  as T7 in that cell, never a clean one (the exit code does not change), and the detectors' T7 line says "the app was
+  not in front". The shot shows the Home Screen, and the simulator's crash report
+  (`~/Library/Logs/DiagnosticReports/<app name>-<date>.ips`, moved to `Retired/` after a while) says where. A crash on
+  the fold can be intermittent: one capture without it proves nothing.
 - `tools/routes.sh <app folder> [<type or file name> …]`: the route inventory a structural change's proposal in
   `.duo/PLAN.md` carries, and the change takes through, every line of it: each push, stack replaced, pop,
   presentation, SwiftUI navigation, state restoration, URL, notification and quick action in the app's Swift code, and
@@ -298,8 +508,8 @@ next preflight takes), and run `/foldsmith-start` again. On that resume:
 - Check each one again with a `closed` capture into a scratch folder. One still not reached stays in `todo` with what
   the shot shows (a session lost on relaunch, a login asked for again).
 - Each one reached: `progress.py screen <name>`, `todo --remove "needs sign-in: <name>"`, then the workflow from step 2
-  for it. Its before is the app as it was before the migration: once a `Duo:` commit exists, build the commit the
-  migration started from (the parent of the first `Duo:` commit) in a `git worktree` outside the app's folder (removed
+  for it. Its before is the app as it was before the migration: once the migration has a commit, build the commit it
+  started from (the log's `branch duo-migration from <commit>`) in a `git worktree` outside the app's folder (removed
   afterwards), install it over the app, capture into `before` with `SCREEN=`, then install the current build again and
   carry on hands-free.
 - The shots now hold the person's own content: they stay in `.duo/captures/` (out of git), the report links them and

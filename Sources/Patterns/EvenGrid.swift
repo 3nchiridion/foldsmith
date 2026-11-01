@@ -14,6 +14,9 @@
 // [111463, 7:50]; scrolling content is exempt from hinge avoidance [111466, 9:28]. A grid centred in the safe area
 // lands off the fold because the vertical bar makes the safe area asymmetric (Wikipedia's Explore, taxonomy T14).
 
+// Xcode 27 brings Swift 6.4 and the iOS 27 SDK; an older Xcode compiles this file to nothing: guard each use alike.
+#if compiler(>=6.4)
+
 import SwiftUI
 
 public struct EvenGrid<Data: RandomAccessCollection, Cell: View>: View where Data.Element: Identifiable {
@@ -121,3 +124,5 @@ private struct GridGeometry: Equatable, Sendable {
         windowExtents = local.map { (origin + $0.lowerBound)...(origin + $0.upperBound) }
     }
 }
+
+#endif  // compiler(>=6.4)

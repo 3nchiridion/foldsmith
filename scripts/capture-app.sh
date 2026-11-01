@@ -7,11 +7,13 @@
 # .duo/env (the preflight writes it) sets DUO_UDID, DUO_TAP_XCTESTRUN and DUO_PY; DUO_PY defaults to the bundled
 # driver beside this script (driver/duo.py; third_party/duo-driver/duo.py from the repository's scripts/). Without
 # them, or with an ONLY or SCREEN that names nothing of the flow's, it exits 2 before it touches anything.
-# The flow file is shell: BUNDLE=<bundle id>, optional LAUNCH_ARGS="…" and APP_PATH=<.app>, and
+# The flow file is shell: BUNDLE=<bundle id>, optional LAUNCH_ARGS="…" (the tap runner splits it at each space and
+# nowhere else, so no quotes inside: -Key <false/>) and APP_PATH=<.app>, and
 # SCREENS=( "<screen>=<tap>;<tap>" … ) with the taps capture-corpus-flow.sh takes (its header has the syntax).
 # The app must already be built and installed on the simulator (xcrun simctl install), or APP_PATH set to its .app,
 # which uninstalls it and installs it afresh before every screen (its data and any login go with it). Shots,
-# <screen>-<pose>.json snapshots and capture.txt go to <out-dir>;
+# <screen>-<pose>.json snapshots and capture.txt go to <out-dir>; capture.txt starts with the app, the flow and its
+# sha256, and the code the capture is of (code: <what progress.py codeid prints, once, after the lock>);
 # the detectors write <out-dir>/detectors.md and their summary line to <out-dir>/findings.txt. ONLY="book laptop"
 # limits poses, as for capture-corpus-flow.sh, and SCREEN="settings status" limits screens, by their names in the flow:
 # together they probe one screen behind taps in the poses a change touches (into a scratch <out-dir>, so no cell
@@ -20,8 +22,9 @@
 # written to its cell as it lands, so the Foldsmith pane shows the capture as it goes.
 # Exit 0 when every screen was captured in every pose asked for; 3 when any cell was not (the lines are repeated at the
 # end and in findings.txt), so a missing screen is never read as a clean one. What decides is the record of the cells
-# captured, <out-dir>/.captured (a shot and a snapshot both landed): each of this run's screens in each pose asked for
-# with no line there is missing, whatever its line said (taps that reach nothing, no shot, no snapshot). A SCREEN=
+# captured, <out-dir>/.captured (a shot and a snapshot both landed: "<flow sha256> <screen> <pose> <code>"): each of
+# this run's screens in each pose asked for with no line there from this flow and this code is missing, whatever its
+# line said (taps that reach nothing, no shot, no snapshot). A SCREEN=
 # recapture into a folder that has a capture adds to its capture.txt under a "recaptured" line instead of replacing it,
 # so the first pass's lines (a lost screen, a skip) stay on record; for the flow's other screens each one's latest
 # capture in the file decides, so a screen skipped in an earlier pass and not captured since still counts as missing,
@@ -41,9 +44,10 @@
 # - INT, TERM or HUP: the runner lets go of the app (xcodebuild is killed if it holds on), the lock goes, capture.txt
 #   ends with a "stopped:" line naming the signal, the screen and the pose, and the exit code is 128 + the signal's
 #   number.
-# - RESUME=1, with the same flow file (same sha256) into the same <out-dir>: the cells already captured there are kept
-#   and the rest captured, capture.txt gets a "resumed" line, then the detectors run over the whole folder. A changed
-#   flow captures every cell again.
+# - RESUME=1, with the same flow file (same sha256) into the same <out-dir>: the cells already captured there from the
+#   same code are kept and the rest captured, capture.txt gets a "resumed" line and a "code:" line, then the detectors
+#   run over the whole folder. A changed flow captures every cell again, and so does changed code (a commit or an edit
+#   since: "code changed since the earlier capture: taking every cell again"), so a shot is never kept from other code.
 # Exit codes: 0 every cell asked for captured; 2 a wrong call; 3 cells not captured; 4 under 3 GB free; 5 another
 # capture running; 128 + n stopped by signal n; anything else, the "stopped:" line says where.
 set -euo pipefail
@@ -156,19 +160,29 @@ trap on_exit EXIT
 
 if note="$(low_disk "the capture")"; then echo "$note" >&2; exit 4; fi
 
+# The code this capture is of, taken once: HEAD, then + and a hash when anything outside .duo/ is uncommitted (none
+# outside git, or with no progress.py beside this script). It goes on the code: line and on each line of .captured, so
+# RESUME=1 keeps only cells taken from this code and progress.py check tells an after shot from older code.
+CODE=none
+[ ! -f "$HERE/progress.py" ] || CODE="$(python3 "$HERE/progress.py" --file "$PROGRESS" codeid 2>/dev/null)" || CODE=none
+CODE_RE='^[0-9a-f]{40}(\+[0-9a-f]{16})?$'
+[[ "$CODE" =~ $CODE_RE ]] || CODE=none
+
 RESUMING=0
 if [ "${RESUME:-0}" = 1 ]; then
   if [ -f "$OUT/capture.txt" ] && grep -q "sha256 $SHA" "$OUT/capture.txt"; then RESUMING=1
   else echo "RESUME=1: $OUT holds no capture of this flow (sha256 $SHA), so every cell is captured" >&2; fi
 fi
 if [ "$RESUMING" = 1 ]; then
-  echo "resumed: ${SCREEN:-every screen}, $(now), flow sha256 $SHA" >> "$OUT/capture.txt"
+  printf 'resumed: %s, %s, flow sha256 %s\ncode: %s\n' "${SCREEN:-every screen}" "$(now)" "$SHA" "$CODE" \
+    >> "$OUT/capture.txt"
 elif [ -n "${SCREEN:-}" ] && [ -f "$OUT/capture.txt" ]; then
-  echo "recaptured: $SCREEN, $(now), flow sha256 $SHA" >> "$OUT/capture.txt"
+  printf 'recaptured: %s, %s, flow sha256 %s\ncode: %s\n' "$SCREEN" "$(now)" "$SHA" "$CODE" >> "$OUT/capture.txt"
 else
   {
     echo "app: $NAME ($BUNDLE)"
     echo "flow: $FLOW sha256 $SHA"
+    echo "code: $CODE"
     echo "captured: $(now) on $(xcrun simctl list devices | grep -F "$DUO_UDID" | sed 's/^ *//')"
   } > "$OUT/capture.txt"
 fi
@@ -184,7 +198,7 @@ fi
 # into capture.txt ignores the signals and ends with the capture, so the capture's last line ("stopped: …") lands, even
 # when this script was killed and its own output is gone (PIPE ignored: tee goes on writing the file).
 keep_writing() { trap '' INT TERM HUP USR1 PIPE; exec tee -a "$1"; }
-CAPTURE_LOCK="$LOCK" CAPTURE_LOCK_PID=$$ FLOW_SHA="$SHA" RESUME="$RESUMING" \
+CAPTURE_LOCK="$LOCK" CAPTURE_LOCK_PID=$$ FLOW_SHA="$SHA" CAPTURE_CODE="$CODE" RESUME="$RESUMING" \
 OUT="$OUT" SNAPSHOT=1 WAIT="${WAIT:-6}" TAP_WAIT="${TAP_WAIT:-2}" LAUNCH_ARGS="$LAUNCH_ARGS" APP_PATH="$APP_PATH" \
   ONLY="${ONLY:-}" ON_SHOT="$ON_SHOT" bash "$HERE/capture-corpus-flow.sh" "$NAME" "$BUNDLE" "${SCREENS[@]}" \
   | keep_writing "$OUT/capture.txt" &
@@ -217,12 +231,13 @@ for f in sorted(pathlib.Path(sys.argv[1]).glob("*.json")):
 ' "$OUT")"
 [ -z "$GONE" ] || echo "$GONE" | tee -a "$OUT/findings.txt" >&2
 # What is missing. The record decides for this run's cells: each of its screens in each pose asked for with no
-# "<sha256> <screen> <pose>" line in <out>/.captured (a skip, a failed shot or snapshot, whatever its line said). For the
-# flow's other screens, the skip lines of each one's latest capture in capture.txt ("== <screen>" starts one) stay.
+# "<sha256> <screen> <pose> <code>" line in <out>/.captured (a skip, a failed shot or snapshot, whatever its line said).
+# For the flow's other screens, the skip lines of each one's latest capture in capture.txt ("== <screen>" starts one)
+# stay.
 MISSING=()
 for s in "${SCREENS[@]}"; do
   for p in "${ASKED[@]}"; do
-    grep -qxF "$SHA ${s%%=*} $p" "$OUT/.captured" 2>/dev/null || MISSING+=("${s%%=*} $p")
+    grep -qxF "$SHA ${s%%=*} $p $CODE" "$OUT/.captured" 2>/dev/null || MISSING+=("${s%%=*} $p")
   done
 done
 SKIPPED="$(awk '/^== / { cur = substr($0, 4); lines[cur] = ""; next }

@@ -13,6 +13,9 @@
 // 7:34]; continuously scrolling content must not displace [111463, 2:26]; scrolling content is exempt from hinge
 // avoidance [111466, 9:28]. One column across a book fold reads across the spine (Wikipedia's article, taxonomy T5).
 
+// Xcode 27 brings Swift 6.4 and the iOS 27 SDK; an older Xcode compiles this file to nothing: guard each use alike.
+#if compiler(>=6.4)
+
 import SwiftUI
 import UIKit
 
@@ -162,3 +165,5 @@ private struct PagedColumns: UIViewRepresentable {
         var typeSize: DynamicTypeSize
     }
 }
+
+#endif  // compiler(>=6.4)

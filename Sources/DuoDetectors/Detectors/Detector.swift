@@ -290,15 +290,20 @@ public struct PaneContentShortOfFold: Detector {
 
 /// T10 stranded-horizontal-item: a navigation bar item drawn as text stays horizontal where the bar goes vertical
 /// [tt-111462 5:56]; symbols move into the vertical bar. Text-shaped (40 % wider than tall; symbols are square) and left outside the
-/// vertical bar's band, in a pose that has one. NetNewsWire's Add Feed before its migration: Cancel 77 × 36 and Add
-/// 56 × 36 pt in the top bar; after, symbols 38 × 38 pt in the band.
+/// vertical bar's band, in a pose that has one. NetNewsWire's Add Feed before its migration, on the cover: Cancel
+/// 77 × 36 and Add 56 × 36 pt in the sheet's top bar; after, symbols 38 × 38 pt in the band.
 /// A toolbar's items go into the vertical bar whatever their shape, so any toolbar control left outside the band is
 /// stranded: a custom-view item, square or not (Wikipedia's article toolbar before its migration: six
 /// `UIBarButtonItem(customView:)` buttons in a row along the cover's bottom edge while the navigation items stood in the
-/// band; NetNewsWire's Reader View button, a custom view, beside the band on the cover and in the detail pane). In a split
-/// each pane keeps its own bottom toolbar and only the pane beside the vertical bar hands its items to it: NetNewsWire's
-/// timeline keeps Mark All as Read and Search at the bottom of the leading pane, as the system draws them. An item's pane
-/// is the navigation bar over its midpoint; with none, the window.
+/// band; NetNewsWire's Reader View button, a custom view, beside the band on the cover and in the detail pane).
+/// Both are checked only in a bar that reaches the band: items go vertical only when their container sits on the
+/// display's edge, and in a split only the detail column's do [tt-111462 3:09]. So each pane keeps its own bars
+/// (NetNewsWire's timeline keeps Mark All as Read and Search at the bottom of the leading pane; the catalog's sidebar
+/// keeps New and Hide Sidebar in its top bar in book), and a sheet away from the edge keeps a horizontal bar of its
+/// own: Add Feed centred open flat (245.5–705.5 pt of 951), before and after its migration, and the catalog's sheet
+/// on the leading half in book (8–467.3 pt), whose defect is its side (T15). On the cover a sheet spans the window.
+/// An item's bar is the sheet it sits in (a sheet's bar runs its width), else the narrowest navigation bar over its
+/// midpoint (a sidebar's lies over the detail's, which SwiftUI runs the window's width), else the window.
 public struct StrandedHorizontalItem: Detector {
     public static let classId = "T10"
     public init() {}
@@ -310,21 +315,26 @@ public struct StrandedHorizontalItem: Detector {
             : CGRect(x: 0, y: 0, width: pose.safeArea.leading, height: w.height)
         guard band.width > 0 else { return [] }
         func outside(_ e: Element) -> Bool { Detectors.horizontalOverlap(band, e.frame) < e.frame.width / 2 }
+        let sheets = elements.filter { $0.role == "sheet" }
+        let paneBars = elements.filter { $0.role == "bar" }
+        func reachesVerticalBar(_ e: Element) -> Bool {
+            let mid = CGPoint(x: e.frame.midX, y: e.frame.midY)
+            let t = Detectors.tolerance
+            let bar = sheets.first { $0.frame.insetBy(dx: -t, dy: -t).contains(mid) }
+                ?? paneBars.filter { $0.frame.minX - t <= mid.x && mid.x <= $0.frame.maxX + t }
+                    .min { $0.frame.width < $1.frame.width }
+            guard let bar else { return true }
+            return edge == "trailing" ? bar.frame.maxX >= band.minX - t : bar.frame.minX <= band.maxX + t
+        }
         let text = elements.filter {
             $0.inNavigationBar && $0.isInteractive && $0.frame.width >= 1.4 * $0.frame.height && outside($0)
+                && reachesVerticalBar($0)
         }.map {
             Finding(classId: Self.classId, pose: pose.name, element: $0,
                     detail: "\($0.name) (\(Int($0.frame.width)) × \(Int($0.frame.height)) pt, text) stays in the horizontal bar while the bar is vertical (\(edge))")
         }
-        let paneBars = elements.filter { $0.role == "bar" }
-        func besideVerticalBar(_ e: Element) -> Bool {
-            guard let pane = paneBars.first(where: { $0.frame.minX - Detectors.tolerance <= e.frame.midX
-                                                     && e.frame.midX <= $0.frame.maxX + Detectors.tolerance }) else { return true }
-            return edge == "trailing" ? pane.frame.maxX >= band.minX - Detectors.tolerance
-                                      : pane.frame.minX <= band.maxX + Detectors.tolerance
-        }
         let toolbar = elements.filter {
-            $0.inToolbar && $0.isInteractive && !$0.scrolls && outside($0) && besideVerticalBar($0)
+            $0.inToolbar && $0.isInteractive && !$0.scrolls && outside($0) && reachesVerticalBar($0)
         }.map {
             Finding(classId: Self.classId, pose: pose.name, element: $0,
                     detail: "\($0.name) (\(span($0.frame))) stays in a horizontal toolbar while the bar is vertical (\(edge)): a custom-view or text item")

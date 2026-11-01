@@ -31,7 +31,8 @@ alert if one is up (permission prompts, "Open in …?"), `try:<label>` taps only
 `wait:<seconds>` pauses, `cell:<n>` taps the n-th hittable cell from the top (a feed's newest article).
 
 `TEST_RUNNER_DUO_ARGS` (the flow script's `LAUNCH_ARGS`) passes launch arguments to the app, for an app's own UI-test
-switches such as Firefox's `FIREFOX_SKIP_INTRO`.
+switches such as Firefox's `FIREFOX_SKIP_INTRO`, split at each space and nowhere else (Swift's `split(separator: " ")`):
+no quoting, so `-Key <false/>`, never `-Key '<false/>'`.
 
 ## Run one flow by hand
 ```sh

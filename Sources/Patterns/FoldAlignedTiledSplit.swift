@@ -29,6 +29,9 @@
 // The fold is read from reserved regions, never from the device, idiom or orientation. Where the SDK has none (Xcode
 // 27.1's Mac Catalyst, visionOS and macOS SDKs) this type is FoldAlignedSplit and the UIKit part is not compiled.
 
+// Xcode 27 brings Swift 6.4 and the iOS 27 SDK; an older Xcode compiles this file to nothing: guard each use alike.
+#if compiler(>=6.4)
+
 import SwiftUI
 #if os(iOS) && !targetEnvironment(macCatalyst)
 import UIKit
@@ -210,3 +213,5 @@ private final class TiledSplitViewController: UISplitViewController {
     }
 }
 #endif
+
+#endif  // compiler(>=6.4)

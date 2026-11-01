@@ -22,6 +22,9 @@
 //
 // Before iOS 27.1 it is the layout an app had: a stack by shape for a split, a ZStack for an overlay.
 
+// Xcode 27 brings Swift 6.4 and the iOS 27 SDK; an older Xcode compiles this file to nothing: guard each use alike.
+#if compiler(>=6.4)
+
 import SwiftUI
 
 public enum ArrangementStyle: Sendable {
@@ -130,3 +133,5 @@ private struct FlatFold: Equatable, Sendable {
         #endif
     }
 }
+
+#endif  // compiler(>=6.4)
