@@ -37,9 +37,9 @@ Measurements: `metrics.md`.
 - Reset privacy prompts on reinstall (`xcrun simctl privacy <udid> reset all <bundle id>`) or a permission sheet blanks the flow.
 - `duo.py orient` logs the simulator's own names: `sideways` prints "portrait" and `upright` prints "landscape-left".
   The table above is what each pose looks like.
-- A fresh checkout's first build can fail on a source a build phase generates during the build (NetNewsWire's
-  gitignored `SecretKey.swift`). Build once more before diagnosing, and read the target's script phases for
-  generators (`rg -n "shellScript" <App>.xcodeproj/project.pbxproj`).
+- A fresh checkout's first build can fail on a source a build phase generates during the build (NetNewsWire's does).
+  Build once more before diagnosing, and read the target's script phases for generators
+  (`rg -n "shellScript" <App>.xcodeproj/project.pbxproj`).
 - In zsh (macOS's default shell) call each tool by its path with its interpreter (`python3 <skill>/tools/progress.py
   check`), and never keep a command in a variable: zsh does not split `$P` into words, so `P="python3
   …/progress.py"; $P check` looks for a program named by the whole string.
@@ -496,10 +496,10 @@ path in the progress file that leads outside the repository is refused unread. E
 written, 1 when none could be, 2 without `sips` or a progress file, or for an `<out>` refused.
 
 ## Screens behind a login: the second pass
-The run never signs in and never types credentials. A screen only a login reaches waits in `todo` as `needs sign-in:
-<screen>`, its flow line in `.duo/flows/<app>-login.flow`, and the report and the closing message ask the person to
-sign in on the Duo simulator themselves, naming it (`iPhone Duo (<UDID>)`, the progress file's `simulator`, which the
-next preflight takes), and run `/foldsmith-start` again. On that resume:
+The run never signs in and never types login details. A screen only a login reaches waits in `todo` as
+`needs sign-in: <screen>`, its flow line in `.duo/flows/<app>-login.flow`, and the report and the closing message ask
+the person to sign in on the Duo simulator themselves, naming it (`iPhone Duo (<UDID>)`, the progress file's
+`simulator`, which the next preflight takes), and run `/foldsmith-start` again. On that resume:
 - Never uninstall: that signs the person out. `APP_PATH` in a flow uninstalls the app before every screen, so capture
   these screens from a flow without it (`.duo/flows/<app>-login.flow`), always with `SCREEN=` so the folder's
   `capture.txt` is added to, not replaced, and run no flow with `APP_PATH` at all, for any screen, until these screens

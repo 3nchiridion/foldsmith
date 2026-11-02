@@ -1,6 +1,6 @@
 # Repository topics
 
-Set in the GitHub UI (About → ⚙︎ → Topics), so people searching GitHub for these find Foldsmith:
+Set in the GitHub UI (About → ⚙ → Topics), so people searching GitHub for these find Foldsmith:
 
 - iphone-duo
 - foldable

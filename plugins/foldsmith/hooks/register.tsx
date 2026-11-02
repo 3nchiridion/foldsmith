@@ -342,7 +342,7 @@ const clamp = (n: number, low: number, high: number) => Math.max(low, Math.min(h
 const round1 = (n: number) => Math.round(n * 10) / 10
 
 // A long name may wrap after - _ / and . (a zero-width space after each); text otherwise wraps only at spaces.
-const breakable = (text: string) => text.replace(/([-_/.])/g, '$1​')
+const breakable = (text: string) => text.replace(/([-_/.])/g, '$1\u200B')
 
 // A folder's path may wrap after each slash.
 const slashes = (path: string) => path.replace(/\//g, '/\u200B')

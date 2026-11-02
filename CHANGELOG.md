@@ -3,6 +3,22 @@
 Versions of the repository, as tagged, and from 0.8.1 the versions of the Claude Code plugin, which carries its own
 version in `plugins/foldsmith/.claude-plugin/plugin.json` (0.6.0 to 0.8.0 are described in their commits).
 
+## Plugin 0.8.2 — 2026-11-02
+The Claude directory's check of 0.8.0 held the plugin for an invisible character: a zero-width space written as itself
+in `hooks/register.tsx`.
+
+- **The pane's code** writes that zero-width space as `\u200B`, as the line below it does; what the pane draws is
+  unchanged.
+- **A new test**, `scripts/test_text.py`, refuses an invisible character in any text file the repository tracks: format
+  characters (zero-width spaces and joiners, bidirectional controls, byte-order marks), control characters other than
+  tab and newline (a carriage return among them), spaces other than the plain one, line and paragraph separators,
+  private-use characters, variation selectors, and the letters and marks Unicode lets a reader ignore (Hangul fillers
+  among them); a tracked file that is not UTF-8 must be a PNG. `.github/TOPICS.md` loses the one it had.
+- **The skill** words its rule as "never sign in or type login details" (it said "credentials"), in `SKILL.md` and
+  `references/simulator.md`; the rule is the same. `references/simulator.md` no longer names the source NetNewsWire's
+  first build generates. These were the likeliest matches for the same check's three credential findings, which do not
+  say what they matched.
+
 ## Plugin 0.8.1 — 2026-11-01
 What the NetNewsWire rerun with 0.8.0 showed was still broken: the branch did not build with the project's CI, the
 upright article pane lost Share, Previous and Next with nothing to show where they went, the gate passed a `verified`
